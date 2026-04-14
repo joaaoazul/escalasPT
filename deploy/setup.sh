@@ -44,10 +44,20 @@ if [[ ! -f "$ENV_FILE" ]]; then
         warn "Could not generate TOTP key (cryptography package missing). Set it manually."
     fi
 
-    warn "Edit .env.prod to set your DuckDNS domain in CORS_ORIGINS"
-    warn "File: $ENV_FILE"
+    warn "Review the generated .env.prod below:"
     echo ""
-    read -rp "Press Enter after reviewing .env.prod, or Ctrl+C to abort..."
+    echo "─────────────────── .env.prod ───────────────────"
+    cat "$ENV_FILE"
+    echo "─────────────────────────────────────────────────"
+    echo ""
+    warn "Edit CORS_ORIGINS with your DuckDNS domain if needed."
+    warn "To edit: nano $ENV_FILE (in another terminal or after Ctrl+C)"
+    echo ""
+    read -rp "Continue with these values? [Y/n]: " CONFIRM
+    if [[ "${CONFIRM,,}" == "n" ]]; then
+        info "Aborted. Edit $ENV_FILE and re-run: bash deploy/setup.sh"
+        exit 0
+    fi
 else
     info ".env.prod already exists, skipping generation"
 fi
