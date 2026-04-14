@@ -1,0 +1,288 @@
+/* ── Assignment Popover ─────────────────────────────────── */
+
+.apop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  /* transparent — clicking it dismisses the popover */
+}
+
+.apop-container {
+  position: fixed;
+  z-index: 1000;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  background: var(--surface-100);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: apop-in 120ms ease-out;
+}
+
+@keyframes apop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Header */
+.apop-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-200);
+  border-bottom: 1px solid var(--border-default);
+  border-left: 4px solid transparent;
+}
+
+.apop-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.apop-type-code {
+  font-size: var(--font-base);
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+}
+
+.apop-type-name {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.apop-date {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.apop-close {
+  margin-top: -4px;
+  margin-right: -4px;
+}
+
+/* Body */
+.apop-body {
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Times */
+.apop-times {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.apop-time-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.apop-time-field label {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.apop-time-input {
+  padding: var(--space-1) var(--space-2) !important;
+  font-size: var(--font-xs) !important;
+  height: 28px;
+  flex: 1;
+}
+
+.apop-time-sep {
+  color: var(--text-tertiary);
+  font-size: var(--font-xs);
+  flex-shrink: 0;
+}
+
+.apop-fixed-time {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  background: var(--surface-200);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.apop-allday-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface-200);
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+  font-weight: var(--weight-medium);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  width: fit-content;
+}
+
+/* GRAT-specific + Notes fields */
+.apop-grat-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.apop-field {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+}
+
+.apop-field svg {
+  margin-top: 6px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.apop-field label {
+  font-weight: var(--weight-medium);
+  min-width: 60px;
+  margin-top: 5px;
+  white-space: nowrap;
+}
+
+.apop-field input,
+.apop-field textarea {
+  flex: 1;
+  font-size: var(--font-xs);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.apop-field textarea {
+  resize: vertical;
+  min-height: 40px;
+}
+
+.apop-notes-field {
+  margin-top: var(--space-1);
+}
+
+/* User list */
+.apop-section-label {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.apop-user-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.apop-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-1);
+  background: var(--surface-50, var(--surface-100));
+}
+
+.apop-user-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.apop-user-item:hover {
+  background: var(--surface-300);
+}
+
+.apop-checkbox {
+  accent-color: var(--color-primary, #2563EB);
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.apop-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.apop-user-name {
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.apop-user-nip {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+.apop-fixed-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary-700);
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-full);
+  padding: 0 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.apop-empty {
+  font-size: var(--font-sm);
+  color: var(--text-tertiary);
+  padding: var(--space-3);
+  text-align: center;
+}
+
+/* Actions */
+.apop-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--border-default);
+}

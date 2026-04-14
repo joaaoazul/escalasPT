@@ -1,0 +1,375 @@
+/* FullCalendar custom theme overrides for GNR dark design system */
+
+.schedule-calendar {
+  position: relative;
+  animation: fadeIn var(--transition-base) ease-out;
+}
+
+.calendar-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.calendar-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+
+/* ── FullCalendar Theme Overrides ──────────────────────── */
+
+.fc {
+  --fc-border-color: var(--border-subtle);
+  --fc-bg-event-opacity: 1;
+  --fc-event-border-color: transparent;
+  --fc-today-bg-color: rgba(16, 185, 129, 0.04);
+  --fc-neutral-bg-color: var(--surface-100);
+  --fc-page-bg-color: transparent;
+  --fc-highlight-color: rgba(16, 185, 129, 0.08);
+  --fc-non-business-color: rgba(0, 0, 0, 0.1);
+  font-family: var(--font-family) !important;
+}
+
+/* Toolbar */
+.fc .fc-toolbar {
+  margin-bottom: 10px !important;
+  gap: 8px !important;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 10px 12px 0 12px;
+}
+
+.fc .fc-toolbar-title {
+  font-size: var(--font-lg) !important;
+  font-weight: var(--weight-semibold) !important;
+  color: var(--text-primary) !important;
+  text-transform: capitalize;
+  letter-spacing: -0.01em;
+}
+
+/* Base button */
+.fc .fc-button {
+  background: var(--surface-300) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--text-secondary) !important;
+  font-family: var(--font-family) !important;
+  font-size: var(--font-xs) !important;
+  font-weight: var(--weight-medium) !important;
+  padding: 5px 12px !important;
+  border-radius: 7px !important;
+  transition: all var(--transition-fast) !important;
+  box-shadow: none !important;
+  text-transform: none !important;
+  line-height: 1.4 !important;
+}
+
+.fc .fc-button:hover {
+  background: var(--surface-400) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-default) !important;
+}
+
+.fc .fc-button-active,
+.fc .fc-button:active {
+  background: var(--color-primary-600) !important;
+  border-color: var(--color-primary-500) !important;
+  color: white !important;
+  box-shadow: inset 0 1px 0 rgba(0,0,0,0.2) !important;
+}
+
+/* Segmented button group — macOS pill */
+.fc .fc-button-group {
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--border-subtle);
+}
+.fc .fc-button-group > .fc-button {
+  border-radius: 0 !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+}
+.fc .fc-button-group > .fc-button + .fc-button {
+  border-left: 1px solid var(--border-subtle) !important;
+}
+
+/* Nav prev/next — icon-only pills */
+.fc .fc-prev-button,
+.fc .fc-next-button {
+  padding: 5px 9px !important;
+  border-radius: 0 !important;
+}
+
+.fc .fc-today-button {
+  border-radius: 7px !important;
+}
+.fc .fc-today-button:disabled {
+  opacity: 0.35 !important;
+}
+
+/* Header cells (day names) */
+.fc .fc-col-header-cell {
+  background: var(--surface-200) !important;
+  border-color: var(--border-subtle) !important;
+  padding: 6px 0 !important;
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: var(--text-secondary) !important;
+  font-size: var(--font-xs) !important;
+  font-weight: var(--weight-semibold) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  text-decoration: none !important;
+}
+
+/* Day cells */
+.fc .fc-daygrid-day {
+  background: var(--surface-100) !important;
+  transition: background var(--transition-fast);
+}
+
+.fc .fc-daygrid-day:hover {
+  background: var(--surface-200) !important;
+}
+
+.fc .fc-daygrid-day.fc-day-today {
+  background: var(--fc-today-bg-color) !important;
+}
+
+.fc .fc-daygrid-day-number {
+  color: var(--text-secondary) !important;
+  font-size: 11px !important;
+  font-weight: var(--weight-medium) !important;
+  padding: 4px 6px !important;
+  text-decoration: none !important;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+  color: var(--color-primary-400) !important;
+  font-weight: var(--weight-bold) !important;
+}
+
+.fc .fc-daygrid-day-frame {
+  min-height: 88px !important;
+}
+
+/* Other month days */
+.fc .fc-day-other .fc-daygrid-day-number {
+  color: var(--text-muted) !important;
+  opacity: 0.5;
+}
+
+.fc .fc-day-other {
+  background: var(--surface-50) !important;
+}
+
+/* Weekend day subtle tint */
+.fc .fc-day-sat,
+.fc .fc-day-sun {
+  background: rgba(255, 255, 255, 0.018) !important;
+}
+
+.fc .fc-day-sat.fc-day-other,
+.fc .fc-day-sun.fc-day-other {
+  background: rgba(255, 255, 255, 0.008) !important;
+}
+
+/* Drag mirror ghost — solid color, elevated */
+.fc .fc-event-mirror {
+  opacity: 0.92 !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.6) !important;
+  transform: scale(1.03) translateY(-2px) !important;
+  pointer-events: none !important;
+  /* force FC's background-color variable to show through */
+  background-color: var(--fc-event-bg-color) !important;
+}
+
+.fc .fc-event-mirror .fc-event-main {
+  background-color: inherit !important;
+}
+
+/* Drop highlight cell */
+.fc .fc-highlight {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-radius: 4px !important;
+}
+
+/* Events */
+.fc .fc-event {
+  border-radius: var(--radius-sm) !important;
+  border-width: 2px !important;
+  cursor: pointer !important;
+  margin: 1px 2px !important;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast) !important;
+  overflow: hidden;
+}
+
+.fc .fc-event:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  z-index: 10 !important;
+}
+
+.fc-shift-draft {
+  border-style: dashed !important;
+  opacity: 0.85;
+}
+
+.fc-shift-cancelled {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+/* Custom event content */
+.fc-event-inner {
+  padding: 2px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-height: 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fc-event-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fc-event-code {
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.fc-event-time {
+  font-size: 10px;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+/* User count badge — shown when multiple people share a shift slot */
+.fc-event-count {
+  font-size: 9px;
+  font-weight: var(--weight-bold);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0 4px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fc-event-user {
+  font-size: 10px;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-event-draft-badge {
+  font-size: 9px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0 4px;
+  border-radius: 3px;
+  align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: var(--weight-semibold);
+}
+
+.fc-event-notes-dot {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  font-size: 8px;
+  color: var(--color-accent-400);
+  line-height: 1;
+}
+
+/* Time grid specifics */
+.fc .fc-timegrid-slot {
+  height: 48px !important;
+  border-color: var(--border-subtle) !important;
+}
+
+.fc .fc-timegrid-slot-label-cushion {
+  color: var(--text-muted) !important;
+  font-size: var(--font-xs) !important;
+}
+
+.fc .fc-timegrid-axis-cushion {
+  color: var(--text-muted) !important;
+  font-size: var(--font-xs) !important;
+}
+
+.fc .fc-timegrid-now-indicator-line {
+  border-color: var(--color-primary-500) !important;
+  border-width: 2px !important;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+  border-left-color: var(--color-primary-500) !important;
+}
+
+/* More link */
+.fc .fc-daygrid-more-link {
+  color: var(--color-primary-400) !important;
+  font-size: var(--font-xs) !important;
+  font-weight: var(--weight-semibold) !important;
+}
+
+/* Scrollbar */
+.fc .fc-scroller {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-500) transparent;
+}
+
+/* Popover */
+.fc .fc-popover {
+  background: var(--surface-200) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.fc .fc-popover-header {
+  background: var(--surface-300) !important;
+  color: var(--text-primary) !important;
+  font-size: var(--font-sm) !important;
+  padding: var(--space-2) var(--space-3) !important;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    gap: var(--space-2) !important;
+  }
+  .fc .fc-toolbar-title {
+    font-size: var(--font-lg) !important;
+  }
+  .fc .fc-daygrid-day-frame {
+    min-height: 70px !important;
+  }
+  .fc-event-user {
+    display: none;
+  }
+}

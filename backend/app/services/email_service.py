@@ -70,13 +70,13 @@ def _build_notification_email(title: str, message: str) -> str:
 <head><meta charset="utf-8"></head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
   <div style="background: #1a1f2c; color: #ffffff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-    <h1 style="margin: 0; font-size: 24px;">Shifting</h1>
+    <h1 style="margin: 0; font-size: 24px;">EscalasPT</h1>
   </div>
   <div style="background: #ffffff; padding: 24px; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0;">
     <h2 style="color: #1a1f2c; margin-top: 0;">{title}</h2>
     <p style="color: #333; font-size: 15px; line-height: 1.6;">{message}</p>
     <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-    <p style="color: #999; font-size: 12px;">Esta é uma notificação automática do Shifting. Não responda a este email.</p>
+    <p style="color: #999; font-size: 12px;">Esta é uma notificação automática do EscalasPT. Não responda a este email.</p>
   </div>
 </body>
 </html>"""
@@ -98,5 +98,5 @@ async def send_notification_email(
     html = _build_notification_email(title, message)
     # Fire and forget — don't block the notification flow
     asyncio.create_task(
-        send_email(to_email, f"Shifting — {title}", html, body_text=message)
+        send_email(to_email, f"EscalasPT — {title}", html, body_text=message)
     )

@@ -1,5 +1,7 @@
 """
-Users router — admin-only user management.
+Users router — user management with station-scoped access.
+Admin: full CRUD globally.
+Comandante/Adjunto: create, update, deactivate users within their own station.
 """
 
 from __future__ import annotations
@@ -11,20 +13,42 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db, require_role
+from app.exceptions import AuthorizationError, ValidationError
 from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserListResponse, UserResponse, UserUpdate
 from app.services import user_service
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
+# Roles that a Comandante/Adjunto can assign within their station
+_STATION_MANAGEABLE_ROLES = {UserRole.MILITAR, UserRole.SECRETARIA, UserRole.ADJUNTO}
+
 
 @router.post("/", response_model=UserResponse, status_code=201)
 async def create_user(
     data: UserCreate,
-    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
     db: AsyncSession = Depends(get_db),
 ):
-    """Create a new user. Admin only."""
+    """
+    Create a new user.
+    - Admin: can create any user in any station with any role.
+    - Comandante/Adjunto: can only create users in their own station,
+      with roles limited to militar, secretaria, or adjunto.
+    """
+    if current_user.role in (UserRole.COMANDANTE, UserRole.ADJUNTO):
+        # Force the new user into the commander's station
+        if data.station_id and data.station_id != current_user.station_id:
+            raise AuthorizationError("Cannot create users in another station")
+        data.station_id = current_user.station_id
+
+        # Restrict assignable roles
+        if data.role not in _STATION_MANAGEABLE_ROLES:
+            raise AuthorizationError(
+                f"Cannot assign role '{data.role.value}'. "
+                f"Station commanders can only create: {', '.join(r.value for r in _STATION_MANAGEABLE_ROLES)}"
+            )
+
     user = await user_service.create_user(db, data, created_by=current_user.id)
     return UserResponse.model_validate(user)
 
@@ -73,10 +97,37 @@ async def get_user(
 async def update_user(
     user_id: uuid.UUID,
     data: UserUpdate,
-    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update a user. Admin only."""
+    """
+    Update a user.
+    - Admin: can update any user.
+    - Comandante/Adjunto: can only update users within their station,
+      cannot promote beyond station-manageable roles, cannot reassign
+      users to another station.
+    """
+    if current_user.role in (UserRole.COMANDANTE, UserRole.ADJUNTO):
+        target_user = await user_service.get_user_by_id(db, user_id)
+
+        # Must be in the same station
+        if target_user.station_id != current_user.station_id:
+            raise AuthorizationError("Cannot update users from another station")
+
+        # Cannot change station assignment
+        update_dict = data.model_dump(exclude_unset=True)
+        if "station_id" in update_dict and update_dict["station_id"] != current_user.station_id:
+            raise AuthorizationError("Cannot reassign users to another station")
+
+        # Restrict role changes
+        if "role" in update_dict:
+            new_role = UserRole(update_dict["role"])
+            if new_role not in _STATION_MANAGEABLE_ROLES:
+                raise AuthorizationError(
+                    f"Cannot assign role '{new_role.value}'. "
+                    f"Station commanders can only assign: {', '.join(r.value for r in _STATION_MANAGEABLE_ROLES)}"
+                )
+
     user = await user_service.update_user(db, user_id, data, updated_by=current_user.id)
     return UserResponse.model_validate(user)
 

@@ -1,0 +1,148 @@
+/* Notifications Page styles */
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  max-width: 800px;
+}
+
+.notification-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-100);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-lg);
+  transition: background 0.2s ease;
+}
+.notification-card:hover {
+  background: var(--surface-200);
+}
+
+.notification-card.unread {
+  background: rgba(255, 255, 255, 0.02);
+  border-left-color: var(--nc-accent, var(--color-primary-500));
+  border-color: var(--border-default);
+}
+
+/* Type icon circle */
+.nc-type-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+/* Title row with badge */
+.nc-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 2px;
+}
+
+.nc-type-badge {
+  font-size: 10px;
+  font-weight: var(--weight-bold);
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+/* Shift chips row */
+.nc-shifts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 5px 0 2px;
+}
+
+.nc-shift-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 1px solid;
+  letter-spacing: 0.03em;
+  cursor: default;
+}
+
+.nc-shift-date {
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+  opacity: 0.75;
+}
+
+.nc-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.nc-title {
+  font-size: var(--font-sm);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.nc-message {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 600px;
+}
+
+.nc-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  color: var(--text-tertiary);
+  font-size: var(--font-xs);
+}
+
+.nc-mark-btn {
+  color: var(--color-primary-400);
+}
+.nc-mark-btn:hover {
+  color: var(--color-primary-300);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) 0;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.empty-icon {
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-4);
+  opacity: 0.5;
+}
+.empty-state h3 {
+  font-size: var(--font-lg);
+  font-weight: var(--weight-bold);
+  margin-bottom: var(--space-2);
+  color: var(--text-primary);
+}
+.empty-state p {
+  font-size: var(--font-sm);
+}

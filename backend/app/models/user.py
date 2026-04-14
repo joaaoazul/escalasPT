@@ -45,6 +45,10 @@ class User(UUIDMixin, TimestampMixin, Base):
         String(20), unique=True, nullable=False, index=True,
         comment="Número de Identificação Pessoal"
     )
+    numero_ordem: Mapped[str | None] = mapped_column(
+        String(10), unique=True, nullable=True, index=True,
+        comment="Número de ordem do militar (3-4 dígitos)"
+    )
     role: Mapped[str] = mapped_column(
         Enum(UserRole, name="user_role", create_constraint=True, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,

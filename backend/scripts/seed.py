@@ -7,6 +7,7 @@ Or via Docker: docker compose exec api python -m scripts.seed
 from __future__ import annotations
 
 import asyncio
+import os
 import uuid
 from datetime import time
 
@@ -18,6 +19,11 @@ from app.utils.logging import setup_logging, get_logger
 
 setup_logging()
 logger = get_logger(__name__)
+
+# Seed passwords from env vars — never hardcoded in production
+SEED_ADMIN_PASSWORD = os.environ.get("SEED_ADMIN_PASSWORD", "Admin@2026!Gnr")
+SEED_CMDT_PASSWORD = os.environ.get("SEED_CMDT_PASSWORD", "Cmd@2026!GnrPT")
+SEED_DEFAULT_PASSWORD = os.environ.get("SEED_DEFAULT_PASSWORD", "Mil@2026!GnrPT")
 
 
 async def seed():
@@ -40,8 +46,8 @@ async def seed():
         admin = User(
             id=uuid.uuid4(),
             username="admin",
-            email="admin@gnr-escalas.pt",
-            password_hash=hash_password("Admin@2026!Gnr"),
+            email="admin@escalaspt.pt",
+            password_hash=hash_password(SEED_ADMIN_PASSWORD),
             full_name="Administrador do Sistema",
             nip="ADM001",
             role=UserRole.ADMIN,
@@ -54,8 +60,8 @@ async def seed():
         comandante = User(
             id=uuid.uuid4(),
             username="cmdt.silva",
-            email="silva@gnr-escalas.pt",
-            password_hash=hash_password("Cmd@2026!GnrPT"),
+            email="silva@escalaspt.pt",
+            password_hash=hash_password(SEED_CMDT_PASSWORD),
             full_name="Sargento-Ajudante António Silva",
             nip="GNR10001",
             role=UserRole.COMANDANTE,
@@ -68,8 +74,8 @@ async def seed():
         secretaria = User(
             id=uuid.uuid4(),
             username="guarda.lima",
-            email="lima@gnr-escalas.pt",
-            password_hash=hash_password("Mil@2026!GnrPT"),
+            email="lima@escalaspt.pt",
+            password_hash=hash_password(SEED_DEFAULT_PASSWORD),
             full_name="Guarda Ana Lima",
             nip="GNR20001",
             role=UserRole.SECRETARIA,
@@ -82,15 +88,15 @@ async def seed():
         # ── 2 Cabos — NIC (Inquéritos) ───────────────────
         cabos_inq_users = []
         cabos_inq = [
-            ("cabo.ferreira", "ferreira@gnr-escalas.pt", "Cabo Manuel Ferreira",  "GNR30001"),
-            ("cabo.oliveira", "oliveira@gnr-escalas.pt", "Cabo Ricardo Oliveira", "GNR30002"),
+            ("cabo.ferreira", "ferreira@escalaspt.pt", "Cabo Manuel Ferreira",  "GNR30001"),
+            ("cabo.oliveira", "oliveira@escalaspt.pt", "Cabo Ricardo Oliveira", "GNR30002"),
         ]
         for username, email, full_name, nip in cabos_inq:
             user = User(
                 id=uuid.uuid4(),
                 username=username,
                 email=email,
-                password_hash=hash_password("Mil@2026!GnrPT"),
+                password_hash=hash_password(SEED_DEFAULT_PASSWORD),
                 full_name=full_name,
                 nip=nip,
                 role=UserRole.MILITAR,
@@ -102,29 +108,29 @@ async def seed():
 
         # ── 16 Guardas — Patrulha + Atendimento ──────────
         guardas = [
-            ("guarda.costa",      "costa@gnr-escalas.pt",      "Guarda João Costa",         "GNR40001"),
-            ("guarda.santos",     "santos@gnr-escalas.pt",     "Guarda Pedro Santos",       "GNR40002"),
-            ("guarda.pereira",    "pereira@gnr-escalas.pt",    "Guarda Carlos Pereira",     "GNR40003"),
-            ("guarda.rodrigues",  "rodrigues@gnr-escalas.pt",  "Guarda Tiago Rodrigues",    "GNR40004"),
-            ("guarda.almeida",    "almeida@gnr-escalas.pt",    "Guarda Bruno Almeida",      "GNR40005"),
-            ("guarda.nunes",      "nunes@gnr-escalas.pt",      "Guarda Rui Nunes",          "GNR40006"),
-            ("guarda.marques",    "marques@gnr-escalas.pt",    "Guarda André Marques",      "GNR40007"),
-            ("guarda.sousa",      "sousa@gnr-escalas.pt",      "Guarda Hugo Sousa",         "GNR40008"),
-            ("guarda.mendes",     "mendes@gnr-escalas.pt",     "Guarda Diogo Mendes",       "GNR40009"),
-            ("guarda.lopes",      "lopes@gnr-escalas.pt",      "Guarda Marco Lopes",        "GNR40010"),
-            ("guarda.ribeiro",    "ribeiro@gnr-escalas.pt",    "Guarda Sérgio Ribeiro",     "GNR40011"),
-            ("guarda.fernandes",  "fernandes@gnr-escalas.pt",  "Guarda Paulo Fernandes",    "GNR40012"),
-            ("guarda.carvalho",   "carvalho@gnr-escalas.pt",   "Guarda Daniel Carvalho",    "GNR40013"),
-            ("guarda.gomes",      "gomes@gnr-escalas.pt",      "Guarda Francisco Gomes",    "GNR40014"),
-            ("guarda.martins",    "martins@gnr-escalas.pt",    "Guarda Luís Martins",       "GNR40015"),
-            ("guarda.dias",       "dias@gnr-escalas.pt",       "Guarda Miguel Dias",        "GNR40016"),
+            ("guarda.costa",      "costa@escalaspt.pt",      "Guarda João Costa",         "GNR40001"),
+            ("guarda.santos",     "santos@escalaspt.pt",     "Guarda Pedro Santos",       "GNR40002"),
+            ("guarda.pereira",    "pereira@escalaspt.pt",    "Guarda Carlos Pereira",     "GNR40003"),
+            ("guarda.rodrigues",  "rodrigues@escalaspt.pt",  "Guarda Tiago Rodrigues",    "GNR40004"),
+            ("guarda.almeida",    "almeida@escalaspt.pt",    "Guarda Bruno Almeida",      "GNR40005"),
+            ("guarda.nunes",      "nunes@escalaspt.pt",      "Guarda Rui Nunes",          "GNR40006"),
+            ("guarda.marques",    "marques@escalaspt.pt",    "Guarda André Marques",      "GNR40007"),
+            ("guarda.sousa",      "sousa@escalaspt.pt",      "Guarda Hugo Sousa",         "GNR40008"),
+            ("guarda.mendes",     "mendes@escalaspt.pt",     "Guarda Diogo Mendes",       "GNR40009"),
+            ("guarda.lopes",      "lopes@escalaspt.pt",      "Guarda Marco Lopes",        "GNR40010"),
+            ("guarda.ribeiro",    "ribeiro@escalaspt.pt",    "Guarda Sérgio Ribeiro",     "GNR40011"),
+            ("guarda.fernandes",  "fernandes@escalaspt.pt",  "Guarda Paulo Fernandes",    "GNR40012"),
+            ("guarda.carvalho",   "carvalho@escalaspt.pt",   "Guarda Daniel Carvalho",    "GNR40013"),
+            ("guarda.gomes",      "gomes@escalaspt.pt",      "Guarda Francisco Gomes",    "GNR40014"),
+            ("guarda.martins",    "martins@escalaspt.pt",    "Guarda Luís Martins",       "GNR40015"),
+            ("guarda.dias",       "dias@escalaspt.pt",       "Guarda Miguel Dias",        "GNR40016"),
         ]
         for username, email, full_name, nip in guardas:
             user = User(
                 id=uuid.uuid4(),
                 username=username,
                 email=email,
-                password_hash=hash_password("Mil@2026!GnrPT"),
+                password_hash=hash_password(SEED_DEFAULT_PASSWORD),
                 full_name=full_name,
                 nip=nip,
                 role=UserRole.MILITAR,
@@ -359,14 +365,14 @@ async def seed():
         print("=" * 60)
         print(f"\n  Station: {station.name} ({station.code})")
         print(f"\n  Personnel ({1 + 1 + 2 + 16} = 20):")
-        print(f"    Admin:       admin              / Admin@2026!Gnr")
-        print(f"    Comandante:  cmdt.silva         / Cmd@2026!GnrPT  (Sargento-Ajudante)")
-        print(f"    Secretaria:  guarda.lima        / Mil@2026!GnrPT")
-        print(f"    Inquéritos:  cabo.ferreira      / Mil@2026!GnrPT")
-        print(f"                 cabo.oliveira      / Mil@2026!GnrPT")
-        print(f"    Patrulha:    guarda.costa … guarda.dias (16 guardas) / Mil@2026!GnrPT")
+        print(f"    Admin:       admin              / {SEED_ADMIN_PASSWORD}")
+        print(f"    Comandante:  cmdt.silva         / {SEED_CMDT_PASSWORD}  (Sargento-Ajudante)")
+        print(f"    Secretaria:  guarda.lima        / {SEED_DEFAULT_PASSWORD}")
+        print(f"    Inquéritos:  cabo.ferreira      / {SEED_DEFAULT_PASSWORD}")
+        print(f"                 cabo.oliveira      / {SEED_DEFAULT_PASSWORD}")
+        print(f"    Patrulha:    guarda.costa … guarda.dias (16 guardas) / {SEED_DEFAULT_PASSWORD}")
         print(f"\n  Shift Types: {len(shift_types)} created")
-        print(f"    Serviço:   AT1-3, OC1-3, GRAT, T, INST, INQ, SEC")
+        print(f"    Serviço:   AT1-3, OC1-3, GRAT, ALOJ, T, INST, INQ, SEC")
         print(f"    Folga:     F")
         print(f"    Ausências: FER, CONV, MF, DIL, LIC")
         print("=" * 60 + "\n")

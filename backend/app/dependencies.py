@@ -64,12 +64,17 @@ async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
             # Set RLS station context if resolved by middleware
             rls_station_id = getattr(request.state, "rls_station_id", None)
             if rls_station_id:
-                # SET LOCAL doesn't support parameterized queries in asyncpg,
-                # but station_id is validated from the JWT (never from user input).
-                import re
-                if re.match(r'^[0-9a-f\-]{36}$', rls_station_id):
+                # SET LOCAL doesn't support parameterized queries in asyncpg.
+                # Strict UUID parse guarantees the value is safe for interpolation.
+                import uuid as _uuid
+                try:
+                    validated_id = str(_uuid.UUID(rls_station_id))
                     await session.execute(
-                        text(f"SET LOCAL app.current_station_id = '{rls_station_id}'")
+                        text(f"SET LOCAL app.current_station_id = '{validated_id}'")
+                    )
+                except (ValueError, AttributeError):
+                    await session.execute(
+                        text("SET LOCAL app.current_station_id = ''")
                     )
             yield session
             await session.commit()

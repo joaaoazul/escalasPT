@@ -41,7 +41,17 @@ async def create_audit_log(
     def _sanitize(data: Optional[Dict]) -> Optional[Dict]:
         if data is None:
             return None
-        return {k: "[REDACTED]" if k in sensitive_keys else v for k, v in data.items()}
+        result = {}
+        for k, v in data.items():
+            if k in sensitive_keys:
+                result[k] = "[REDACTED]"
+            elif isinstance(v, uuid.UUID):
+                result[k] = str(v)
+            elif hasattr(v, 'value'):  # Enum
+                result[k] = v.value
+            else:
+                result[k] = v
+        return result
 
     log_entry = AuditLog(
         id=uuid.uuid4(),

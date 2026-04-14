@@ -73,6 +73,14 @@ class Shift(UUIDMixin, TimestampMixin, Base):
         Text, nullable=True,
         comment="Notas do comandante: giro, indicações, tarefas específicas"
     )
+    location: Mapped[str | None] = mapped_column(
+        String(300), nullable=True,
+        comment="Localização do serviço (relevante para gratificados)"
+    )
+    grat_type: Mapped[str | None] = mapped_column(
+        String(100), nullable=True,
+        comment="Tipo de gratificado (ex: Evento desportivo, Segurança privada, etc)"
+    )
     created_by: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),

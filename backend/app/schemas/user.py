@@ -29,6 +29,7 @@ class UserBase(BaseModel):
     email: EmailStr
     full_name: str = Field(..., min_length=2, max_length=200)
     nip: str = Field(..., min_length=3, max_length=20)
+    numero_ordem: Optional[str] = Field(None, min_length=3, max_length=10)
     phone: Optional[str] = Field(None, max_length=20)
 
     _sanitize_full_name = field_validator("full_name", mode="before")(_sanitize_text)
@@ -43,6 +44,7 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     full_name: Optional[str] = Field(None, min_length=2, max_length=200)
+    numero_ordem: Optional[str] = Field(None, min_length=3, max_length=10)
     phone: Optional[str] = Field(None, max_length=20)
     role: Optional[UserRole] = None
     station_id: Optional[uuid.UUID] = None
@@ -56,6 +58,7 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     nip: str
+    numero_ordem: Optional[str] = None
     role: UserRole
     station_id: Optional[uuid.UUID]
     phone: Optional[str]

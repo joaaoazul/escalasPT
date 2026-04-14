@@ -1,0 +1,249 @@
+/* SwapsPage styles */
+
+/* ── Filter bar ───────────────────────────────────────── */
+.swap-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0 var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.swap-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-200);
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.swap-filter-pill:hover {
+  background: var(--surface-300);
+  color: var(--text-primary);
+}
+
+.swap-filter-pill.active {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: #fff;
+}
+
+.swap-filter-count {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 10px;
+}
+
+.swap-filter-pill.active .swap-filter-count {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── List area ───────────────────────────────────────── */
+.swap-list-area {
+  padding: 0 var(--space-6) var(--space-6);
+}
+
+.swap-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ── Empty state ─────────────────────────────────────── */
+.swap-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-12);
+  color: var(--text-tertiary);
+  font-size: var(--font-sm);
+}
+
+.swap-empty--error {
+  color: var(--color-danger-400);
+}
+
+/* ── Swap card ───────────────────────────────────────── */
+.swap-card {
+  background: var(--surface-200);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.swap-card:hover {
+  border-color: var(--border-default);
+}
+
+.swap-card--pending_target {
+  border-left: 3px solid #F59E0B;
+}
+
+.swap-card--pending_approval {
+  border-left: 3px solid #8B5CF6;
+}
+
+.swap-card--approved {
+  border-left: 3px solid #10B981;
+}
+
+.swap-card--rejected {
+  border-left: 3px solid #EF4444;
+}
+
+.swap-card--cancelled {
+  border-left: 3px solid #6B7280;
+  opacity: 0.6;
+}
+
+.swap-card-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4);
+  cursor: pointer;
+  user-select: none;
+  flex-wrap: wrap;
+}
+
+/* Status badge */
+.swap-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sc-color) 15%, transparent);
+  color: var(--sc-color);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Shifts row */
+.swap-card-shifts {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.swap-arrow-icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.swap-shift-unknown {
+  font-size: var(--font-sm);
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.swap-card-meta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* Expand icon */
+.swap-expand-icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  transform: rotate(0deg);
+  transition: transform var(--transition-fast);
+}
+
+.swap-expand-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Shift chip */
+.swap-shift-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--surface-300);
+  border: 1px solid var(--border-subtle);
+}
+
+.swap-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.swap-chip-code {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.swap-chip-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Detail panel */
+.swap-card-detail {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.swap-reason-text {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Action buttons */
+.swap-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.swap-reject-btn {
+  color: var(--color-danger-400) !important;
+}
+
+.swap-cancel-btn {
+  color: var(--text-tertiary) !important;
+  font-size: var(--font-xs);
+}
+
+.swap-download-btn {
+  color: var(--color-primary-400) !important;
+  font-size: var(--font-xs);
+  gap: var(--space-1);
+}
+
+@media (max-width: 768px) {
+  .swap-list-area {
+    padding: 0 var(--space-3) var(--space-3);
+  }
+}

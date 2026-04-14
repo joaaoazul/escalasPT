@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     )
 
     # ── App ───────────────────────────────────────────────────
-    APP_NAME: str = "Shifting"
+    APP_NAME: str = "EscalasPT"
     APP_ENV: str = "production"
     APP_DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # ── TOTP ──────────────────────────────────────────────────
-    TOTP_ISSUER_NAME: str = "Shifting"
+    TOTP_ISSUER_NAME: str = "EscalasPT"
     TOTP_ENCRYPTION_KEY: str = ""  # Fernet key for encrypting totp_secret at rest
 
     # ── Account Lockout ───────────────────────────────────────
@@ -60,6 +60,21 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> List[str]:
         return json.loads(self.CORS_ORIGINS)
 
+    @field_validator("CORS_ORIGINS")
+    @classmethod
+    def validate_cors_origins(cls, v: str, info) -> str:
+        env = info.data.get("APP_ENV", "production")
+        origins = json.loads(v) if v else []
+        if env != "development":
+            unsafe = [o for o in origins if "localhost" in o or "127.0.0.1" in o]
+            if unsafe:
+                print(
+                    f"WARNING: CORS_ORIGINS contains localhost entries in {env} mode: {unsafe}. "
+                    "Remove them for production.",
+                    file=sys.stderr,
+                )
+        return v
+
     # ── Rate Limiting ─────────────────────────────────────────
     RATE_LIMIT_LOGIN: str = "5/minute"
     RATE_LIMIT_DEFAULT: str = "60/minute"
@@ -73,7 +88,7 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_FROM_EMAIL: str = ""
-    SMTP_FROM_NAME: str = "Shifting"
+    SMTP_FROM_NAME: str = "EscalasPT"
     SMTP_USE_TLS: bool = True
     EMAIL_ENABLED: bool = False
 

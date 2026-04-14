@@ -54,12 +54,9 @@ async def authenticate_user(
     result = await db.execute(select(User).where(User.username == username))
     user = result.scalar_one_or_none()
 
-    # Check lockout BEFORE password verification
+    # Check lockout BEFORE password verification — generic message to prevent enumeration
     if user is not None and user.locked_until and user.locked_until > datetime.now(timezone.utc):
-        remaining = (user.locked_until - datetime.now(timezone.utc)).seconds // 60
-        raise AuthenticationError(
-            f"Account is locked. Try again in {remaining + 1} minutes"
-        )
+        raise AuthenticationError("Invalid username or password")
 
     if user is None or not verify_password(password, user.password_hash):
         # Increment failed attempts if user exists
@@ -125,12 +122,9 @@ async def authenticate_with_totp(
     result = await db.execute(select(User).where(User.username == username))
     user = result.scalar_one_or_none()
 
-    # Check lockout BEFORE password verification (same as authenticate_user)
+    # Check lockout BEFORE password verification — generic message to prevent enumeration
     if user is not None and user.locked_until and user.locked_until > datetime.now(timezone.utc):
-        remaining = (user.locked_until - datetime.now(timezone.utc)).seconds // 60
-        raise AuthenticationError(
-            f"Account is locked. Try again in {remaining + 1} minutes"
-        )
+        raise AuthenticationError("Invalid username or password")
 
     if user is None or not verify_password(password, user.password_hash):
         if user is not None:
@@ -158,6 +152,11 @@ async def authenticate_with_totp(
             )
         db.add(user)
         await db.commit()
+        await create_audit_log(
+            db, user_id=user.id, action="login_totp_failed",
+            resource_type="user", resource_id=str(user.id),
+            ip_address=ip_address,
+        )
         raise AuthenticationError("Invalid TOTP code")
 
     # Reset failed attempts

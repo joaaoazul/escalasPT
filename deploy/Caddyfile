@@ -1,0 +1,25 @@
+# EscalasPT — Caddy reverse proxy
+# Place this file at /etc/caddy/Caddyfile on the VPS
+# Replace YOURDOMAIN with your DuckDNS subdomain (e.g., escalaspt.duckdns.org)
+
+YOURDOMAIN.duckdns.org {
+    reverse_proxy localhost:8443
+
+    # Compress responses
+    encode gzip zstd
+
+    # Security headers (supplement nginx)
+    header {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/escalaspt.log {
+            roll_size 10mb
+            roll_keep 3
+        }
+    }
+}

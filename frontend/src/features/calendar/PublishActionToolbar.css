@@ -1,0 +1,67 @@
+/* Publish Action Toolbar — compact macOS-style pill */
+
+.publish-toolbar {
+  position: fixed;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  width: auto;
+  max-width: 560px;
+  min-width: 280px;
+  width: calc(100% - 2rem);
+}
+
+.publish-toolbar-content {
+  background: var(--surface-150, var(--surface-200));
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(245, 158, 11, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.publish-toolbar-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* small amber dot indicator */
+.publish-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-warning-500);
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+}
+
+.publish-title {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.publish-desc {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.publish-desc strong {
+  color: var(--color-warning-400);
+  font-weight: var(--weight-semibold);
+}
+
+.publish-toolbar-actions .btn {
+  border-radius: var(--radius-full);
+  font-size: var(--font-xs);
+  padding: var(--space-1) var(--space-3);
+  height: 28px;
+}

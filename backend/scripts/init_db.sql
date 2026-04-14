@@ -1,5 +1,5 @@
 -- ============================================================
--- Shifting — Database initialization script
+-- EscalasPT — Database initialization script
 -- Runs on first docker-compose up via entrypoint
 -- Creates the limited app user and sets audit_log protections
 -- ============================================================

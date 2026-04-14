@@ -1,5 +1,5 @@
 """
-Shifting — FastAPI application factory.
+EscalasPT — FastAPI application factory.
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     application = FastAPI(
         title=settings.APP_NAME,
-        description="Shifting — Shift scheduling and management platform",
+        description="EscalasPT — Plataforma de gestão de escalas",
         version="1.0.0",
         docs_url="/api/docs" if settings.APP_DEBUG else None,
         redoc_url="/api/redoc" if settings.APP_DEBUG else None,

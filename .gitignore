@@ -1,4 +1,4 @@
-# Shifting — Ignore patterns
+# EscalasPT — Ignore patterns
 
 # Python
 __pycache__/
@@ -13,6 +13,7 @@ build/
 .env
 .env.local
 .env.*.local
+.env.prod
 
 # IDE
 .vscode/
@@ -31,6 +32,16 @@ Thumbs.db
 
 # Alembic
 alembic/versions/__pycache__/
+
+# Secrets / tokens / debug artifacts
+*.key
+key.txt
+token.json
+payload.json
+me.json
+users.json
+types.json
+api_logs.txt
 
 # Coverage
 htmlcov/

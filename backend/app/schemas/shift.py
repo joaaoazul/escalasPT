@@ -30,8 +30,12 @@ class ShiftCreate(BaseModel):
     start_datetime: datetime
     end_datetime: datetime
     notes: Optional[str] = Field(None, max_length=2000)
+    location: Optional[str] = Field(None, max_length=300)
+    grat_type: Optional[str] = Field(None, max_length=100)
 
     _sanitize_notes = field_validator("notes", mode="before")(_sanitize_text)
+    _sanitize_location = field_validator("location", mode="before")(_sanitize_text)
+    _sanitize_grat_type = field_validator("grat_type", mode="before")(_sanitize_text)
 
     @model_validator(mode="after")
     def validate_times(self):
@@ -52,8 +56,12 @@ class ShiftUpdate(BaseModel):
     start_datetime: Optional[datetime] = None
     end_datetime: Optional[datetime] = None
     notes: Optional[str] = Field(None, max_length=2000)
+    location: Optional[str] = Field(None, max_length=300)
+    grat_type: Optional[str] = Field(None, max_length=100)
 
     _sanitize_notes = field_validator("notes", mode="before")(_sanitize_text)
+    _sanitize_location = field_validator("location", mode="before")(_sanitize_text)
+    _sanitize_grat_type = field_validator("grat_type", mode="before")(_sanitize_text)
 
 
 class ShiftResponse(BaseModel):
@@ -71,8 +79,12 @@ class ShiftResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    location: Optional[str] = None
+    grat_type: Optional[str] = None
+
     # Nested info
     user_name: Optional[str] = None
+    user_numero_ordem: Optional[str] = None
     shift_type_name: Optional[str] = None
     shift_type_code: Optional[str] = None
     shift_type_color: Optional[str] = None

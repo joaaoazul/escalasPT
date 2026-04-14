@@ -33,6 +33,15 @@ _MESES = [
 _DIAS_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
 
+def _is_dark(hex_color: str) -> bool:
+    """Return True if the hex color is dark (needs white text)."""
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    # Relative luminance (sRGB)
+    luminance = 0.299 * r + 0.587 * g + 0.114 * b
+    return luminance < 160
+
+
 # ═════════════════════════════════════════════════════════
 #  1. RELATÓRIO SEMANAL DE TROCAS
 # ═════════════════════════════════════════════════════════
@@ -277,10 +286,20 @@ def generate_schedule_pdf(
         fontName="Helvetica", fontSize=6, alignment=TA_LEFT,
         leading=8,
     )
+    s_name_cell_header = ParagraphStyle(
+        "NameCellHeader", parent=styles["Normal"],
+        fontName="Helvetica-Bold", fontSize=6, alignment=TA_LEFT,
+        leading=8, textColor=colors.white,
+    )
     s_day_cell = ParagraphStyle(
         "DayCell", parent=styles["Normal"],
         fontName="Helvetica-Bold", fontSize=6, alignment=TA_CENTER,
         leading=8,
+    )
+    s_day_cell_header = ParagraphStyle(
+        "DayCellHeader", parent=styles["Normal"],
+        fontName="Helvetica-Bold", fontSize=6, alignment=TA_CENTER,
+        leading=8, textColor=colors.white,
     )
     s_code_cell = ParagraphStyle(
         "CodeCell", parent=styles["Normal"],
@@ -329,7 +348,7 @@ def generate_schedule_pdf(
     col_widths = [name_col_w] + [day_col_w] * num_days
 
     # ── Header row (day numbers + weekday) ───────────────
-    header_row = [Paragraph("<b>Militar</b>", s_name_cell)]
+    header_row = [Paragraph("<b>Militar</b>", s_name_cell_header)]
     weekend_cols: set[int] = set()
     for d in range(1, num_days + 1):
         dt_obj = date(year, month, d)
@@ -339,7 +358,7 @@ def generate_schedule_pdf(
             weekend_cols.add(d)
         header_row.append(Paragraph(
             f"<b>{d}</b><br/><font size='4'>{wd_label}</font>",
-            s_day_cell,
+            s_day_cell_header,
         ))
 
     # ── Data rows ────────────────────────────────────────
@@ -349,7 +368,14 @@ def generate_schedule_pdf(
         for d in range(1, num_days + 1):
             key = (u["id"], d)
             code = shift_map.get(key, "")
-            row.append(Paragraph(code, s_code_cell))
+            clr = shift_color_map.get(key, "")
+            if code and clr:
+                txt_color = "#ffffff" if _is_dark(clr) else "#1a202c"
+                row.append(Paragraph(
+                    f'<font color="{txt_color}">{code}</font>', s_code_cell
+                ))
+            else:
+                row.append(Paragraph(code, s_code_cell))
         data_rows.append(row)
 
     # ── Build table ──────────────────────────────────────
@@ -391,13 +417,8 @@ def generate_schedule_pdf(
             if clr:
                 try:
                     bg = colors.HexColor(clr)
-                    # Use a lighter tint for background
                     style_cmds.append(
                         ("BACKGROUND", (d, row_idx), (d, row_idx), bg)
-                    )
-                    # White text on dark backgrounds
-                    style_cmds.append(
-                        ("TEXTCOLOR", (d, row_idx), (d, row_idx), colors.white)
                     )
                 except Exception:
                     pass

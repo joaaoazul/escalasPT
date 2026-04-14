@@ -1,6 +1,10 @@
 """
-Admin router — system-wide administration endpoints.
-Audit logs, system stats, password reset, session management.
+Admin router — system-wide and station-scoped administration endpoints.
+Audit logs, system stats, password reset, session management, station onboarding.
+
+Access levels:
+  - ADMIN: full access to everything, globally.
+  - COMANDANTE/ADJUNTO: password reset, unlock, audit logs — scoped to their station.
 """
 
 from __future__ import annotations
@@ -10,11 +14,12 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
-from sqlalchemy import func, select, text
+from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db, require_role
+from app.exceptions import AuthorizationError, ConflictError, NotFoundError, ValidationError
 from app.models.audit_log import AuditLog
 from app.models.shift import Shift
 from app.models.station import Station
@@ -23,6 +28,21 @@ from app.services.audit_service import create_audit_log
 from app.utils.security import hash_password
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
+
+# ── Helpers ───────────────────────────────────────────────
+
+async def _get_user_check_station(
+    db: AsyncSession, user_id: uuid.UUID, current_user: User,
+) -> User:
+    """Get a target user and verify station-scoped access for non-admins."""
+    user = await db.get(User, user_id)
+    if user is None:
+        raise NotFoundError("User")
+    if current_user.role in (UserRole.COMANDANTE, UserRole.ADJUNTO):
+        if user.station_id != current_user.station_id:
+            raise AuthorizationError("Cannot manage users from another station")
+    return user
 
 
 # ── Schemas ───────────────────────────────────────────────
@@ -62,7 +82,7 @@ class SystemStatsResponse(BaseModel):
 
 
 class PasswordResetRequest(BaseModel):
-    new_password: str
+    new_password: str = Field(..., min_length=12, max_length=128)
 
 
 class SessionResponse(BaseModel):
@@ -83,7 +103,28 @@ class SessionListResponse(BaseModel):
     total: int
 
 
-# ── System Stats ──────────────────────────────────────────
+class StationOnboardRequest(BaseModel):
+    """Create a station together with its first Comandante."""
+    station_name: str = Field(..., min_length=2, max_length=200)
+    station_code: str = Field(..., min_length=2, max_length=20)
+    station_address: str | None = None
+    station_phone: str | None = None
+    comandante_username: str = Field(..., min_length=3, max_length=50)
+    comandante_email: EmailStr
+    comandante_password: str = Field(..., min_length=12, max_length=128)
+    comandante_full_name: str = Field(..., min_length=2, max_length=200)
+    comandante_nip: str = Field(..., min_length=3, max_length=20)
+    comandante_phone: str | None = None
+
+
+class StationOnboardResponse(BaseModel):
+    station_id: str
+    station_name: str
+    comandante_id: str
+    comandante_username: str
+
+
+# ── System Stats (Admin only) ────────────────────────────
 
 @router.get("/stats", response_model=SystemStatsResponse)
 async def get_system_stats(
@@ -145,7 +186,7 @@ async def get_system_stats(
     )
 
 
-# ── Audit Logs ────────────────────────────────────────────
+# ── Audit Logs (Admin: global, Comandante/Adjunto: station-scoped) ──
 
 @router.get("/audit-logs", response_model=AuditLogListResponse)
 async def list_audit_logs(
@@ -156,12 +197,25 @@ async def list_audit_logs(
     date_to: Optional[datetime] = Query(None),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
-    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
     db: AsyncSession = Depends(get_db),
 ):
-    """List audit logs with filters. Admin only."""
+    """
+    List audit logs.
+    - Admin: sees all.
+    - Comandante/Adjunto: only sees logs created by users in their station.
+    """
     query = select(AuditLog)
     count_query = select(func.count(AuditLog.id))
+
+    # Station-scoped: join on user to filter by station
+    if current_user.role in (UserRole.COMANDANTE, UserRole.ADJUNTO):
+        query = query.join(User, AuditLog.user_id == User.id).where(
+            User.station_id == current_user.station_id
+        )
+        count_query = count_query.join(User, AuditLog.user_id == User.id).where(
+            User.station_id == current_user.station_id
+        )
 
     if action:
         query = query.where(AuditLog.action == action)
@@ -192,24 +246,17 @@ async def list_audit_logs(
     )
 
 
-# ── Password Reset ────────────────────────────────────────
+# ── Password Reset (Admin: any, Comandante/Adjunto: own station) ──
 
 @router.post("/users/{user_id}/reset-password", status_code=200)
 async def admin_reset_password(
     user_id: uuid.UUID,
     body: PasswordResetRequest,
-    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
     db: AsyncSession = Depends(get_db),
 ):
-    """Reset a user's password. Admin only."""
-    user = await db.get(User, user_id)
-    if user is None:
-        from app.exceptions import NotFoundError
-        raise NotFoundError("User")
-
-    if len(body.new_password) < 12:
-        from app.exceptions import ValidationError
-        raise ValidationError("Password must be at least 12 characters")
+    """Reset a user's password. Admin or station commander."""
+    user = await _get_user_check_station(db, user_id, current_user)
 
     user.password_hash = hash_password(body.new_password)
     user.failed_login_attempts = 0
@@ -287,10 +334,12 @@ async def revoke_session(
 @router.post("/users/{user_id}/revoke-all-sessions", status_code=200)
 async def revoke_all_user_sessions(
     user_id: uuid.UUID,
-    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
     db: AsyncSession = Depends(get_db),
 ):
-    """Revoke all sessions for a user. Admin only."""
+    """Revoke all sessions for a user. Admin or station commander."""
+    await _get_user_check_station(db, user_id, current_user)
+
     result = await db.execute(
         select(ActiveSession).where(
             ActiveSession.user_id == user_id,
@@ -313,19 +362,16 @@ async def revoke_all_user_sessions(
     return {"message": f"Revoked {count} sessions"}
 
 
-# ── User Unlock ───────────────────────────────────────────
+# ── User Unlock (Admin: any, Comandante/Adjunto: own station) ──
 
 @router.post("/users/{user_id}/unlock", status_code=200)
 async def unlock_user(
     user_id: uuid.UUID,
-    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
     db: AsyncSession = Depends(get_db),
 ):
-    """Unlock a locked user account. Admin only."""
-    user = await db.get(User, user_id)
-    if user is None:
-        from app.exceptions import NotFoundError
-        raise NotFoundError("User")
+    """Unlock a locked user account. Admin or station commander."""
+    user = await _get_user_check_station(db, user_id, current_user)
 
     user.failed_login_attempts = 0
     user.locked_until = None
@@ -337,3 +383,90 @@ async def unlock_user(
     )
 
     return {"message": "Account unlocked"}
+
+
+# ── Station Onboarding (Admin only) ──────────────────────
+
+@router.post("/onboard-station", response_model=StationOnboardResponse, status_code=201)
+async def onboard_station(
+    data: StationOnboardRequest,
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Provision a new station with its first Comandante in one atomic operation.
+    After this, the Comandante can self-manage their station's users.
+    """
+    from app.utils.security import validate_password_strength, check_password_hibp
+
+    # Check station code uniqueness
+    existing_station = await db.execute(
+        select(Station).where(Station.code == data.station_code)
+    )
+    if existing_station.scalar_one_or_none():
+        raise ConflictError(f"Station with code '{data.station_code}' already exists")
+
+    # Check user uniqueness
+    for field_name, value in [
+        ("username", data.comandante_username),
+        ("email", data.comandante_email),
+        ("nip", data.comandante_nip),
+    ]:
+        existing = await db.execute(
+            select(User).where(getattr(User, field_name) == value)
+        )
+        if existing.scalar_one_or_none():
+            raise ConflictError(f"A user with this {field_name} already exists")
+
+    # Validate password
+    pw_issues = validate_password_strength(data.comandante_password)
+    if pw_issues:
+        raise ValidationError("; ".join(pw_issues))
+
+    if await check_password_hibp(data.comandante_password):
+        raise ValidationError(
+            "This password has been exposed in a data breach. Choose a different password."
+        )
+
+    # Create station
+    station = Station(
+        id=uuid.uuid4(),
+        name=data.station_name,
+        code=data.station_code,
+        address=data.station_address,
+        phone=data.station_phone,
+    )
+    db.add(station)
+    await db.flush()
+
+    # Create Comandante
+    comandante = User(
+        id=uuid.uuid4(),
+        username=data.comandante_username,
+        email=data.comandante_email,
+        password_hash=hash_password(data.comandante_password),
+        full_name=data.comandante_full_name,
+        nip=data.comandante_nip,
+        role=UserRole.COMANDANTE,
+        station_id=station.id,
+        phone=data.comandante_phone,
+    )
+    db.add(comandante)
+    await db.flush()
+
+    await create_audit_log(
+        db, user_id=current_user.id, action="onboard_station",
+        resource_type="station", resource_id=str(station.id),
+        new_data={
+            "station_name": station.name,
+            "station_code": station.code,
+            "comandante_id": str(comandante.id),
+        },
+    )
+
+    return StationOnboardResponse(
+        station_id=str(station.id),
+        station_name=station.name,
+        comandante_id=str(comandante.id),
+        comandante_username=comandante.username,
+    )

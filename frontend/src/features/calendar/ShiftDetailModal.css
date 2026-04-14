@@ -1,0 +1,208 @@
+/* Shift Detail Panel / Modal styles */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+}
+
+.shift-detail-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  max-width: 100vw;
+  background: var(--surface-100);
+  border-left: 1px solid var(--border-subtle);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+}
+
+/* Header */
+.sdp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--space-6);
+  gap: var(--space-4);
+}
+
+.sdp-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sdp-title {
+  font-size: var(--font-xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  line-height: var(--leading-tight);
+}
+
+/* Color bar */
+.sdp-color-bar {
+  height: 3px;
+  width: 100%;
+  opacity: 0.8;
+}
+
+/* Body */
+.sdp-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Field rows */
+.sdp-field {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.sdp-field-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--surface-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.sdp-field-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sdp-field-label {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sdp-field-value {
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sdp-type-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Notes */
+.sdp-notes-field {
+  background: var(--surface-200);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  margin-left: calc(-1 * var(--space-3));
+  padding-left: calc(var(--space-3) + var(--space-4));
+}
+
+.sdp-notes-content {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Footer */
+.sdp-footer {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.sdp-btn-remove {
+  color: var(--color-danger-500);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.sdp-btn-remove:hover {
+  background: var(--color-danger-50);
+}
+
+/* Delete confirmation */
+.sdp-delete-confirm {
+  margin: 0 var(--space-6) var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-danger-50);
+  border: 1px solid var(--color-danger-200);
+  border-radius: var(--radius-md);
+}
+
+.sdp-delete-confirm-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-danger-700);
+  font-size: var(--font-sm);
+  margin-bottom: var(--space-2);
+}
+
+.sdp-delete-confirm-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--font-xs);
+  color: var(--color-danger-600);
+}
+
+.sdp-delete-confirm-details span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.sdp-delete-warning {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-xs);
+  font-weight: 600;
+  color: var(--color-danger-700);
+}
+
+.btn-danger {
+  background: var(--color-danger-500);
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.btn-danger:hover {
+  background: var(--color-danger-600);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .shift-detail-panel {
+    width: 100vw;
+  }
+}

@@ -1,5 +1,5 @@
 """
-Test fixtures for the Shifting backend.
+Test fixtures for the EscalasPT backend.
 Provides: async DB session, HTTP client, authenticated users per role.
 """
 

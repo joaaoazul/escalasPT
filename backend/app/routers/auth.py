@@ -5,6 +5,8 @@ Auth router — login, refresh, logout, TOTP.
 from __future__ import annotations
 
 from fastapi import APIRouter, Cookie, Depends, Request, Response
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db, require_role
@@ -21,8 +23,12 @@ from app.schemas.auth import (
     TOTPVerifyResponse,
 )
 from app.services import auth_service
+from app.config import get_settings
+
+settings = get_settings()
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 def _get_client_ip(request: Request) -> str:
@@ -34,6 +40,7 @@ def _get_client_ip(request: Request) -> str:
 
 
 @router.post("/login", response_model=LoginResponse)
+@limiter.limit(settings.RATE_LIMIT_LOGIN)
 async def login(
     data: LoginRequest,
     request: Request,
@@ -73,6 +80,7 @@ async def login(
 
 
 @router.post("/login/totp", response_model=LoginResponse)
+@limiter.limit(settings.RATE_LIMIT_LOGIN)
 async def login_with_totp(
     data: TOTPLoginRequest,
     request: Request,
@@ -103,6 +111,7 @@ async def login_with_totp(
 
 
 @router.post("/refresh", response_model=RefreshResponse)
+@limiter.limit("30/minute")
 async def refresh_token(
     request: Request,
     response: Response,

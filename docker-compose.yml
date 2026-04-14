@@ -3,7 +3,7 @@ version: "3.9"
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: shifting-postgres
+    container_name: escalaspt-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-gnr_admin}
@@ -24,11 +24,11 @@ services:
           memory: 512M
           cpus: '1.0'
     networks:
-      - shifting-net
+      - escalaspt-net
 
   redis:
     image: redis:7-alpine
-    container_name: shifting-redis
+    container_name: escalaspt-redis
     restart: unless-stopped
     command: redis-server --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD} --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
@@ -44,13 +44,13 @@ services:
           memory: 256M
           cpus: '0.5'
     networks:
-      - shifting-net
+      - escalaspt-net
 
   api:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: shifting-api
+    container_name: escalaspt-api
     restart: unless-stopped
     env_file:
       - .env
@@ -79,11 +79,11 @@ services:
         max-size: "50m"
         max-file: "5"
     networks:
-      - shifting-net
+      - escalaspt-net
 
   nginx:
     image: nginx:1.25-alpine
-    container_name: shifting-nginx
+    container_name: escalaspt-nginx
     restart: unless-stopped
     ports:
       - "${NGINX_PORT:-80}:80"
@@ -103,12 +103,12 @@ services:
         max-size: "20m"
         max-file: "3"
     networks:
-      - shifting-net
+      - escalaspt-net
 
 volumes:
   postgres_data:
   redis_data:
 
 networks:
-  shifting-net:
+  escalaspt-net:
     driver: bridge

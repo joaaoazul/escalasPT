@@ -78,12 +78,16 @@ async def set_rls_context(db_session, station_id: str | None) -> None:
     Set the RLS context variable for the current DB session.
     Called from get_db() after station_id is resolved.
     """
-    import re
-    if station_id and re.match(r'^[0-9a-f\-]{36}$', station_id):
-        await db_session.execute(
-            text(f"SET LOCAL app.current_station_id = '{station_id}'"),
-        )
-    else:
-        await db_session.execute(
-            text("SET LOCAL app.current_station_id = ''")
-        )
+    import uuid as _uuid
+    if station_id:
+        try:
+            validated_id = str(_uuid.UUID(station_id))
+            await db_session.execute(
+                text(f"SET LOCAL app.current_station_id = '{validated_id}'"),
+            )
+            return
+        except (ValueError, AttributeError):
+            pass
+    await db_session.execute(
+        text("SET LOCAL app.current_station_id = ''")
+    )

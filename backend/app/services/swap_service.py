@@ -24,6 +24,8 @@ from app.models.notification import NotificationType
 from app.models.shift import Shift, ShiftStatus, ShiftSwapRequest, SwapStatus
 from app.models.user import User
 from app.services import notification_service
+from app.services.conflict_detector import validate_swap
+from app.services.notification_service import ws_manager
 from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -141,6 +143,13 @@ async def create_swap(
     )
     if dup_tgt.scalar_one_or_none():
         raise ValidationError("That shift already has a pending swap request")
+
+    # ── Conflict validation: check if the swap would create conflicts ──
+    swap_conflicts = await validate_swap(db, req_shift, tgt_shift)
+    errors = [c for c in swap_conflicts if c.severity == "error"]
+    if errors:
+        descriptions = "; ".join(e.description for e in errors)
+        raise ValidationError(f"Troca criaria conflitos: {descriptions}")
 
     swap = ShiftSwapRequest(
         id=uuid.uuid4(),
@@ -283,6 +292,14 @@ async def decide_swap(
         req_shift = await db.get(Shift, swap.requester_shift_id)
         tgt_shift = await db.get(Shift, swap.target_shift_id)
         if req_shift and tgt_shift:
+            # Final conflict check before approving
+            swap_conflicts = await validate_swap(db, req_shift, tgt_shift)
+            errors = [c for c in swap_conflicts if c.severity == "error"]
+            if errors:
+                descriptions = "; ".join(e.description for e in errors)
+                raise ValidationError(
+                    f"Não é possível aprovar — conflitos detectados: {descriptions}"
+                )
             req_shift.user_id, tgt_shift.user_id = tgt_shift.user_id, req_shift.user_id
             db.add(req_shift)
             db.add(tgt_shift)
@@ -302,6 +319,15 @@ async def decide_swap(
             message=message,
             data={"swap_id": str(swap.id)},
         )
+
+    # Broadcast calendar sync to ALL station members
+    await ws_manager.broadcast_to_station(
+        str(station_id),
+        {
+            "type": "calendar_sync",
+            "reason": "swap_approved" if approve else "swap_rejected",
+        },
+    )
 
     logger.info(
         "Swap %s %s by approver %s",

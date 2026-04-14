@@ -23,6 +23,7 @@ from app.schemas.shift import (
 )
 from app.services.audit_service import create_audit_log
 from app.services.conflict_detector import validate_shifts, validate_single_shift
+from app.services.notification_service import ws_manager
 from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -40,11 +41,14 @@ def _shift_to_response(shift: Shift) -> ShiftResponse:
         end_datetime=shift.end_datetime,
         status=shift.status,
         notes=shift.notes,
+        location=shift.location,
+        grat_type=shift.grat_type,
         created_by=shift.created_by,
         published_at=shift.published_at,
         created_at=shift.created_at,
         updated_at=shift.updated_at,
         user_name=shift.user.full_name if shift.user else None,
+        user_numero_ordem=shift.user.numero_ordem if shift.user else None,
         shift_type_name=shift.shift_type.name if shift.shift_type else None,
         shift_type_code=shift.shift_type.code if shift.shift_type else None,
         shift_type_color=shift.shift_type.color if shift.shift_type else None,
@@ -64,9 +68,10 @@ async def create_shift(
     # Validate conflicts
     warnings = await validate_single_shift(
         db, data.user_id, data.start_datetime, data.end_datetime,
+        shift_type_id=data.shift_type_id,
     )
 
-    # Block on hard errors (overlap)
+    # Block on hard errors (overlap / fullday / duplicate service)
     errors = [w for w in warnings if w.severity == "error"]
     if errors:
         descriptions = "; ".join(e.description for e in errors)
@@ -82,6 +87,8 @@ async def create_shift(
         end_datetime=data.end_datetime,
         status=ShiftStatus.DRAFT,
         notes=data.notes,
+        location=data.location,
+        grat_type=data.grat_type,
         created_by=created_by,
     )
     db.add(shift)
@@ -136,6 +143,7 @@ async def update_shift(
     warnings = await validate_single_shift(
         db, shift.user_id, shift.start_datetime, shift.end_datetime,
         exclude_shift_id=shift.id,
+        shift_type_id=shift.shift_type_id,
     )
     errors = [w for w in warnings if w.severity == "error"]
     if errors:
@@ -161,8 +169,8 @@ async def delete_shift(
     station_id: uuid.UUID,
     deleted_by: uuid.UUID,
 ) -> None:
-    """Cancel a draft shift (soft delete via status change)."""
-    shift = await db.get(Shift, shift_id)
+    """Cancel a shift (soft delete via status change). Notifies the affected military if published."""
+    shift = await db.get(Shift, shift_id, options=[selectinload(Shift.shift_type)])
     if shift is None:
         raise NotFoundError("Shift")
 
@@ -172,6 +180,7 @@ async def delete_shift(
     if shift.status == ShiftStatus.CANCELLED:
         raise ValidationError("Shift is already cancelled")
 
+    was_published = shift.status == ShiftStatus.PUBLISHED
     old_status = shift.status.value
     shift.status = ShiftStatus.CANCELLED
     db.add(shift)
@@ -182,6 +191,30 @@ async def delete_shift(
         old_data={"status": old_status},
         new_data={"status": ShiftStatus.CANCELLED.value},
     )
+
+    # Notify the affected military if the shift was already published
+    if was_published and shift.user_id and shift.user_id != deleted_by:
+        from app.models.notification import NotificationType
+        from app.services.notification_service import create_notification
+
+        shift_type_name = shift.shift_type.name if shift.shift_type else "Turno"
+        shift_date = shift.date.strftime("%d/%m/%Y") if shift.date else ""
+
+        await create_notification(
+            db,
+            user_id=shift.user_id,
+            station_id=station_id,
+            notification_type=NotificationType.SHIFT_CANCELLED,
+            title="Turno cancelado",
+            message=f"O seu turno de {shift_type_name} no dia {shift_date} foi cancelado pelo comandante.",
+            data={"shift_id": str(shift.id)},
+        )
+
+    # Broadcast calendar sync to all station members
+    await ws_manager.broadcast_to_station(str(station_id), {
+        "type": "calendar_sync",
+        "reason": "shift_cancelled",
+    })
 
 
 async def get_shift(db: AsyncSession, shift_id: uuid.UUID) -> Shift:

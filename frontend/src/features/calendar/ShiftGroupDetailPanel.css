@@ -1,0 +1,298 @@
+/* ShiftGroupDetailPanel — patrol detail slide-in */
+
+.sgdp-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  max-width: 100vw;
+  background: var(--surface-100);
+  border-left: 1px solid var(--border-subtle);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+}
+
+/* Header */
+.sgdp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--space-6);
+  gap: var(--space-4);
+}
+
+.sgdp-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sgdp-title {
+  font-size: var(--font-xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  line-height: var(--leading-tight);
+}
+
+.sgdp-member-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  background: var(--surface-300);
+  border-radius: 999px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+/* Color bar */
+.sgdp-color-bar {
+  height: 3px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Meta */
+.sgdp-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sgdp-meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.sgdp-meta-item svg {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.sgdp-type-code {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  background: var(--surface-300);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* Section label */
+.sgdp-section-label {
+  padding: var(--space-3) var(--space-6) var(--space-2);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Members list */
+.sgdp-members {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sgdp-member-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-200);
+  border: 1px solid var(--border-subtle);
+  transition: border-color var(--transition-fast);
+}
+
+.sgdp-member-row:hover {
+  border-color: var(--border-default);
+}
+
+.sgdp-member-me {
+  border-color: var(--color-primary-500);
+  background: color-mix(in srgb, var(--color-primary-500) 8%, var(--surface-200));
+}
+
+/* Avatar */
+.sgdp-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: var(--weight-bold);
+  color: #fff;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.sgdp-member-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.sgdp-member-name {
+  font-size: var(--font-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sgdp-me-badge {
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--color-primary-400);
+  background: color-mix(in srgb, var(--color-primary-500) 15%, transparent);
+  border-radius: 999px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+.sgdp-member-ordem {
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Actions */
+.sgdp-member-actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.sgdp-swap-btn {
+  font-size: 11px;
+  padding: 3px 8px;
+  color: var(--color-primary-400) !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary-500) 30%, transparent);
+  border-radius: 6px;
+}
+
+.sgdp-swap-btn:hover {
+  background: color-mix(in srgb, var(--color-primary-500) 12%, transparent);
+}
+
+/* Remove button per member */
+.sgdp-remove-btn {
+  color: var(--color-danger-400) !important;
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+.sgdp-remove-btn:hover {
+  background: color-mix(in srgb, var(--color-danger-500) 12%, transparent);
+}
+
+/* Inline confirm for per-member removal */
+.sgdp-confirm-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-danger-50);
+  border: 1px solid var(--color-danger-200);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-xs);
+  color: var(--color-danger-600);
+}
+.sgdp-confirm-inline svg {
+  flex-shrink: 0;
+  color: var(--color-danger-500);
+}
+.sgdp-confirm-inline span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Member row wraps when confirm is visible */
+.sgdp-member-row {
+  flex-wrap: wrap;
+}
+
+/* Remove All button */
+.sgdp-remove-all-btn {
+  color: var(--color-danger-400) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-xs);
+}
+.sgdp-remove-all-btn:hover {
+  background: color-mix(in srgb, var(--color-danger-500) 10%, transparent);
+}
+
+/* Bulk delete confirmation */
+.sgdp-delete-all-confirm {
+  margin: 0 var(--space-4) var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-danger-50);
+  border: 1px solid var(--color-danger-200);
+  border-radius: var(--radius-md);
+}
+.sgdp-delete-all-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-danger-700);
+  font-size: var(--font-sm);
+  margin-bottom: var(--space-2);
+}
+.sgdp-delete-all-text {
+  font-size: var(--font-xs);
+  color: var(--color-danger-600);
+  margin: 0 0 var(--space-3);
+}
+.sgdp-delete-all-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+/* Footer */
+.sgdp-footer {
+  display: flex;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+  gap: var(--space-3);
+}
+
+.sgdp-my-shift-note {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+@media (max-width: 480px) {
+  .sgdp-panel {
+    width: 100vw;
+  }
+}

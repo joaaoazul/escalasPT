@@ -1,6 +1,6 @@
 """
 WebSocket endpoint for real-time notifications.
-Auth via JWT token as query parameter.
+Auth via first message after connection.
 """
 
 from __future__ import annotations
@@ -8,13 +8,12 @@ from __future__ import annotations
 import asyncio
 
 import jwt
-from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.database import async_session_factory
-from app.models.user import ActiveSession, User
+from app.models.user import ActiveSession, User, UserRole
 from app.services.notification_service import ws_manager
 from app.utils.logging import get_logger
 from app.utils.security import decode_token
@@ -28,12 +27,31 @@ router = APIRouter()
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
-    token: str = Query(...),
 ):
     """
     WebSocket connection for real-time notifications.
-    Client connects with: ws://host/ws?token=<access_token>
+    Client connects with: ws://host/ws
+    Then sends: {"type": "auth", "token": "<access_token>"}
     """
+    await websocket.accept()
+
+    # Wait for auth message (5s timeout)
+    try:
+        auth_msg = await asyncio.wait_for(
+            websocket.receive_json(), timeout=5.0
+        )
+    except asyncio.TimeoutError:
+        await websocket.close(code=4001, reason="Auth timeout")
+        return
+    except Exception:
+        await websocket.close(code=4001, reason="Auth error")
+        return
+
+    token = auth_msg.get("token") if isinstance(auth_msg, dict) and auth_msg.get("type") == "auth" else None
+    if not token:
+        await websocket.close(code=4002, reason="Missing auth message")
+        return
+
     # Authenticate
     try:
         payload = decode_token(token)
@@ -52,8 +70,8 @@ async def websocket_endpoint(
     station_id = payload.get("station_id")
     session_id = payload.get("sid")
 
-    if not user_id or not station_id:
-        await websocket.close(code=4004, reason="Missing user or station info")
+    if not user_id:
+        await websocket.close(code=4004, reason="Missing user info")
         return
 
     # Verify user exists, is active, and session is valid
@@ -63,6 +81,12 @@ async def websocket_endpoint(
         if user is None or not user.is_active:
             await websocket.close(code=4005, reason="User not found or inactive")
             return
+
+        # Verify user belongs to the station claimed in the JWT
+        if station_id and str(user.station_id) != station_id:
+            if user.role not in (UserRole.ADMIN,):
+                await websocket.close(code=4007, reason="Unauthorized station")
+                return
 
         if session_id:
             sess_result = await db.execute(
