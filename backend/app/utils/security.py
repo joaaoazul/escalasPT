@@ -188,7 +188,7 @@ async def check_password_hibp(password: str) -> bool:
     HaveIBeenPwned's k-anonymity API (only first 5 chars of SHA-1 sent).
     Returns True if the password IS compromised.
     """
-    sha1 = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
+    sha1 = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()  # nosec B324 — required by HIBP k-anonymity API
     prefix = sha1[:5]
     suffix = sha1[5:]
     try:
