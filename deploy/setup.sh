@@ -79,8 +79,18 @@ docker exec escalaspt-api alembic upgrade head
 # ── Seed (optional) ──────────────────────────────────────────
 read -rp "Run database seed? (first-time setup only) [y/N]: " SEED_ANSWER
 if [[ "${SEED_ANSWER,,}" == "y" ]]; then
+    info "Seed requires passwords for initial users."
+    read -rsp "Admin password (min 8 chars, upper+lower+digit+special): " SEED_ADMIN_PW
+    echo ""
+    read -rsp "Commander password: " SEED_CMDT_PW
+    echo ""
+    read -rsp "Default military password: " SEED_DEFAULT_PW
+    echo ""
     info "Seeding database..."
-    docker exec escalaspt-api python -m scripts.seed
+    docker exec -e SEED_ADMIN_PASSWORD="$SEED_ADMIN_PW" \
+                -e SEED_CMDT_PASSWORD="$SEED_CMDT_PW" \
+                -e SEED_DEFAULT_PASSWORD="$SEED_DEFAULT_PW" \
+                escalaspt-api python -m scripts.seed
     info "Seed complete"
 fi
 
