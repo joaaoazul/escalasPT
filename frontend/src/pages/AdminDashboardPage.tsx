@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
   Users, Building2, Calendar, Shield, Activity,
-  TrendingUp, AlertTriangle, Lock, Eye,
+  TrendingUp, Lock, Eye,
 } from 'lucide-react';
 import { fetchSystemStats } from '../api/admin';
 import './AdminPages.css';

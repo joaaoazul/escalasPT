@@ -6,7 +6,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ShieldAlert, Lock, ChevronLeft, ChevronRight,
-  Monitor, Clock, XCircle,
+  Monitor, XCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';

@@ -4,7 +4,7 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, ShieldAlert, Clock, Users, Palette } from 'lucide-react';
+import { Search, ShieldAlert, Clock, Users } from 'lucide-react';
 import { fetchShiftTypes } from '../api/shiftTypes';
 import { fetchStations } from '../api/stations';
 import './AdminPages.css';

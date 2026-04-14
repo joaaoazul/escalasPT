@@ -7,8 +7,8 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Search, ShieldAlert, CheckCircle, XCircle, Plus,
-  Edit, Trash2, Key, Lock, Unlock, UserX, X,
-  ChevronLeft, ChevronRight, Filter,
+  Edit, Key, Lock, Unlock, X,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchUsers, createUser, updateUser, type UserCreateData, type UserUpdateData } from '../api/users';

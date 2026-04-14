@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Search, ShieldAlert, ChevronLeft, ChevronRight,
+  ShieldAlert, ChevronLeft, ChevronRight,
   Eye, FileText, Clock, User as UserIcon,
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -69,7 +69,7 @@ export function AdminAuditLogPage() {
           >
             <option value="">Todas as ações</option>
             {Object.keys(ACTION_LABELS).map(a => (
-              <option key={a} value={a}>{ACTION_LABELS[a].label}</option>
+              <option key={a} value={a}>{ACTION_LABELS[a]?.label}</option>
             ))}
           </select>
           <select
