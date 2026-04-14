@@ -1,0 +1,28 @@
+# Development overrides — automatically merged by `docker compose up`
+# Adds source volume mounts, hot-reload, and exposes internal ports for debugging.
+# DO NOT use this in production — deploy with `docker compose -f docker-compose.yml up` instead.
+
+services:
+  postgres:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  redis:
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  api:
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --reload
+      - --log-level
+      - info
