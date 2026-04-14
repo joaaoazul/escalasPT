@@ -33,10 +33,12 @@ if [[ "${1:-}" == "--reset" ]]; then
         info "Aborted."
         exit 0
     fi
-    info "Stopping containers..."
-    $COMPOSE down 2>/dev/null || docker compose -f "$SCRIPT_DIR/docker-compose.prod.yml" down 2>/dev/null || true
-    info "Removing volumes..."
-    docker volume rm deploy_escalaspt_pgdata deploy_escalaspt_redis deploy_frontend_dist deploy_frontend_node_modules 2>/dev/null || true
+    info "Stopping containers and removing volumes..."
+    docker compose -f "$SCRIPT_DIR/docker-compose.prod.yml" down -v 2>/dev/null || true
+    # Also try with env-file in case it exists
+    if [[ -f "$ENV_FILE" ]]; then
+        docker compose -f "$SCRIPT_DIR/docker-compose.prod.yml" --env-file "$ENV_FILE" down -v 2>/dev/null || true
+    fi
     info "Removing .env.prod..."
     rm -f "$ENV_FILE"
     info "Reset complete. Re-running setup..."
