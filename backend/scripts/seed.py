@@ -20,10 +20,21 @@ from app.utils.logging import setup_logging, get_logger
 setup_logging()
 logger = get_logger(__name__)
 
-# Seed passwords from env vars — never hardcoded in production
-SEED_ADMIN_PASSWORD = os.environ.get("SEED_ADMIN_PASSWORD", "Admin@2026!Gnr")
-SEED_CMDT_PASSWORD = os.environ.get("SEED_CMDT_PASSWORD", "Cmd@2026!GnrPT")
-SEED_DEFAULT_PASSWORD = os.environ.get("SEED_DEFAULT_PASSWORD", "Mil@2026!GnrPT")
+# Seed passwords from env vars — ALL THREE must be set, no insecure defaults
+SEED_ADMIN_PASSWORD = os.environ.get("SEED_ADMIN_PASSWORD", "")
+SEED_CMDT_PASSWORD = os.environ.get("SEED_CMDT_PASSWORD", "")
+SEED_DEFAULT_PASSWORD = os.environ.get("SEED_DEFAULT_PASSWORD", "")
+
+_REQUIRED_SEED_VARS = {
+    "SEED_ADMIN_PASSWORD": SEED_ADMIN_PASSWORD,
+    "SEED_CMDT_PASSWORD": SEED_CMDT_PASSWORD,
+    "SEED_DEFAULT_PASSWORD": SEED_DEFAULT_PASSWORD,
+}
+_missing = [k for k, v in _REQUIRED_SEED_VARS.items() if not v]
+if _missing:
+    raise SystemExit(
+        f"Seed aborted: set environment variables {', '.join(_missing)} before running."
+    )
 
 
 async def seed():

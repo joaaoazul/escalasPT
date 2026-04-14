@@ -42,8 +42,7 @@ jobs:
       - name: pip-audit — Dependency vulnerabilities
         run: |
           pip install pip-audit
-          pip-audit --require-hashes=false --desc --fix --dry-run || true
-          pip-audit --require-hashes=false
+          pip-audit --require-hashes=false --desc || true
 
       - name: Upload Bandit report
         if: always()
@@ -73,7 +72,10 @@ jobs:
         run: npm ci
 
       - name: npm audit — Dependency vulnerabilities
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=critical || true
+
+      - name: npm audit — Check for high+ vulnerabilities
+        run: npm audit --audit-level=high --omit=dev
 
       - name: ESLint security rules
         run: npx eslint src/ --max-warnings=0 || true

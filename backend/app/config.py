@@ -33,10 +33,10 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # ── Database ──────────────────────────────────────────────
-    DATABASE_URL: str = "postgresql+asyncpg://gnr_admin:password@localhost:5432/gnr_escalas"
+    DATABASE_URL: str = "postgresql+asyncpg://user:pass@localhost:5432/escalaspt"
 
     # ── Redis ─────────────────────────────────────────────────
-    REDIS_URL: str = "redis://:password@localhost:6379/0"
+    REDIS_URL: str = "redis://:pass@localhost:6379/0"
 
     # ── JWT ───────────────────────────────────────────────────
     JWT_SECRET_KEY: str = "CHANGE-ME-IN-PRODUCTION"
