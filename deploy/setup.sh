@@ -28,9 +28,9 @@ if [[ ! -f "$ENV_FILE" ]]; then
     info "Generating .env.prod with random secrets..."
     cp "$ENV_EXAMPLE" "$ENV_FILE"
 
-    PG_PASS=$(openssl rand -base64 24)
-    REDIS_PASS=$(openssl rand -base64 24)
-    JWT_SECRET=$(openssl rand -base64 32)
+    PG_PASS=$(openssl rand -hex 24)
+    REDIS_PASS=$(openssl rand -hex 16)
+    JWT_SECRET=$(openssl rand -hex 32)
     # Generate Fernet key for TOTP encryption
     TOTP_KEY=$(python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())" 2>/dev/null || echo "")
 
