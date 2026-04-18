@@ -141,6 +141,7 @@ function SwapCard({ swap, currentUserId, isCommand }: SwapCardProps) {
   const canDecide = isCommand && swap.status === 'pending_approval';
   const canCancel = isRequester && (swap.status === 'pending_target' || swap.status === 'pending_approval');
   const canDownload = swap.status === 'approved';
+  const hasActions = canRespond || canDecide || canCancel || canDownload;
 
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -148,16 +149,22 @@ function SwapCard({ swap, currentUserId, isCommand }: SwapCardProps) {
     try {
       await downloadSwapPdf(swap.id);
     } catch {
-      // silently fail — toast could be added
+      // silently fail
     } finally {
       setDownloading(false);
     }
   };
 
+  /* Who is who */
+  const yourLabel = isRequester ? 'O seu turno' : isTarget ? 'O seu turno' : 'Requerente';
+  const otherLabel = isRequester ? 'Turno pretendido' : isTarget ? 'Turno oferecido' : 'Alvo';
+  const yourShift = isTarget ? swap.target_shift : swap.requester_shift;
+  const otherShift = isTarget ? swap.requester_shift : swap.target_shift;
+
   return (
-    <div className={`swap-card swap-card--${swap.status}`}>
-      <div className="swap-card-main" onClick={() => setExpanded(!expanded)}>
-        {/* Status badge */}
+    <div className={`swap-card swap-card--${swap.status} ${hasActions ? 'swap-card--actionable' : ''}`}>
+      {/* Header row: status + date */}
+      <div className="swap-card-header">
         <span
           className="swap-status-badge"
           style={{ '--sc-color': cfg.color } as React.CSSProperties}
@@ -165,110 +172,124 @@ function SwapCard({ swap, currentUserId, isCommand }: SwapCardProps) {
           {cfg.icon}
           {cfg.label}
         </span>
-
-        {/* Shifts */}
-        <div className="swap-card-shifts">
-          {swap.requester_shift ? (
-            <ShiftChip
-              code={swap.requester_shift.shift_type_code}
-              color={swap.requester_shift.shift_type_color}
-              date={swap.requester_shift.date}
-              userName={swap.requester_shift.user_name}
-            />
-          ) : (
-            <span className="swap-shift-unknown">Turno removido</span>
-          )}
-          <ArrowLeftRight size={14} className="swap-arrow-icon" />
-          {swap.target_shift ? (
-            <ShiftChip
-              code={swap.target_shift.shift_type_code}
-              color={swap.target_shift.shift_type_color}
-              date={swap.target_shift.date}
-              userName={swap.target_shift.user_name}
-            />
-          ) : (
-            <span className="swap-shift-unknown">Turno removido</span>
-          )}
-        </div>
-
-        {/* Meta */}
         <span className="swap-card-meta">{fmtRelative(swap.created_at)}</span>
-
-        <ChevronDown
-          size={16}
-          className={`swap-expand-icon ${expanded ? 'rotated' : ''}`}
-        />
       </div>
 
-      {expanded && (
-        <div className="swap-card-detail">
-          {swap.reason && (
-            <p className="swap-reason-text">
-              <AlertCircle size={13} />
-              {swap.reason}
-            </p>
-          )}
-
-          {/* Action buttons */}
-          {(canRespond || canDecide || canCancel || canDownload) && (
-            <div className="swap-actions">
-              {canRespond && (
-                <>
-                  <button
-                    className="btn btn-primary btn-sm"
-                    disabled={respond.isPending}
-                    onClick={() => respond.mutate({ swapId: swap.id, accept: true })}
-                  >
-                    <Check size={14} /> Aceitar
-                  </button>
-                  <button
-                    className="btn btn-ghost btn-sm swap-reject-btn"
-                    disabled={respond.isPending}
-                    onClick={() => respond.mutate({ swapId: swap.id, accept: false })}
-                  >
-                    <X size={14} /> Recusar
-                  </button>
-                </>
-              )}
-              {canDecide && (
-                <>
-                  <button
-                    className="btn btn-primary btn-sm"
-                    disabled={decide.isPending}
-                    onClick={() => decide.mutate({ swapId: swap.id, approve: true })}
-                  >
-                    <Check size={14} /> Aprovar
-                  </button>
-                  <button
-                    className="btn btn-ghost btn-sm swap-reject-btn"
-                    disabled={decide.isPending}
-                    onClick={() => decide.mutate({ swapId: swap.id, approve: false })}
-                  >
-                    <X size={14} /> Rejeitar
-                  </button>
-                </>
-              )}
-              {canCancel && (
-                <button
-                  className="btn btn-ghost btn-sm swap-cancel-btn"
-                  disabled={cancel.isPending}
-                  onClick={() => cancel.mutate(swap.id)}
-                >
-                  Cancelar pedido
-                </button>
-              )}
-              {canDownload && (
-                <button
-                  className="btn btn-ghost btn-sm swap-download-btn"
-                  disabled={downloading}
-                  onClick={handleDownload}
-                >
-                  <Download size={14} /> {downloading ? 'A gerar...' : 'Exportar PDF'}
-                </button>
-              )}
-            </div>
+      {/* Shift comparison — always visible */}
+      <div className="swap-card-shifts">
+        <div className="swap-shift-side">
+          <span className="swap-shift-label">{yourLabel}</span>
+          {yourShift ? (
+            <ShiftChip
+              code={yourShift.shift_type_code}
+              color={yourShift.shift_type_color}
+              date={yourShift.date}
+              userName={yourShift.user_name}
+            />
+          ) : (
+            <span className="swap-shift-unknown">Turno removido</span>
           )}
         </div>
+        <div className="swap-arrow-wrap">
+          <ArrowLeftRight size={16} className="swap-arrow-icon" />
+        </div>
+        <div className="swap-shift-side">
+          <span className="swap-shift-label">{otherLabel}</span>
+          {otherShift ? (
+            <ShiftChip
+              code={otherShift.shift_type_code}
+              color={otherShift.shift_type_color}
+              date={otherShift.date}
+              userName={otherShift.user_name}
+            />
+          ) : (
+            <span className="swap-shift-unknown">Turno removido</span>
+          )}
+        </div>
+      </div>
+
+      {/* Inline actions — always visible, no expand needed */}
+      {hasActions && (
+        <div className="swap-actions">
+          {canRespond && (
+            <>
+              <button
+                className="swap-action-btn swap-action-accept"
+                disabled={respond.isPending}
+                onClick={() => respond.mutate({ swapId: swap.id, accept: true })}
+              >
+                <Check size={16} /> Aceitar
+              </button>
+              <button
+                className="swap-action-btn swap-action-reject"
+                disabled={respond.isPending}
+                onClick={() => respond.mutate({ swapId: swap.id, accept: false })}
+              >
+                <X size={16} /> Recusar
+              </button>
+            </>
+          )}
+          {canDecide && (
+            <>
+              <button
+                className="swap-action-btn swap-action-accept"
+                disabled={decide.isPending}
+                onClick={() => decide.mutate({ swapId: swap.id, approve: true })}
+              >
+                <Check size={16} /> Aprovar
+              </button>
+              <button
+                className="swap-action-btn swap-action-reject"
+                disabled={decide.isPending}
+                onClick={() => decide.mutate({ swapId: swap.id, approve: false })}
+              >
+                <X size={16} /> Rejeitar
+              </button>
+            </>
+          )}
+          {canCancel && (
+            <button
+              className="swap-action-btn swap-action-cancel"
+              disabled={cancel.isPending}
+              onClick={() => cancel.mutate(swap.id)}
+            >
+              Cancelar pedido
+            </button>
+          )}
+          {canDownload && (
+            <button
+              className="swap-action-btn swap-action-download"
+              disabled={downloading}
+              onClick={handleDownload}
+            >
+              <Download size={14} /> {downloading ? 'A gerar...' : 'PDF'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Expandable details (reason, etc.) */}
+      {swap.reason && (
+        <>
+          <button
+            className="swap-detail-toggle"
+            onClick={() => setExpanded(!expanded)}
+          >
+            <span>Motivo</span>
+            <ChevronDown
+              size={14}
+              className={`swap-expand-icon ${expanded ? 'rotated' : ''}`}
+            />
+          </button>
+          {expanded && (
+            <div className="swap-card-detail">
+              <p className="swap-reason-text">
+                <AlertCircle size={13} />
+                {swap.reason}
+              </p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
