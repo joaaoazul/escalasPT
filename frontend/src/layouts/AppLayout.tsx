@@ -20,7 +20,6 @@ import {
   Lock,
   Layers,
   Bell,
-  MoreHorizontal,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { getInitials } from '../utils/helpers';
