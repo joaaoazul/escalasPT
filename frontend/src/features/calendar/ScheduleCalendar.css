@@ -362,14 +362,59 @@
   .fc .fc-toolbar {
     flex-direction: column;
     gap: var(--space-2) !important;
+    padding: 6px 8px 0 8px !important;
   }
   .fc .fc-toolbar-title {
-    font-size: var(--font-lg) !important;
+    font-size: var(--font-base) !important;
+  }
+  .fc .fc-toolbar .fc-button {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
   }
   .fc .fc-daygrid-day-frame {
-    min-height: 70px !important;
+    min-height: 54px !important;
+    padding: 1px !important;
+  }
+  .fc .fc-daygrid-day-number {
+    font-size: 11px !important;
+    padding: 2px 4px !important;
+  }
+  .fc .fc-col-header-cell-cushion {
+    font-size: 10px !important;
+    padding: 4px 2px !important;
+  }
+  .fc .fc-event {
+    margin: 0 1px 1px 1px !important;
+    border-width: 1px !important;
+    border-radius: 3px !important;
+  }
+  .fc-event-inner {
+    padding: 1px 3px;
+    min-height: 16px;
+    gap: 0;
+  }
+  .fc-event-code {
+    font-size: 9px;
+  }
+  .fc-event-time {
+    font-size: 8px;
   }
   .fc-event-user {
     display: none;
+  }
+  .fc-event-count {
+    font-size: 8px;
+    padding: 0 3px;
+  }
+  .fc-event-notes-dot {
+    display: none;
+  }
+  .fc-event-draft-badge {
+    display: none;
+  }
+  /* More link */
+  .fc .fc-daygrid-more-link {
+    font-size: 9px !important;
+    padding: 0 2px !important;
   }
 }

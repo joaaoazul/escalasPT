@@ -183,3 +183,20 @@
   background: var(--surface-200);
   text-align: center;
 }
+
+/* ── Mobile ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .nd-popover {
+    position: fixed;
+    top: var(--header-height, 52px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100vw;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    max-height: calc(100vh - var(--header-height, 52px) - var(--space-4));
+  }
+  .nd-body {
+    max-height: 60vh;
+  }
+}

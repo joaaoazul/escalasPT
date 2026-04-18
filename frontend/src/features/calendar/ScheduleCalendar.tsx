@@ -53,6 +53,7 @@ export function ScheduleCalendar({
   groupByType = false,
 }: ScheduleCalendarProps) {
   const calendarRef = useRef<FullCalendar>(null);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
 
   const events: EventInput[] = useMemo(() => {
     // Strip timezone offset so FC treats times as naive local (no UTC→local conversion)
@@ -234,7 +235,7 @@ export function ScheduleCalendar({
         allDaySlot={true}
         allDayText="Dia"
         nowIndicator
-        dayMaxEvents={4}
+        dayMaxEvents={isMobile ? 2 : 4}
         moreLinkText={(n) => `+${n} mais`}
         eventDisplay="block"
         eventContent={(arg) => {

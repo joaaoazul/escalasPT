@@ -465,9 +465,12 @@ input, select, textarea {
 
 /* ── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {
+  html {
+    font-size: 16px;          /* reset from 19px on mobile */
+  }
   :root {
     --sidebar-width: 0px;
-    --header-height: 56px;
+    --header-height: 52px;
   }
 }
 

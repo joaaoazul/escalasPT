@@ -156,6 +156,7 @@
 @media (max-width: 768px) {
   .station-schedule-body {
     flex-direction: column;
+    border-radius: 8px;
   }
 
   .shift-library,
@@ -165,6 +166,20 @@
 
   .station-schedule-header {
     padding: 0 var(--space-2);
+    gap: var(--space-1);
+  }
+
+  .station-schedule-header h1 {
+    font-size: 14px;
+  }
+
+  .view-seg-btn {
+    width: 26px;
+    height: 22px;
+  }
+
+  .station-schedule-calendar {
+    min-height: 0;
   }
 }
 

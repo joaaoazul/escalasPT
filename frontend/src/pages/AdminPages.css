@@ -277,6 +277,30 @@
   gap: var(--space-4);
 }
 
+@media (max-width: 768px) {
+  .admin-modal {
+    max-width: calc(100vw - 1rem);
+    max-height: 85vh;
+    margin: 0 0.5rem;
+    border-radius: var(--radius-lg);
+  }
+  .admin-modal--wide {
+    max-width: calc(100vw - 1rem);
+  }
+  .admin-modal-header {
+    padding: var(--space-3) var(--space-4);
+  }
+  .admin-modal-header h2 {
+    font-size: 1rem;
+  }
+  .admin-modal-body {
+    padding: var(--space-4);
+  }
+  .admin-modal-footer {
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
 @media (max-width: 600px) {
   .admin-form-grid {
     grid-template-columns: 1fr;

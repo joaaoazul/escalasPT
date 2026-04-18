@@ -54,6 +54,28 @@
   color: var(--text-tertiary);
   white-space: nowrap;
 }
+
+@media (max-width: 768px) {
+  .publish-toolbar {
+    max-width: calc(100vw - 1rem);
+    min-width: unset;
+  }
+  .publish-toolbar-content {
+    border-radius: var(--radius-lg);
+    padding: var(--space-2);
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .publish-title {
+    white-space: normal;
+    text-align: center;
+  }
+  .publish-desc {
+    white-space: normal;
+    text-align: center;
+  }
+}
 .publish-desc strong {
   color: var(--color-warning-400);
   font-weight: var(--weight-semibold);

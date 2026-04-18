@@ -339,6 +339,22 @@
   }
 
   .app-content {
-    padding: var(--space-4);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .sidebar {
+    width: 260px;
+  }
+
+  .app-header {
+    padding: 0 var(--space-3);
+  }
+
+  .header-actions {
+    gap: var(--space-1);
+  }
+
+  .header-user-pill {
+    padding: var(--space-1);
   }
 }

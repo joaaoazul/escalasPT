@@ -244,6 +244,12 @@
 
 @media (max-width: 768px) {
   .swap-list-area {
-    padding: 0 var(--space-3) var(--space-3);
+    padding: 0 var(--space-2) var(--space-3);
+  }
+  .swap-filter-bar {
+    padding: 0 var(--space-3);
+  }
+  .swap-card {
+    padding: var(--space-3);
   }
 }
