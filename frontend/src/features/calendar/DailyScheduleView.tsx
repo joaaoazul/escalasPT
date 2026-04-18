@@ -62,7 +62,7 @@ export function DailyScheduleView({
   const detailCodes = ['GRAT', 'INST'];
 
   // Group shifts into service slots, inline absences
-  const { serviceSlots, inlineSlots } = useMemo(() => {
+  const { regularSlots, detailSlots, inlineSlots } = useMemo(() => {
     const slotMap = new Map<string, TimeSlotGroup>();
     const detailShifts: Shift[] = [];
 
