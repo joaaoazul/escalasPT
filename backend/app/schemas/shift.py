@@ -2,8 +2,7 @@
 Shift and ShiftSwapRequest schemas.
 """
 
-from __future__ import annotations
-
+import datetime as _dt
 import re
 import uuid
 from datetime import date, datetime, time
@@ -26,9 +25,9 @@ def _sanitize_text(v: str | None) -> str | None:
 class ShiftCreate(BaseModel):
     user_id: uuid.UUID
     shift_type_id: Optional[uuid.UUID] = None
-    date: date
-    start_datetime: datetime
-    end_datetime: datetime
+    date: _dt.date
+    start_datetime: _dt.datetime
+    end_datetime: _dt.datetime
     notes: Optional[str] = Field(None, max_length=2000)
     location: Optional[str] = Field(None, max_length=300)
     grat_type: Optional[str] = Field(None, max_length=100)
@@ -52,9 +51,9 @@ class ShiftCreate(BaseModel):
 
 class ShiftUpdate(BaseModel):
     shift_type_id: Optional[uuid.UUID] = None
-    date: Optional[date] = None
-    start_datetime: Optional[datetime] = None
-    end_datetime: Optional[datetime] = None
+    date: Optional[_dt.date] = None
+    start_datetime: Optional[_dt.datetime] = None
+    end_datetime: Optional[_dt.datetime] = None
     notes: Optional[str] = Field(None, max_length=2000)
     location: Optional[str] = Field(None, max_length=300)
     grat_type: Optional[str] = Field(None, max_length=100)
@@ -69,9 +68,9 @@ class ShiftResponse(BaseModel):
     user_id: uuid.UUID
     station_id: uuid.UUID
     shift_type_id: Optional[uuid.UUID]
-    date: date
-    start_datetime: datetime
-    end_datetime: datetime
+    date: _dt.date
+    start_datetime: _dt.datetime
+    end_datetime: _dt.datetime
     status: ShiftStatus
     notes: Optional[str]
     created_by: Optional[uuid.UUID]

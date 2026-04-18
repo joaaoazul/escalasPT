@@ -9,7 +9,11 @@ import { X, Check, Clock, MapPin, FileText, Tag } from 'lucide-react';
 import { format, parseISO, addDays } from 'date-fns';
 import { useStationUsers } from '../../hooks/useStationUsers';
 import { useShiftTypes } from '../../hooks/useShiftTypes';
+import type { Shift } from '../../types';
 import './AssignmentPopover.css';
+
+/** Shift type codes that are absences / GRAT (not normal services) */
+const _NON_SERVICE_CODES = new Set(['CONV', 'DIL', 'F', 'FER', 'LIC', 'MF', 'INST', 'T', 'GRAT']);
 
 export interface AssignmentPayload {
   shiftTypeId: string;
@@ -29,6 +33,8 @@ interface AssignmentPopoverProps {
   onConfirm: (payload: AssignmentPayload) => void;
   onClose: () => void;
   isPending?: boolean;
+  /** Existing shifts for the selected day — used to hide already-assigned militares */
+  existingShifts?: Shift[];
 }
 
 export function AssignmentPopover({
@@ -38,6 +44,7 @@ export function AssignmentPopover({
   onConfirm,
   onClose,
   isPending = false,
+  existingShifts = [],
 }: AssignmentPopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const { data: users = [] } = useStationUsers();
@@ -136,8 +143,26 @@ export function AssignmentPopover({
   const isAbsence = shiftType?.is_absence ?? false;
 
   // Filter to militares only (exclude admin/secretaria who don't do shifts)
-  const assignableUsers = users.filter((u) =>
-    u.role === 'militar' || u.role === 'comandante' || u.role === 'adjunto',
+  const isNormalService = !_NON_SERVICE_CODES.has(shiftType?.code ?? '');
+
+  // Users already assigned to a normal service on this day
+  const alreadyAssignedIds = isNormalService
+    ? new Set(
+        existingShifts
+          .filter(
+            (s) =>
+              s.status !== 'cancelled' &&
+              s.shift_type_code &&
+              !_NON_SERVICE_CODES.has(s.shift_type_code),
+          )
+          .map((s) => s.user_id),
+      )
+    : new Set<string>();
+
+  const assignableUsers = users.filter(
+    (u) =>
+      (u.role === 'militar' || u.role === 'comandante' || u.role === 'adjunto') &&
+      !alreadyAssignedIds.has(u.id),
   );
 
   return (

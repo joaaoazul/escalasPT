@@ -431,6 +431,9 @@ export function StationSchedulePage() {
           onConfirm={handleAssignConfirm}
           onClose={() => setDropState(null)}
           isPending={createShift.isPending}
+          existingShifts={shifts.filter(
+            (s) => s.date === format(dropState.date, 'yyyy-MM-dd'),
+          )}
         />
       )}
 
