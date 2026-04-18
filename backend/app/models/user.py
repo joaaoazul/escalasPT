@@ -46,7 +46,7 @@ class User(UUIDMixin, TimestampMixin, Base):
         comment="NIM — Número de Identificação Militar (7 dígitos, único nacional)"
     )
     numero_ordem: Mapped[str | None] = mapped_column(
-        String(4), unique=True, nullable=True, index=True,
+        String(4), nullable=True, index=True,
         comment="Número de ordem do militar (1-4 dígitos, único por Comando Territorial)"
     )
     role: Mapped[str] = mapped_column(

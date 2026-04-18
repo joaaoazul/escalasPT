@@ -47,6 +47,8 @@ async def seed():
             id=station_id,
             name="Posto Territorial de Vila Nova de Gaia",
             code="PT-VNG",
+            comando_territorial="CT Porto",
+            destacamento="DT Vila Nova de Gaia",
             address="Rua Exemplo, 123 - Vila Nova de Gaia",
             phone="+351 220 000 000",
         )
@@ -74,8 +76,8 @@ async def seed():
             email="silva@escalaspt.pt",
             password_hash=hash_password(SEED_CMDT_PASSWORD),
             full_name="Sargento-Ajudante António Silva",
-            nip="1000001",
-            numero_ordem="1",
+            nip="2030145",
+            numero_ordem="45",
             role=UserRole.COMANDANTE,
             station_id=station_id,
         )
@@ -89,8 +91,8 @@ async def seed():
             email="lima@escalaspt.pt",
             password_hash=hash_password(SEED_DEFAULT_PASSWORD),
             full_name="Guarda Ana Lima",
-            nip="2000001",
-            numero_ordem="2",
+            nip="2150312",
+            numero_ordem="312",
             role=UserRole.SECRETARIA,
             station_id=station_id,
             # default_shift_type_id set after shift types are created
@@ -101,8 +103,8 @@ async def seed():
         # ── 2 Cabos — NIC (Inquéritos) ───────────────────
         cabos_inq_users = []
         cabos_inq = [
-            ("cabo.ferreira", "ferreira@escalaspt.pt", "Cabo Manuel Ferreira",  "3000001", "3"),
-            ("cabo.oliveira", "oliveira@escalaspt.pt", "Cabo Ricardo Oliveira", "3000002", "4"),
+            ("cabo.ferreira", "ferreira@escalaspt.pt", "Cabo Manuel Ferreira",  "2070089", "89"),
+            ("cabo.oliveira", "oliveira@escalaspt.pt", "Cabo Ricardo Oliveira", "2100156", "156"),
         ]
         for username, email, full_name, nip, n_ordem in cabos_inq:
             user = User(
@@ -122,22 +124,22 @@ async def seed():
 
         # ── 16 Guardas — Patrulha + Atendimento ──────────
         guardas = [
-            ("guarda.costa",      "costa@escalaspt.pt",      "Guarda João Costa",         "4000001", "5"),
-            ("guarda.santos",     "santos@escalaspt.pt",     "Guarda Pedro Santos",       "4000002", "6"),
-            ("guarda.pereira",    "pereira@escalaspt.pt",    "Guarda Carlos Pereira",     "4000003", "7"),
-            ("guarda.rodrigues",  "rodrigues@escalaspt.pt",  "Guarda Tiago Rodrigues",    "4000004", "8"),
-            ("guarda.almeida",    "almeida@escalaspt.pt",    "Guarda Bruno Almeida",      "4000005", "9"),
-            ("guarda.nunes",      "nunes@escalaspt.pt",      "Guarda Rui Nunes",          "4000006", "10"),
-            ("guarda.marques",    "marques@escalaspt.pt",    "Guarda André Marques",      "4000007", "11"),
-            ("guarda.sousa",      "sousa@escalaspt.pt",      "Guarda Hugo Sousa",         "4000008", "12"),
-            ("guarda.mendes",     "mendes@escalaspt.pt",     "Guarda Diogo Mendes",       "4000009", "13"),
-            ("guarda.lopes",      "lopes@escalaspt.pt",      "Guarda Marco Lopes",        "4000010", "14"),
-            ("guarda.ribeiro",    "ribeiro@escalaspt.pt",    "Guarda Sérgio Ribeiro",     "4000011", "15"),
-            ("guarda.fernandes",  "fernandes@escalaspt.pt",  "Guarda Paulo Fernandes",    "4000012", "16"),
-            ("guarda.carvalho",   "carvalho@escalaspt.pt",   "Guarda Daniel Carvalho",    "4000013", "17"),
-            ("guarda.gomes",      "gomes@escalaspt.pt",      "Guarda Francisco Gomes",    "4000014", "18"),
-            ("guarda.martins",    "martins@escalaspt.pt",    "Guarda Luís Martins",       "4000015", "19"),
-            ("guarda.dias",       "dias@escalaspt.pt",       "Guarda Miguel Dias",        "4000016", "20"),
+            ("guarda.costa",      "costa@escalaspt.pt",      "Guarda João Costa",         "2200401", "401"),
+            ("guarda.santos",     "santos@escalaspt.pt",     "Guarda Pedro Santos",       "2200402", "402"),
+            ("guarda.pereira",    "pereira@escalaspt.pt",    "Guarda Carlos Pereira",     "2200403", "403"),
+            ("guarda.rodrigues",  "rodrigues@escalaspt.pt",  "Guarda Tiago Rodrigues",    "2200404", "404"),
+            ("guarda.almeida",    "almeida@escalaspt.pt",    "Guarda Bruno Almeida",      "2210405", "405"),
+            ("guarda.nunes",      "nunes@escalaspt.pt",      "Guarda Rui Nunes",          "2210406", "406"),
+            ("guarda.marques",    "marques@escalaspt.pt",    "Guarda André Marques",      "2210407", "407"),
+            ("guarda.sousa",      "sousa@escalaspt.pt",      "Guarda Hugo Sousa",         "2210408", "408"),
+            ("guarda.mendes",     "mendes@escalaspt.pt",     "Guarda Diogo Mendes",       "2220409", "409"),
+            ("guarda.lopes",      "lopes@escalaspt.pt",      "Guarda Marco Lopes",        "2220410", "410"),
+            ("guarda.ribeiro",    "ribeiro@escalaspt.pt",    "Guarda Sérgio Ribeiro",     "2220411", "411"),
+            ("guarda.fernandes",  "fernandes@escalaspt.pt",  "Guarda Paulo Fernandes",    "2220412", "412"),
+            ("guarda.carvalho",   "carvalho@escalaspt.pt",   "Guarda Daniel Carvalho",    "2230413", "413"),
+            ("guarda.gomes",      "gomes@escalaspt.pt",      "Guarda Francisco Gomes",    "2230414", "414"),
+            ("guarda.martins",    "martins@escalaspt.pt",    "Guarda Luís Martins",       "2230415", "415"),
+            ("guarda.dias",       "dias@escalaspt.pt",       "Guarda Miguel Dias",        "2230416", "416"),
         ]
         for username, email, full_name, nip, n_ordem in guardas:
             user = User(

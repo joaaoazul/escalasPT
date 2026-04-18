@@ -1,5 +1,8 @@
-"""
-Station model — represents a GNR post/station.
+"""Station model — represents a GNR Posto Territorial.
+
+Hierarchy: Comando Territorial → Destacamento → Posto
+The system serves individual Postos. comando_territorial and destacamento
+identify where the posto sits in the GNR hierarchy.
 """
 
 from __future__ import annotations
@@ -23,6 +26,14 @@ class Station(UUIDMixin, TimestampMixin, Base):
 
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
+    comando_territorial: Mapped[str] = mapped_column(
+        String(200), nullable=False, index=True,
+        comment="Comando Territorial (e.g. CT Porto)",
+    )
+    destacamento: Mapped[str] = mapped_column(
+        String(200), nullable=False, index=True,
+        comment="Destacamento Territorial (e.g. DT Vila Nova de Gaia)",
+    )
     address: Mapped[str | None] = mapped_column(String(500), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
