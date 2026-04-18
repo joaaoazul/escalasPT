@@ -22,7 +22,7 @@ from sqlalchemy.orm import selectinload
 from app.exceptions import AuthorizationError, NotFoundError, ValidationError
 from app.models.notification import NotificationType
 from app.models.shift import Shift, ShiftStatus, ShiftSwapRequest, SwapStatus
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.services import notification_service
 from app.services.conflict_detector import validate_swap
 from app.services.notification_service import ws_manager
