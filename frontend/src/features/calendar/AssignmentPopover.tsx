@@ -63,7 +63,7 @@ export function AssignmentPopover({
   const defaultEnd = shiftType?.fixed_slots
     ? shiftType.end_time.substring(0, 5)
     : shiftType?.is_absence
-      ? '00:00'
+      ? '23:59'
       : '16:00';
 
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -90,7 +90,7 @@ export function AssignmentPopover({
   useEffect(() => {
     if (!shiftType) return;
     setStartTime(shiftType.fixed_slots ? shiftType.start_time.substring(0, 5) : shiftType.is_absence ? '00:00' : '08:00');
-    setEndTime(shiftType.fixed_slots ? shiftType.end_time.substring(0, 5) : shiftType.is_absence ? '00:00' : '16:00');
+    setEndTime(shiftType.fixed_slots ? shiftType.end_time.substring(0, 5) : shiftType.is_absence ? '23:59' : '16:00');
   }, [shiftType]);
 
   // Clamp popover to viewport
