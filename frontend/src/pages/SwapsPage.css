@@ -244,12 +244,45 @@
 
 @media (max-width: 768px) {
   .swap-list-area {
-    padding: 0 var(--space-2) var(--space-3);
+    padding: 0 0 var(--space-3);
   }
   .swap-filter-bar {
-    padding: 0 var(--space-3);
+    padding: 0 var(--space-2);
+    margin-bottom: var(--space-3);
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .swap-filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .swap-filter-pill {
+    flex-shrink: 0;
   }
   .swap-card {
+    border-radius: var(--radius-md);
+  }
+  .swap-card-main {
     padding: var(--space-3);
+    gap: var(--space-2);
+  }
+  .swap-card-detail {
+    padding: var(--space-2) var(--space-3) var(--space-3);
+  }
+  .swap-card-shifts {
+    gap: var(--space-1);
+  }
+  .swap-shift-chip {
+    padding: 2px 6px;
+  }
+  .swap-chip-meta {
+    font-size: 10px;
+  }
+  .swap-card-meta {
+    font-size: 10px;
+  }
+  .swap-actions {
+    gap: var(--space-1);
   }
 }

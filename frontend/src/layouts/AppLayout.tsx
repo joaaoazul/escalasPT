@@ -1,9 +1,9 @@
 /**
- * AppLayout — main application shell with responsive sidebar + header.
+ * AppLayout — main application shell with responsive sidebar + header + mobile bottom bar.
  */
 
 import { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Calendar,
   Users,
@@ -19,6 +19,8 @@ import {
   Eye,
   Lock,
   Layers,
+  Bell,
+  MoreHorizontal,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { getInitials } from '../utils/helpers';
@@ -98,6 +100,7 @@ const navItems: NavItem[] = [
 export function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -113,6 +116,18 @@ export function AppLayout() {
   };
 
   const closeMobileSidebar = () => setSidebarOpen(false);
+
+  // Page title for mobile header
+  const pageTitle = (() => {
+    const p = location.pathname;
+    if (p.includes('/station-schedule')) return 'Escala do Posto';
+    if (p.includes('/schedule')) return 'Minha Escala';
+    if (p.includes('/swaps')) return 'Trocas';
+    if (p.includes('/dashboard')) return 'Dashboard';
+    if (p.includes('/notifications')) return 'Notificações';
+    if (p.includes('/admin')) return 'Administração';
+    return 'EscalasPT';
+  })();
 
   return (
     <div className={`app-layout ${collapsed ? 'sidebar-collapsed' : ''}`}>
@@ -207,6 +222,8 @@ export function AppLayout() {
             <Menu size={22} />
           </button>
 
+          <span className="header-page-title">{pageTitle}</span>
+
           <div className="header-spacer" />
 
           <div className="header-actions">
@@ -225,6 +242,49 @@ export function AppLayout() {
         <main className="app-content">
           <Outlet />
         </main>
+
+        {/* Mobile bottom tab bar */}
+        {user.role !== 'admin' && (
+          <nav className="bottom-tab-bar">
+            <NavLink
+              to="/app/schedule"
+              className={({ isActive }) => `btb-tab ${isActive ? 'btb-tab-active' : ''}`}
+            >
+              <Calendar size={22} />
+              <span>Escala</span>
+            </NavLink>
+            <NavLink
+              to="/app/station-schedule"
+              className={({ isActive }) => `btb-tab ${isActive ? 'btb-tab-active' : ''}`}
+            >
+              <ClipboardList size={22} />
+              <span>Posto</span>
+            </NavLink>
+            <NavLink
+              to="/app/swaps"
+              className={({ isActive }) => `btb-tab ${isActive ? 'btb-tab-active' : ''}`}
+            >
+              <ArrowLeftRight size={22} />
+              <span>Trocas</span>
+            </NavLink>
+            <NavLink
+              to="/app/notifications"
+              className={({ isActive }) => `btb-tab ${isActive ? 'btb-tab-active' : ''}`}
+            >
+              <Bell size={22} />
+              <span>Alertas</span>
+            </NavLink>
+            {(user.role === 'comandante' || user.role === 'adjunto') && (
+              <NavLink
+                to="/app/dashboard"
+                className={({ isActive }) => `btb-tab ${isActive ? 'btb-tab-active' : ''}`}
+              >
+                <LayoutDashboard size={22} />
+                <span>Painel</span>
+              </NavLink>
+            )}
+          </nav>
+        )}
       </div>
     </div>
   );

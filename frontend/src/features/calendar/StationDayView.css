@@ -3,7 +3,7 @@
 .sdv {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
   animation: fadeIn var(--transition-base) ease-out;
 }
 
@@ -25,15 +25,16 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--border-subtle);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .sdv-today {
   border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 1px var(--color-primary-500), 0 2px 8px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 1px var(--color-primary-500), 0 4px 16px rgba(16, 185, 129, 0.12);
 }
 
 .sdv-empty {
-  opacity: 0.45;
+  opacity: 0.4;
 }
 
 /* ── Day Header (collapsible) ──────────────────────────── */
@@ -42,7 +43,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  padding: 12px 14px;
   background: var(--surface-100);
   border: none;
   width: 100%;
@@ -58,14 +59,15 @@
 .sdv-day-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .sdv-day-num {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   color: var(--text-primary);
   min-width: 28px;
+  line-height: 1;
 }
 
 .sdv-today .sdv-day-num {
@@ -76,6 +78,7 @@
   font-size: 13px;
   color: var(--text-tertiary);
   text-transform: capitalize;
+  font-weight: var(--weight-medium);
 }
 
 .sdv-badge-today {
@@ -83,7 +86,7 @@
   font-weight: 700;
   color: var(--color-primary-400);
   background: rgba(16, 185, 129, 0.12);
-  padding: 1px 7px;
+  padding: 2px 8px;
   border-radius: 99px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -96,12 +99,16 @@
   color: var(--text-muted);
 }
 
+.sdv-day-right svg {
+  transition: transform var(--transition-fast);
+}
+
 .sdv-day-count {
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
   background: var(--surface-300);
-  padding: 1px 8px;
+  padding: 2px 8px;
   border-radius: 99px;
   min-width: 22px;
   text-align: center;
@@ -113,6 +120,12 @@
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--border-subtle);
+  animation: sdvSlideDown var(--transition-fast) ease-out;
+}
+
+@keyframes sdvSlideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .sdv-type-group {
@@ -126,14 +139,14 @@
 .sdv-type-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: 10px;
+  padding: 9px 14px;
   background: var(--surface-150, var(--surface-200));
 }
 
 .sdv-type-bar {
   width: 3px;
-  height: 18px;
+  height: 20px;
   border-radius: 2px;
   flex-shrink: 0;
 }
@@ -158,7 +171,7 @@
   font-size: 10px;
   color: var(--text-muted);
   background: var(--surface-300);
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 99px;
   font-weight: 600;
 }
@@ -174,14 +187,14 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 14px 8px 28px;
+  padding: 9px 14px 9px 28px;
   border: none;
   background: transparent;
   cursor: pointer;
   width: 100%;
   text-align: left;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.1s;
+  transition: background 0.12s;
 }
 
 .sdv-member:active {
@@ -193,8 +206,8 @@
 }
 
 .sdv-member-avatar {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -238,7 +251,7 @@
 
 @media (max-width: 768px) {
   .sdv {
-    gap: 1px;
+    gap: 4px;
   }
 
   .sdv-day {
@@ -250,7 +263,7 @@
   }
 
   .sdv-day-num {
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .sdv-day-name {
@@ -258,17 +271,17 @@
   }
 
   .sdv-type-header {
-    padding: 6px 12px;
+    padding: 7px 12px;
   }
 
   .sdv-member {
-    padding: 7px 12px 7px 24px;
+    padding: 8px 12px 8px 24px;
     gap: 8px;
   }
 
   .sdv-member-avatar {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     font-size: 8px;
   }
 

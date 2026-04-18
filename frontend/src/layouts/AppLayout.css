@@ -233,6 +233,10 @@
   display: none;
 }
 
+.header-page-title {
+  display: none;
+}
+
 .header-spacer {
   flex: 1;
 }
@@ -334,6 +338,15 @@
     display: flex;
   }
 
+  .header-page-title {
+    display: block;
+    font-size: var(--font-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    margin-left: var(--space-2);
+    letter-spacing: -0.01em;
+  }
+
   .header-user-name {
     display: none;
   }
@@ -356,5 +369,80 @@
 
   .header-user-pill {
     padding: var(--space-1);
+  }
+
+  /* Add bottom padding so content isn't hidden behind bottom bar */
+  .app-content {
+    padding-bottom: calc(var(--space-3) + 68px);
+  }
+}
+
+/* ── Bottom Tab Bar (mobile only) ──────────────────────── */
+
+.bottom-tab-bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .bottom-tab-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    height: 64px;
+    background: var(--surface-100);
+    border-top: 1px solid var(--border-subtle);
+    padding: 0 var(--space-1);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .btb-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--text-tertiary);
+    font-size: 10px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.03em;
+    transition: color var(--transition-fast);
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btb-tab svg {
+    transition: transform var(--transition-fast), color var(--transition-fast);
+  }
+
+  .btb-tab:active svg {
+    transform: scale(0.85);
+  }
+
+  .btb-tab-active {
+    color: var(--color-primary-400);
+  }
+
+  .btb-tab-active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 2px;
+    border-radius: 0 0 2px 2px;
+    background: var(--color-primary-400);
+  }
+
+  /* Hide notification dropdown on mobile header — use bottom bar instead */
+  .header-notification-btn {
+    /* Keep visible — some users may still use header */
   }
 }
