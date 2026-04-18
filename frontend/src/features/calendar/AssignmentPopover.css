@@ -283,6 +283,13 @@
   display: flex;
   gap: var(--space-2);
   justify-content: flex-end;
+  align-items: center;
   padding-top: var(--space-1);
   border-top: 1px solid var(--border-default);
+}
+
+.apop-hint {
+  font-size: 10px;
+  color: var(--color-warning-400, #f59e0b);
+  margin-right: auto;
 }

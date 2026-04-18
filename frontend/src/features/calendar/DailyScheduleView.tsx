@@ -3,10 +3,10 @@
  * Similar to the daily operational document used in GNR stations.
  */
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { format, addDays, subDays, isToday, isSameDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import type { Shift } from '../../types';
 import { formatTime } from '../../utils/helpers';
 import './DailyScheduleView.css';
@@ -23,6 +23,7 @@ interface TimeSlotGroup {
   label: string;
   range: string;
   shifts: Shift[];
+  isAbsence: boolean;
 }
 
 export function DailyScheduleView({
@@ -33,6 +34,16 @@ export function DailyScheduleView({
   isLoading,
 }: DailyScheduleViewProps) {
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
+  const [collapsedSlots, setCollapsedSlots] = useState<Set<string>>(new Set());
+
+  const toggleSlot = (key: string) => {
+    setCollapsedSlots((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   const dayShifts = useMemo(() => {
     return shifts
@@ -40,56 +51,44 @@ export function DailyScheduleView({
       .sort((a, b) => a.start_datetime.localeCompare(b.start_datetime));
   }, [shifts, dateStr]);
 
-  // Group shifts into time slots and absences
-  const { regularSlots, absences } = useMemo(() => {
-    const regular: Shift[] = [];
-    const abs: Shift[] = [];
+  // Absence codes
+  const absenceCodes = ['CONV', 'DIL', 'F', 'FER', 'LIC', 'MF', 'INST', 'T'];
+
+  // Group ALL shifts by shift type (including GRAT, absences)
+  const { serviceSlots, absenceSlots } = useMemo(() => {
+    const slotMap = new Map<string, TimeSlotGroup>();
 
     dayShifts.forEach((s) => {
-      // Check if it's an absence type by checking is_absence-related codes
       const code = (s.shift_type_code ?? '').toUpperCase();
-      const absenceCodes = ['CONV', 'DIL', 'F', 'FER', 'LIC', 'MF', 'GRAT', 'INST', 'T'];
-      if (absenceCodes.includes(code)) {
-        abs.push(s);
-      } else {
-        regular.push(s);
-      }
-    });
-
-    // Group regular shifts by shift type
-    const slotMap = new Map<string, TimeSlotGroup>();
-    regular.forEach((s) => {
+      const isAbsence = absenceCodes.includes(code);
       const key = s.shift_type_id ?? 'other';
+
       if (!slotMap.has(key)) {
         slotMap.set(key, {
           label: s.shift_type_code ?? s.shift_type_name ?? 'Turno',
-          range: `${formatTime(s.start_datetime)} — ${formatTime(s.end_datetime)}`,
+          range: isAbsence ? 'Dia inteiro' : `${formatTime(s.start_datetime)} — ${formatTime(s.end_datetime)}`,
           shifts: [],
+          isAbsence,
         });
       }
       slotMap.get(key)!.shifts.push(s);
     });
 
-    // Sort by start time
-    const slots = Array.from(slotMap.values()).sort((a, b) => {
-      const aTime = a.shifts[0]?.start_datetime ?? '';
-      const bTime = b.shifts[0]?.start_datetime ?? '';
-      return aTime.localeCompare(bTime);
-    });
+    const all = Array.from(slotMap.entries());
+    const service = all
+      .filter(([, g]) => !g.isAbsence)
+      .sort(([, a], [, b]) => {
+        const aTime = a.shifts[0]?.start_datetime ?? '';
+        const bTime = b.shifts[0]?.start_datetime ?? '';
+        return aTime.localeCompare(bTime);
+      });
+    const absence = all
+      .filter(([, g]) => g.isAbsence)
+      .sort(([, a], [, b]) => a.label.localeCompare(b.label));
 
-    return { regularSlots: slots, absences: abs };
+    return { serviceSlots: service, absenceSlots: absence };
   }, [dayShifts]);
-
-  // Group absences by type
-  const absenceGroups = useMemo(() => {
-    const map = new Map<string, Shift[]>();
-    absences.forEach((s) => {
-      const code = s.shift_type_code ?? 'Outro';
-      if (!map.has(code)) map.set(code, []);
-      map.get(code)!.push(s);
-    });
-    return Array.from(map.entries());
-  }, [absences]);
+  }, [dayShifts]);
 
   if (isLoading) {
     return (
@@ -139,8 +138,8 @@ export function DailyScheduleView({
         </div>
       ) : (
         <div className="daily-view-content">
-          {/* Regular shifts by type */}
-          {regularSlots.length > 0 && (
+          {/* Service shifts (AT, OC, GRAT, SEC, INQ, etc.) */}
+          {serviceSlots.length > 0 && (
             <div className="daily-view-section">
               <div className="daily-view-section-title">Turnos</div>
               <div className="daily-view-table">
@@ -149,80 +148,96 @@ export function DailyScheduleView({
                   <span className="daily-view-th-time">Horário</span>
                   <span className="daily-view-th-staff">Efetivo</span>
                 </div>
-                {regularSlots.map((slot) => (
-                  <div key={slot.label} className="daily-view-slot">
-                    <div className="daily-view-slot-header">
-                      <span
-                        className="daily-view-slot-code"
-                        style={{
-                          color: slot.shifts[0]?.shift_type_color ?? 'var(--color-primary-400)',
-                        }}
+                {serviceSlots.map(([key, slot]) => {
+                  const isCollapsed = collapsedSlots.has(key);
+                  return (
+                    <div key={key} className="daily-view-slot">
+                      <button
+                        className="daily-view-slot-header daily-view-slot-toggle"
+                        onClick={() => toggleSlot(key)}
+                        type="button"
                       >
-                        {slot.label}
-                      </span>
-                      <span className="daily-view-slot-range">{slot.range}</span>
-                      <span className="daily-view-slot-count">{slot.shifts.length}</span>
-                    </div>
-                    <div className="daily-view-slot-members">
-                      {slot.shifts.map((s) => (
-                        <button
-                          key={s.id}
-                          className="daily-view-member"
-                          onClick={() => onShiftClick(s)}
-                          type="button"
-                        >
+                        <span className="daily-view-slot-header-left">
                           <span
-                            className="daily-view-member-dot"
+                            className="daily-view-slot-code"
                             style={{
-                              backgroundColor: s.shift_type_color ?? 'var(--color-primary-500)',
+                              color: slot.shifts[0]?.shift_type_color ?? 'var(--color-primary-400)',
                             }}
-                          />
-                          <span className="daily-view-member-num">
-                            {s.user_numero_ordem ?? '—'}
+                          >
+                            {slot.label}
                           </span>
-                          <span className="daily-view-member-name">{s.user_name ?? '?'}</span>
-                          {s.location && (
-                            <span className="daily-view-member-loc">{s.location}</span>
+                          {/* Show grat_type tags inline next to GRAT label */}
+                          {slot.shifts.some((s) => s.grat_type) && (
+                            <span className="daily-view-slot-grat-tag">
+                              {[...new Set(slot.shifts.map((s) => s.grat_type).filter(Boolean))].join(', ')}
+                            </span>
                           )}
-                          {s.grat_type && (
-                            <span className="daily-view-member-grat">{s.grat_type}</span>
-                          )}
-                        </button>
-                      ))}
+                        </span>
+                        <span className="daily-view-slot-range">{slot.range}</span>
+                        <span className="daily-view-slot-header-right">
+                          <span className="daily-view-slot-count">{slot.shifts.length}</span>
+                          {isCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+                        </span>
+                      </button>
+                      {!isCollapsed && (
+                        <div className="daily-view-slot-members">
+                          {slot.shifts.map((s) => (
+                            <button
+                              key={s.id}
+                              className="daily-view-member"
+                              onClick={() => onShiftClick(s)}
+                              type="button"
+                            >
+                              <span
+                                className="daily-view-member-dot"
+                                style={{
+                                  backgroundColor: s.shift_type_color ?? 'var(--color-primary-500)',
+                                }}
+                              />
+                              <span className="daily-view-member-num">
+                                {s.user_numero_ordem ?? '—'}
+                              </span>
+                              <span className="daily-view-member-name">{s.user_name ?? '?'}</span>
+                              {s.location && (
+                                <span className="daily-view-member-loc">{s.location}</span>
+                              )}
+                              {s.grat_type && (
+                                <span className="daily-view-member-grat">{s.grat_type}</span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Absences / Other */}
-          {absenceGroups.length > 0 && (
+          {/* Absences — inline chips */}
+          {absenceSlots.length > 0 && (
             <div className="daily-view-section">
               <div className="daily-view-section-title">Ausências &amp; Outros</div>
-              <div className="daily-view-absence-grid">
-                {absenceGroups.map(([code, groupShifts]) => (
-                  <div key={code} className="daily-view-absence-group">
-                    <div
-                      className="daily-view-absence-code"
-                      style={{
-                        color: groupShifts[0]?.shift_type_color ?? 'var(--text-muted)',
-                      }}
+              <div className="daily-view-absence-inline">
+                {absenceSlots.map(([key, group]) => (
+                  <div key={key} className="daily-view-absence-row">
+                    <span
+                      className="daily-view-absence-code-inline"
+                      style={{ color: group.shifts[0]?.shift_type_color ?? 'var(--text-muted)' }}
                     >
-                      {code}
-                    </div>
-                    <div className="daily-view-absence-members">
-                      {groupShifts.map((s) => (
+                      {group.label}
+                    </span>
+                    <div className="daily-view-absence-chips">
+                      {group.shifts.map((s) => (
                         <button
                           key={s.id}
-                          className="daily-view-absence-member"
+                          className="daily-view-absence-chip"
                           onClick={() => onShiftClick(s)}
                           type="button"
                         >
-                          <span className="daily-view-member-num">
-                            {s.user_numero_ordem ?? '—'}
-                          </span>
-                          <span className="daily-view-member-name">{s.user_name ?? '?'}</span>
+                          <span className="daily-view-chip-num">{s.user_numero_ordem ?? '—'}</span>
+                          <span className="daily-view-chip-name">{s.user_name ?? '?'}</span>
                         </button>
                       ))}
                     </div>
@@ -241,12 +256,14 @@ export function DailyScheduleView({
             <div className="daily-view-summary-item">
               <span>Em serviço</span>
               <span className="daily-view-summary-val">
-                {dayShifts.length - absences.length}
+                {serviceSlots.reduce((n, [, g]) => n + g.shifts.length, 0)}
               </span>
             </div>
             <div className="daily-view-summary-item">
               <span>Ausências</span>
-              <span className="daily-view-summary-val">{absences.length}</span>
+              <span className="daily-view-summary-val">
+                {absenceSlots.reduce((n, [, g]) => n + g.shifts.length, 0)}
+              </span>
             </div>
           </div>
         </div>

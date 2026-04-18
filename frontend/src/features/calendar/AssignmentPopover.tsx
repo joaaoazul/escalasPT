@@ -283,6 +283,9 @@ export function AssignmentPopover({
           </div>
 
           <div className="apop-actions">
+            {selectedUserIds.length === 0 && (
+              <span className="apop-hint">Selecione pelo menos um militar</span>
+            )}
             <button
               type="button"
               className="btn btn-sm btn-ghost"

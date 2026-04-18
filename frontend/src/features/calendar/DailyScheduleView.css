@@ -117,19 +117,55 @@
   border-bottom: none;
 }
 
-.daily-view-slot-header {
+.daily-view-slot-toggle {
   display: grid;
-  grid-template-columns: 100px 140px 1fr;
+  grid-template-columns: 1fr 140px auto;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   align-items: center;
   background: var(--surface-150, var(--surface-100));
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.daily-view-slot-toggle:hover {
+  background: var(--surface-200);
+}
+
+.daily-view-slot-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.daily-view-slot-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
 }
 
 .daily-view-slot-code {
   font-size: var(--font-sm);
   font-weight: var(--weight-bold);
   letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.daily-view-slot-grat-tag {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--surface-300);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .daily-view-slot-range {
@@ -205,56 +241,72 @@
   border-radius: var(--radius-sm);
 }
 
-/* ── Absences ──────────────────────────────────────────── */
+/* ── Absences (inline chips) ────────────────────────────── */
 
-.daily-view-absence-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: var(--space-2);
-}
-
-.daily-view-absence-group {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background: var(--surface-100);
-}
-
-.daily-view-absence-code {
-  font-size: 11px;
-  font-weight: var(--weight-bold);
-  padding: var(--space-1) var(--space-3);
-  background: var(--surface-200);
-  border-bottom: 1px solid var(--border-subtle);
-  letter-spacing: 0.04em;
-}
-
-.daily-view-absence-members {
+.daily-view-absence-inline {
   display: flex;
   flex-direction: column;
+  gap: var(--space-2);
+  background: var(--surface-100);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-3);
 }
 
-.daily-view-absence-member {
+.daily-view-absence-row {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: 4px var(--space-3);
-  border: none;
-  background: transparent;
+  gap: var(--space-3);
+  min-height: 28px;
+}
+
+.daily-view-absence-row + .daily-view-absence-row {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-2);
+}
+
+.daily-view-absence-code-inline {
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  min-width: 40px;
+  flex-shrink: 0;
+}
+
+.daily-view-absence-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.daily-view-absence-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--surface-200);
   cursor: pointer;
-  text-align: left;
-  width: 100%;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
   transition: background 0.1s;
+  white-space: nowrap;
 }
 
-.daily-view-absence-member:hover {
-  background: var(--surface-200);
+.daily-view-absence-chip:hover {
+  background: var(--surface-300);
 }
 
-.daily-view-absence-member + .daily-view-absence-member {
-  border-top: 1px solid var(--border-subtle);
+.daily-view-chip-num {
+  font-weight: var(--weight-bold);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.daily-view-chip-name {
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
 }
 
 /* ── Summary bar ───────────────────────────────────────── */
@@ -288,13 +340,18 @@
 /* ── Mobile ────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  .daily-view-table-header,
-  .daily-view-slot-header {
+  .daily-view-table-header {
     grid-template-columns: 70px 110px 1fr;
   }
 
-  .daily-view-absence-grid {
-    grid-template-columns: 1fr;
+  .daily-view-slot-toggle {
+    grid-template-columns: 1fr 100px auto;
+  }
+
+  .daily-view-absence-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
   }
 
   .daily-view-summary {
