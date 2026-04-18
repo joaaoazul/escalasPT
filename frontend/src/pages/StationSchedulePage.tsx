@@ -194,6 +194,24 @@ export function StationSchedulePage() {
     setSelectedInitialDate(undefined);
   }, []);
 
+  // Handle native HTML5 drag-drop on the day view area
+  const handleDayViewDragOver = useCallback((e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes('application/shift-type-id')) {
+      e.preventDefault();
+    }
+  }, []);
+
+  const handleDayViewDrop = useCallback((e: React.DragEvent) => {
+    const shiftTypeId = e.dataTransfer.getData('application/shift-type-id');
+    if (!shiftTypeId) return;
+    e.preventDefault();
+    setDropState({
+      shiftTypeId,
+      date: selectedDay,
+      position: { x: e.clientX + 12, y: e.clientY + 12 },
+    });
+  }, [selectedDay]);
+
   const viewToggle = (
     <div className="view-seg">
       <button
@@ -287,7 +305,7 @@ export function StationSchedulePage() {
               </h1>
               <p style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
                 {canEdit
-                  ? 'Clique num tipo de turno da biblioteca para criar turnos no dia selecionado.'
+                  ? 'Arraste ou clique num tipo de turno da biblioteca para criar turnos no dia selecionado.'
                   : 'Clique num turno para ver detalhes.'}
               </p>
             </div>
@@ -308,7 +326,11 @@ export function StationSchedulePage() {
                 }}
               />
             )}
-            <div className="station-schedule-calendar daily-view-wrapper">
+            <div
+              className="station-schedule-calendar daily-view-wrapper"
+              onDragOver={handleDayViewDragOver}
+              onDrop={handleDayViewDrop}
+            >
               <DailyScheduleView
                 shifts={shifts}
                 selectedDate={selectedDay}

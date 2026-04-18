@@ -31,6 +31,8 @@ function ShiftCard({ st, onClick }: { st: ShiftType; onClick?: (st: ShiftType, e
   return (
     <div
       className={`shift-lib-card${onClick ? ' shift-lib-card-clickable' : ''}`}
+      draggable
+      onDragStart={(e) => e.dataTransfer.setData('application/shift-type-id', st.id)}
       data-shift-type-id={st.id}
       data-code={st.code}
       data-color={st.color}
@@ -54,6 +56,8 @@ function ShiftChip({ st, onClick }: { st: ShiftType; onClick?: (st: ShiftType, e
   return (
     <div
       className={`shift-lib-chip${onClick ? ' shift-lib-chip-clickable' : ''}`}
+      draggable
+      onDragStart={(e) => e.dataTransfer.setData('application/shift-type-id', st.id)}
       data-shift-type-id={st.id}
       data-code={st.code}
       data-color={st.color}
