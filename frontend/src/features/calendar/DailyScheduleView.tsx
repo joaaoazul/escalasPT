@@ -51,22 +51,26 @@ export function DailyScheduleView({
       .sort((a, b) => a.start_datetime.localeCompare(b.start_datetime));
   }, [shifts, dateStr]);
 
-  // Codes that appear as inline chips (not in the main service table)
-  const inlineCodes = ['CONV', 'DIL', 'F', 'FER', 'LIC', 'MF', 'INST', 'T', 'GRAT'];
+  // Codes that appear as inline chips (absences and simple full-day types)
+  const inlineCodes = ['CONV', 'DIL', 'F', 'FER', 'LIC', 'MF', 'T'];
+
+  // Codes that display as detail cards (with location, type, schedule)
+  const cardCodes = ['GRAT', 'INST'];
 
   // Group ALL shifts by shift type
-  const { serviceSlots, inlineSlots } = useMemo(() => {
+  const { serviceSlots, inlineSlots, cardSlots } = useMemo(() => {
     const slotMap = new Map<string, TimeSlotGroup>();
 
     dayShifts.forEach((s) => {
       const code = (s.shift_type_code ?? '').toUpperCase();
       const isInline = inlineCodes.includes(code);
+      const isCard = cardCodes.includes(code);
       const key = s.shift_type_id ?? 'other';
 
       if (!slotMap.has(key)) {
         slotMap.set(key, {
           label: s.shift_type_code ?? s.shift_type_name ?? 'Turno',
-          range: isInline ? '' : `${formatTime(s.start_datetime)} — ${formatTime(s.end_datetime)}`,
+          range: (isInline || isCard) ? '' : `${formatTime(s.start_datetime)} — ${formatTime(s.end_datetime)}`,
           shifts: [],
           isAbsence: isInline,
         });
@@ -76,7 +80,10 @@ export function DailyScheduleView({
 
     const all = Array.from(slotMap.entries());
     const service = all
-      .filter(([, g]) => !g.isAbsence)
+      .filter(([, g]) => {
+        const code = g.label.toUpperCase();
+        return !g.isAbsence && !cardCodes.includes(code);
+      })
       .sort(([, a], [, b]) => {
         const aTime = a.shifts[0]?.start_datetime ?? '';
         const bTime = b.shifts[0]?.start_datetime ?? '';
@@ -86,7 +93,37 @@ export function DailyScheduleView({
       .filter(([, g]) => g.isAbsence)
       .sort(([, a], [, b]) => a.label.localeCompare(b.label));
 
-    return { serviceSlots: service, inlineSlots: inline };
+    // Card-type shifts: group by grat_type + location + time range
+    const cardEntries = all.filter(([, g]) => cardCodes.includes(g.label.toUpperCase()));
+    interface CardGroup {
+      code: string;
+      color: string;
+      gratType: string;
+      location: string;
+      range: string;
+      shifts: Shift[];
+    }
+    const cards: CardGroup[] = [];
+    for (const [, group] of cardEntries) {
+      const subGroups = new Map<string, CardGroup>();
+      for (const s of group.shifts) {
+        const subKey = `${s.grat_type ?? ''}|${s.location ?? ''}|${formatTime(s.start_datetime)}-${formatTime(s.end_datetime)}`;
+        if (!subGroups.has(subKey)) {
+          subGroups.set(subKey, {
+            code: (s.shift_type_code ?? '').toUpperCase(),
+            color: s.shift_type_color ?? 'var(--color-primary-400)',
+            gratType: s.grat_type ?? '',
+            location: s.location ?? '',
+            range: `${formatTime(s.start_datetime)} — ${formatTime(s.end_datetime)}`,
+            shifts: [],
+          });
+        }
+        subGroups.get(subKey)!.shifts.push(s);
+      }
+      cards.push(...subGroups.values());
+    }
+
+    return { serviceSlots: service, inlineSlots: inline, cardSlots: cards };
   }, [dayShifts]);
 
   if (isLoading) {
@@ -214,10 +251,58 @@ export function DailyScheduleView({
             </div>
           )}
 
-          {/* Gratificados, Ausências & Outros — inline chips */}
+          {/* Gratificados & Instrução — detail cards */}
+          {cardSlots.length > 0 && (
+            <div className="daily-view-section">
+              <div className="daily-view-section-title">Gratificados &amp; Instrução</div>
+              <div className="daily-view-cards">
+                {cardSlots.map((card, i) => {
+                  return (
+                    <div key={i} className="daily-view-card" style={{ borderLeftColor: card.color }}>
+                      <div className="daily-view-card-header">
+                        <span className="daily-view-card-code" style={{ color: card.color }}>
+                          {card.code}
+                        </span>
+                        {card.gratType && (
+                          <span className="daily-view-card-type">{card.gratType}</span>
+                        )}
+                        <span className="daily-view-card-range">{card.range}</span>
+                      </div>
+                      {card.location && (
+                        <div className="daily-view-card-location">
+                          📍 {card.location}
+                        </div>
+                      )}
+                      <div className="daily-view-card-members">
+                        {card.shifts.map((s) => (
+                          <button
+                            key={s.id}
+                            className="daily-view-card-member"
+                            onClick={() => onShiftClick(s)}
+                            type="button"
+                          >
+                            <span
+                              className="daily-view-member-dot"
+                              style={{ backgroundColor: card.color }}
+                            />
+                            <span className="daily-view-member-num">
+                              {s.user_numero_ordem ?? '—'}
+                            </span>
+                            <span className="daily-view-member-name">{s.user_name ?? '?'}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Ausências & Outros — inline chips */}
           {inlineSlots.length > 0 && (
             <div className="daily-view-section">
-              <div className="daily-view-section-title">Gratificados, Ausências &amp; Outros</div>
+              <div className="daily-view-section-title">Ausências &amp; Outros</div>
               <div className="daily-view-absence-inline">
                 {inlineSlots.map(([key, group]) => (
                   <div key={key} className="daily-view-absence-row">
@@ -227,12 +312,6 @@ export function DailyScheduleView({
                     >
                       {group.label}
                     </span>
-                    {/* Show grat_type summary if present */}
-                    {group.shifts.some((s) => s.grat_type) && (
-                      <span className="daily-view-inline-tag">
-                        {[...new Set(group.shifts.map((s) => s.grat_type).filter(Boolean))].join(', ')}
-                      </span>
-                    )}
                     <div className="daily-view-absence-chips">
                       {group.shifts.map((s) => (
                         <button
@@ -243,8 +322,6 @@ export function DailyScheduleView({
                         >
                           <span className="daily-view-chip-num">{s.user_numero_ordem ?? '—'}</span>
                           <span className="daily-view-chip-name">{s.user_name ?? '?'}</span>
-                          {s.location && <span className="daily-view-chip-loc">{s.location}</span>}
-                          {s.grat_type && <span className="daily-view-chip-grat">{s.grat_type}</span>}
                         </button>
                       ))}
                     </div>
@@ -263,7 +340,8 @@ export function DailyScheduleView({
             <div className="daily-view-summary-item">
               <span>Em serviço</span>
               <span className="daily-view-summary-val">
-                {serviceSlots.reduce((n, [, g]) => n + g.shifts.length, 0)}
+                {serviceSlots.reduce((n, [, g]) => n + g.shifts.length, 0) +
+                  cardSlots.reduce((n, c) => n + c.shifts.length, 0)}
               </span>
             </div>
             <div className="daily-view-summary-item">

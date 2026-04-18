@@ -141,6 +141,19 @@ export function AssignmentPopover({
 
   const needsTimeInput = !shiftType?.fixed_slots && !shiftType?.is_absence;
   const isAbsence = shiftType?.is_absence ?? false;
+  const shiftCode = (shiftType?.code ?? '').toUpperCase();
+
+  // Codes that support location + type metadata
+  const _DETAIL_CODES = new Set(['GRAT', 'INST', 'T']);
+  const needsDetailFields = _DETAIL_CODES.has(shiftCode);
+
+  // Context-aware labels for location/type fields
+  const detailLabels: Record<string, { loc: string; locPlaceholder: string; type: string; typePlaceholder: string }> = {
+    GRAT: { loc: 'Localização', locPlaceholder: 'Ex: Estádio Municipal, Rua X...', type: 'Tipo de Gratificado', typePlaceholder: 'Ex: Evento desportivo, Segurança privada...' },
+    INST: { loc: 'Localização da Instrução', locPlaceholder: 'Ex: Campo de tiro, Sala de formação...', type: 'Tipo de Instrução', typePlaceholder: 'Ex: Tiro, Defesa pessoal, Legislação...' },
+    T:    { loc: 'Localização do Tiro', locPlaceholder: 'Ex: Carreira de tiro de Alcabideche...', type: 'Tipo de Tiro', typePlaceholder: 'Ex: Pistola, Espingarda, Requalificação...' },
+  };
+  const labels = detailLabels[shiftCode];
 
   // Filter to militares only (exclude admin/secretaria who don't do shifts)
   const isNormalService = !_NON_SERVICE_CODES.has(shiftType?.code ?? '');
@@ -230,29 +243,29 @@ export function AssignmentPopover({
             <div className="apop-allday-badge">Dia inteiro</div>
           )}
 
-          {/* GRAT-specific fields: location and gratificado type */}
-          {needsTimeInput && (
+          {/* Detail fields: location and type (GRAT, INST, T) */}
+          {needsDetailFields && labels && (
             <div className="apop-grat-fields">
               <div className="apop-field">
                 <MapPin size={13} />
-                <label>Localização</label>
+                <label>{labels.loc}</label>
                 <input
                   type="text"
                   className="input-field"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Ex: Estádio Municipal, Rua X..."
+                  placeholder={labels.locPlaceholder}
                 />
               </div>
               <div className="apop-field">
                 <Tag size={13} />
-                <label>Tipo de Gratificado</label>
+                <label>{labels.type}</label>
                 <input
                   type="text"
                   className="input-field"
                   value={gratType}
                   onChange={(e) => setGratType(e.target.value)}
-                  placeholder="Ex: Evento desportivo, Segurança privada..."
+                  placeholder={labels.typePlaceholder}
                 />
               </div>
             </div>
