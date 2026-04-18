@@ -33,7 +33,6 @@ class ConnectionManager:
         self._connections: Dict[str, Dict[str, Any]] = {}
 
     async def connect(self, websocket, user_id: str, station_id: str) -> None:
-        await websocket.accept()
         if station_id not in self._connections:
             self._connections[station_id] = {}
         self._connections[station_id][user_id] = websocket

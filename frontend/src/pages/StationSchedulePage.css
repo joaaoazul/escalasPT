@@ -168,4 +168,73 @@
   }
 }
 
+/* ── Fullscreen Mode ───────────────────────────────────── */
+
+.station-schedule-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--surface-50, #0d1117);
+  padding: 0;
+  border-radius: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.station-schedule-fullscreen .station-schedule-header {
+  display: none;
+}
+
+.station-schedule-fullscreen .station-schedule-body {
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+  margin: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.fullscreen-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Daily view inside 3-col layout ────────────────────── */
+
+.daily-view-wrapper {
+  padding: var(--space-3);
+  overflow-y: auto;
+}
+
+/* Floating exit-fullscreen button */
+.fullscreen-exit-fab {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 210;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-300);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  transition: background 0.15s, color 0.15s;
+}
+
+.fullscreen-exit-fab:hover {
+  background: var(--surface-400);
+  color: var(--text-primary);
+}
+
+.station-schedule-fullscreen .fullscreen-exit-fab {
+  display: flex;
+}
+
 

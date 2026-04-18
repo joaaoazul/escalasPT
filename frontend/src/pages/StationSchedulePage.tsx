@@ -4,14 +4,15 @@
  * Includes a drag-from-sidebar shift library for comandante / adjunto.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { startOfMonth, format, getMonth, getYear } from 'date-fns';
-import { LayoutList, CalendarDays, Plus, Calendar as CalendarIcon, AlertTriangle, ClipboardList, Download } from 'lucide-react';
+import { LayoutList, CalendarDays, Plus, Calendar as CalendarIcon, AlertTriangle, ClipboardList, Download, Maximize2, Minimize2, CalendarRange } from 'lucide-react';
 import { useStationSchedule } from '../hooks/useStationSchedule';
 import { useAuth } from '../hooks/useAuth';
 import { useShiftMutations } from '../hooks/useShiftMutations';
 import { ScheduleCalendar } from '../features/calendar/ScheduleCalendar';
 import { StationDayView } from '../features/calendar/StationDayView';
+import { DailyScheduleView } from '../features/calendar/DailyScheduleView';
 import { MonthNavigator } from '../features/calendar/MonthNavigator';
 import { ShiftDetailModal } from '../features/calendar/ShiftDetailModal';
 import { ShiftGroupDetailPanel } from '../features/calendar/ShiftGroupDetailPanel';
@@ -50,7 +51,7 @@ function QuickStats({ shifts }: { shifts: Shift[] }) {
   );
 }
 
-type ViewMode = 'calendar' | 'list';
+type ViewMode = 'calendar' | 'list' | 'day';
 
 interface DropState {
   shiftTypeId: string;
@@ -61,6 +62,7 @@ interface DropState {
 export function StationSchedulePage() {
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
+  const [selectedDay, setSelectedDay] = useState<Date>(() => new Date());
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [selectedGroupShifts, setSelectedGroupShifts] = useState<Shift[] | null>(null);
 
@@ -78,6 +80,17 @@ export function StationSchedulePage() {
   const isComandante = user?.role === 'comandante';
   const canExportSchedule = canEdit || user?.role === 'secretaria';
   const [exportingSchedule, setExportingSchedule] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // ESC key to exit fullscreen
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFullscreen(false);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isFullscreen]);
 
   const { data: shifts = [], isLoading } = useStationSchedule(currentMonth);
   const { updateShift, deleteShift, createShift } = useShiftMutations();
@@ -191,6 +204,13 @@ export function StationSchedulePage() {
         <CalendarDays size={14} />
       </button>
       <button
+        className={`view-seg-btn${viewMode === 'day' ? ' view-seg-active' : ''}`}
+        onClick={() => setViewMode('day')}
+        title="Vista diária"
+      >
+        <CalendarRange size={14} />
+      </button>
+      <button
         className={`view-seg-btn${viewMode === 'list' ? ' view-seg-active' : ''}`}
         onClick={() => setViewMode('list')}
         title="Vista lista"
@@ -209,8 +229,27 @@ export function StationSchedulePage() {
     </div>
   );
 
+  const fullscreenToggle = (
+    <button
+      className="btn btn-ghost btn-sm fullscreen-toggle-btn"
+      onClick={() => setIsFullscreen((v) => !v)}
+      title={isFullscreen ? 'Sair de ecrã inteiro (Esc)' : 'Ecrã inteiro'}
+    >
+      {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+    </button>
+  );
+
   return (
-    <div className="animate-fade-in station-schedule-page">
+    <div className={`animate-fade-in station-schedule-page${isFullscreen ? ' station-schedule-fullscreen' : ''}`}>
+      {/* Floating exit button in fullscreen */}
+      <button
+        className="fullscreen-exit-fab"
+        onClick={() => setIsFullscreen(false)}
+        title="Sair de ecrã inteiro (Esc)"
+      >
+        <Minimize2 size={16} />
+      </button>
+
       {viewMode === 'list' ? (
         <>
           <MonthNavigator
@@ -239,6 +278,47 @@ export function StationSchedulePage() {
             isLoading={isLoading}
           />
         </>
+      ) : viewMode === 'day' ? (
+        <>
+          <div className="station-schedule-header">
+            <div>
+              <h1 style={{ fontSize: 'var(--font-lg)', fontWeight: 'var(--weight-semibold)', marginBottom: '1px', letterSpacing: '-0.01em' }}>
+                Escala Diária
+              </h1>
+              <p style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+                {canEdit
+                  ? 'Clique num tipo de turno da biblioteca para criar turnos no dia selecionado.'
+                  : 'Clique num turno para ver detalhes.'}
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {viewToggle}
+            </div>
+          </div>
+          <div className="station-schedule-body">
+            {canEdit && (
+              <ShiftTypeLibrary
+                onShiftTypeClick={(shiftTypeId, e) => {
+                  const rect = (e.target as HTMLElement).getBoundingClientRect();
+                  setDropState({
+                    shiftTypeId,
+                    date: selectedDay,
+                    position: { x: rect.right + 12, y: rect.top },
+                  });
+                }}
+              />
+            )}
+            <div className="station-schedule-calendar daily-view-wrapper">
+              <DailyScheduleView
+                shifts={shifts}
+                selectedDate={selectedDay}
+                onDateChange={(d) => { setSelectedDay(d); setCurrentMonth(startOfMonth(d)); }}
+                onShiftClick={handleEventClick}
+                isLoading={isLoading}
+              />
+            </div>
+          </div>
+        </>
       ) : (
         <>
           <div className="station-schedule-header">
@@ -263,6 +343,7 @@ export function StationSchedulePage() {
                   <Download size={14} /> {exportingSchedule ? 'A gerar...' : 'Exportar PDF'}
                 </button>
               )}
+              {fullscreenToggle}
               {viewToggle}
             </div>
           </div>
@@ -284,7 +365,7 @@ export function StationSchedulePage() {
                 selectable={canEdit}
                 droppable={canEdit}
                 initialDate={currentMonth}
-                height="calc(100vh - 154px)"
+                height={isFullscreen ? 'calc(100vh - 24px)' : 'calc(100vh - 154px)'}
                 groupByType
               />
             </div>

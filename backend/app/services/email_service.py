@@ -65,6 +65,9 @@ async def send_email(
 
 def _build_notification_email(title: str, message: str) -> str:
     """Build a simple HTML email body for a notification."""
+    import html as html_module
+    safe_title = html_module.escape(title)
+    safe_message = html_module.escape(message)
     return f"""<!DOCTYPE html>
 <html lang="pt">
 <head><meta charset="utf-8"></head>
@@ -73,8 +76,8 @@ def _build_notification_email(title: str, message: str) -> str:
     <h1 style="margin: 0; font-size: 24px;">EscalasPT</h1>
   </div>
   <div style="background: #ffffff; padding: 24px; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0;">
-    <h2 style="color: #1a1f2c; margin-top: 0;">{title}</h2>
-    <p style="color: #333; font-size: 15px; line-height: 1.6;">{message}</p>
+    <h2 style="color: #1a1f2c; margin-top: 0;">{safe_title}</h2>
+    <p style="color: #333; font-size: 15px; line-height: 1.6;">{safe_message}</p>
     <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
     <p style="color: #999; font-size: 12px;">Esta é uma notificação automática do EscalasPT. Não responda a este email.</p>
   </div>

@@ -95,6 +95,8 @@ apiClient.interceptors.response.use(
     try {
       const response = await apiClient.post<{ access_token: string }>(
         '/auth/refresh',
+        null,
+        { headers: { 'X-Requested-With': 'XMLHttpRequest' } },
       );
       const newToken = response.data.access_token;
       setAccessToken(newToken);

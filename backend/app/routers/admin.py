@@ -25,7 +25,7 @@ from app.models.shift import Shift
 from app.models.station import Station
 from app.models.user import ActiveSession, User, UserRole
 from app.services.audit_service import create_audit_log
-from app.utils.security import hash_password
+from app.utils.security import hash_password, validate_password_strength
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -257,6 +257,11 @@ async def admin_reset_password(
 ):
     """Reset a user's password. Admin or station commander."""
     user = await _get_user_check_station(db, user_id, current_user)
+
+    # Validate password strength
+    issues = validate_password_strength(body.new_password)
+    if issues:
+        raise ValidationError("; ".join(issues))
 
     user.password_hash = hash_password(body.new_password)
     user.failed_login_attempts = 0

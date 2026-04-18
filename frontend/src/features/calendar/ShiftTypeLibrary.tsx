@@ -25,12 +25,12 @@ function computeDuration(st: ShiftType): string {
 }
 
 /** Full 3-line card: code + icon | time | name */
-function ShiftCard({ st }: { st: ShiftType }) {
+function ShiftCard({ st, onClick }: { st: ShiftType; onClick?: (st: ShiftType, e: React.MouseEvent) => void }) {
   const Icon = st.code.startsWith('AT') ? Shield : st.code.startsWith('OC') ? Car : null;
   const timeLabel = `${st.start_time.substring(0, 5)} – ${st.end_time.substring(0, 5)}`;
   return (
     <div
-      className="shift-lib-card"
+      className={`shift-lib-card${onClick ? ' shift-lib-card-clickable' : ''}`}
       data-shift-type-id={st.id}
       data-code={st.code}
       data-color={st.color}
@@ -38,6 +38,7 @@ function ShiftCard({ st }: { st: ShiftType }) {
       data-is-absence="0"
       style={{ backgroundColor: `${st.color}18`, borderColor: `${st.color}38` }}
       title={st.name}
+      onClick={onClick ? (e) => onClick(st, e) : undefined}
     >
       <div className="shift-lib-card-top">
         <span className="shift-lib-card-code" style={{ color: st.color }}>{st.code}</span>
@@ -49,10 +50,10 @@ function ShiftCard({ st }: { st: ShiftType }) {
   );
 }
 
-function ShiftChip({ st }: { st: ShiftType }) {
+function ShiftChip({ st, onClick }: { st: ShiftType; onClick?: (st: ShiftType, e: React.MouseEvent) => void }) {
   return (
     <div
-      className="shift-lib-chip"
+      className={`shift-lib-chip${onClick ? ' shift-lib-chip-clickable' : ''}`}
       data-shift-type-id={st.id}
       data-code={st.code}
       data-color={st.color}
@@ -60,6 +61,7 @@ function ShiftChip({ st }: { st: ShiftType }) {
       data-is-absence={st.is_absence ? '1' : '0'}
       style={{ backgroundColor: `${st.color}18`, borderColor: `${st.color}40` }}
       title={st.name}
+      onClick={onClick ? (e) => onClick(st, e) : undefined}
     >
       <span className="shift-lib-chip-code" style={{ color: st.color }}>{st.code}</span>
       <span className="shift-lib-chip-sub">{st.is_absence ? 'Dia int.' : st.name}</span>
@@ -67,7 +69,11 @@ function ShiftChip({ st }: { st: ShiftType }) {
   );
 }
 
-export function ShiftTypeLibrary() {
+interface ShiftTypeLibraryProps {
+  onShiftTypeClick?: (shiftTypeId: string, e: React.MouseEvent) => void;
+}
+
+export function ShiftTypeLibrary({ onShiftTypeClick }: ShiftTypeLibraryProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { data: shiftTypes = [], isLoading } = useShiftTypes();
   const [collapsed, setCollapsed] = useState(false);
@@ -97,6 +103,10 @@ export function ShiftTypeLibrary() {
     });
     return () => draggable.destroy();
   }, [shiftTypes]);
+
+  const handleClick = onShiftTypeClick
+    ? (st: ShiftType, e: React.MouseEvent) => onShiftTypeClick(st.id, e)
+    : undefined;
 
   const active = shiftTypes.filter((st) => st.is_active);
   const regularTypes = active.filter((st) => st.fixed_slots);
@@ -140,7 +150,7 @@ export function ShiftTypeLibrary() {
                 <div className="shift-lib-group">
                   <span className="shift-lib-group-label">Turnos Regulares</span>
                   <div className="shift-lib-cards">
-                    {regularTypes.map((st) => <ShiftCard key={st.id} st={st} />)}
+                    {regularTypes.map((st) => <ShiftCard key={st.id} st={st} onClick={handleClick} />)}
                   </div>
                 </div>
               )}
@@ -148,7 +158,7 @@ export function ShiftTypeLibrary() {
                 <div className="shift-lib-group">
                   <span className="shift-lib-group-label">Ausências &amp; Outros</span>
                   <div className="shift-lib-chip-grid">
-                    {otherTypes.map((st) => <ShiftChip key={st.id} st={st} />)}
+                    {otherTypes.map((st) => <ShiftChip key={st.id} st={st} onClick={handleClick} />)}
                   </div>
                 </div>
               )}

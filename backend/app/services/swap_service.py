@@ -276,6 +276,13 @@ async def decide_swap(
             f"Swap is not awaiting command approval (status: {swap.status.value})"
         )
 
+    # Station scope check: non-admin approvers must belong to the swap's station
+    approver = await db.get(User, approver_id)
+    if approver and approver.role != UserRole.ADMIN:
+        swap_station_id = swap.requester_shift.station_id
+        if approver.station_id != swap_station_id:
+            raise AuthorizationError("Cannot approve swaps from another station")
+
     swap.approved_by = approver_id
     swap.approved_at = datetime.now(timezone.utc)
     station_id = swap.requester_shift.station_id

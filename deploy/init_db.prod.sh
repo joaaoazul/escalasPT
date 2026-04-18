@@ -5,12 +5,17 @@
 # ============================================================
 set -e
 
+# Use the same password as the main user if APP_DB_PASSWORD is not set
+APP_DB_PASSWORD="${APP_DB_PASSWORD:-$POSTGRES_PASSWORD}"
+
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     -- Create limited application user for RLS
     DO \$\$
     BEGIN
         IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'escalaspt_app') THEN
-            CREATE ROLE escalaspt_app WITH LOGIN PASSWORD 'change_me_after_setup';
+            CREATE ROLE escalaspt_app WITH LOGIN PASSWORD '${APP_DB_PASSWORD}';
+        ELSE
+            ALTER ROLE escalaspt_app WITH PASSWORD '${APP_DB_PASSWORD}';
         END IF;
     END
     \$\$;

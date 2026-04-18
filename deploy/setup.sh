@@ -52,6 +52,7 @@ if [[ ! -f "$ENV_FILE" ]]; then
 
     # Generate URL-safe passwords (hex only: 0-9a-f, no special chars)
     PG_PASS=$(openssl rand -hex 24)
+    APP_DB_PASS=$(openssl rand -hex 24)
     REDIS_PASS=$(openssl rand -hex 16)
     JWT_SECRET=$(openssl rand -hex 32)
 
@@ -60,6 +61,7 @@ if [[ ! -f "$ENV_FILE" ]]; then
 
     # Replace placeholders
     sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=${PG_PASS}|" "$ENV_FILE"
+    sed -i "s|^APP_DB_PASSWORD=.*|APP_DB_PASSWORD=${APP_DB_PASS}|" "$ENV_FILE"
     sed -i "s|^REDIS_PASSWORD=.*|REDIS_PASSWORD=${REDIS_PASS}|" "$ENV_FILE"
     sed -i "s|^JWT_SECRET_KEY=.*|JWT_SECRET_KEY=${JWT_SECRET}|" "$ENV_FILE"
     if [[ -n "$TOTP_KEY" ]]; then
@@ -95,7 +97,7 @@ fi
 
 # ── Validate env file ────────────────────────────────────────
 info "Validating .env.prod..."
-for VAR in POSTGRES_PASSWORD REDIS_PASSWORD JWT_SECRET_KEY; do
+for VAR in POSTGRES_PASSWORD APP_DB_PASSWORD REDIS_PASSWORD JWT_SECRET_KEY; do
     VAL=$(grep "^${VAR}=" "$ENV_FILE" | cut -d'=' -f2-)
     if [[ -z "$VAL" || "$VAL" == "GENERATE_ME" ]]; then
         error "${VAR} is not set in .env.prod!"

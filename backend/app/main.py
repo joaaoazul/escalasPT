@@ -4,6 +4,7 @@ EscalasPT — FastAPI application factory.
 
 from __future__ import annotations
 
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -28,9 +29,61 @@ async def lifespan(app: FastAPI):
     setup_logging()
     logger = get_logger(__name__)
     logger.info("Starting %s (env=%s)", settings.APP_NAME, settings.APP_ENV)
+
+    # Start background cleanup task for expired tokens/sessions
+    cleanup_task = asyncio.create_task(_cleanup_expired_tokens_loop())
+
     yield
+
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        pass
     await close_redis()
     logger.info("Shutting down %s", settings.APP_NAME)
+
+
+async def _cleanup_expired_tokens_loop():
+    """Periodically remove expired refresh tokens and stale sessions."""
+    from datetime import datetime, timezone
+    from sqlalchemy import delete
+    from app.database import async_session_factory
+    from app.models.user import ActiveSession, RefreshToken
+
+    logger = get_logger(__name__)
+    INTERVAL = 3600  # every hour
+
+    while True:
+        try:
+            await asyncio.sleep(INTERVAL)
+            async with async_session_factory() as db:
+                now = datetime.now(timezone.utc)
+                # Delete expired refresh tokens
+                result = await db.execute(
+                    delete(RefreshToken).where(RefreshToken.expires_at < now)
+                )
+                expired_tokens = result.rowcount
+                # Delete revoked sessions older than 7 days
+                from datetime import timedelta
+                cutoff = now - timedelta(days=7)
+                result2 = await db.execute(
+                    delete(ActiveSession).where(
+                        ActiveSession.is_revoked == True,
+                        ActiveSession.created_at < cutoff,
+                    )
+                )
+                stale_sessions = result2.rowcount
+                await db.commit()
+                if expired_tokens or stale_sessions:
+                    logger.info(
+                        "Cleanup: removed %d expired tokens, %d stale sessions",
+                        expired_tokens, stale_sessions,
+                    )
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception("Token cleanup task error")
 
 
 def create_app() -> FastAPI:

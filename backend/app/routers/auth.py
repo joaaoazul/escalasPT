@@ -121,7 +121,13 @@ async def refresh_token(
     """
     Refresh the access token using the HttpOnly refresh cookie.
     Implements token rotation — old refresh token is invalidated.
+    Requires X-Requested-With header as CSRF protection.
     """
+    # CSRF protection: custom headers can't be sent by cross-origin forms
+    if not request.headers.get("X-Requested-With"):
+        from app.exceptions import AuthenticationError
+        raise AuthenticationError("Missing X-Requested-With header")
+
     if not refresh_token:
         from app.exceptions import AuthenticationError
         raise AuthenticationError("No refresh token provided")

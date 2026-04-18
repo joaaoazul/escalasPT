@@ -68,11 +68,14 @@ class Settings(BaseSettings):
         if env != "development":
             unsafe = [o for o in origins if "localhost" in o or "127.0.0.1" in o]
             if unsafe:
+                # Strip localhost origins in non-development environments
+                safe_origins = [o for o in origins if "localhost" not in o and "127.0.0.1" not in o]
                 print(
-                    f"WARNING: CORS_ORIGINS contains localhost entries in {env} mode: {unsafe}. "
-                    "Remove them for production.",
+                    f"WARNING: CORS_ORIGINS contained localhost entries in {env} mode: {unsafe}. "
+                    "They have been removed automatically.",
                     file=sys.stderr,
                 )
+                return json.dumps(safe_origins)
         return v
 
     # ── Rate Limiting ─────────────────────────────────────────

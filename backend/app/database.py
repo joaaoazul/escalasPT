@@ -19,8 +19,8 @@ settings = get_settings()
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.APP_DEBUG and settings.APP_ENV == "development",
-    pool_size=20,
-    max_overflow=10,
+    pool_size=5,
+    max_overflow=5,
     pool_pre_ping=True,
     pool_recycle=300,
     connect_args={

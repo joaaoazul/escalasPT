@@ -318,3 +318,15 @@
   text-overflow: ellipsis;
   max-width: 100%;
 }
+
+/* ── Clickable mode (day view) ─────────────────────────── */
+
+.shift-lib-card-clickable,
+.shift-lib-chip-clickable {
+  cursor: pointer;
+}
+
+.shift-lib-card-clickable:active,
+.shift-lib-chip-clickable:active {
+  cursor: pointer;
+}

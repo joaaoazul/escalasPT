@@ -32,6 +32,8 @@ export async function loginWithTotp(
 export async function refreshToken(): Promise<{ access_token: string }> {
   const response = await apiClient.post<{ access_token: string }>(
     '/auth/refresh',
+    null,
+    { headers: { 'X-Requested-With': 'XMLHttpRequest' } },
   );
   return response.data;
 }
