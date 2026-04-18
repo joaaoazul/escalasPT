@@ -6,6 +6,9 @@
   flex-direction: column;
   gap: var(--space-3);
   padding-bottom: calc(68px + var(--space-4));
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .swap-page-toolbar {
@@ -77,6 +80,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  min-width: 0;
+  width: 100%;
 }
 
 /* ── Empty state ─────────────────────────────────────── */
@@ -106,24 +111,7 @@
   flex-direction: column;
 }
 
-.swap-card--pending_target {
-  border-left: 3px solid #F59E0B;
-}
-
-.swap-card--pending_approval {
-  border-left: 3px solid #8B5CF6;
-}
-
-.swap-card--approved {
-  border-left: 3px solid #10B981;
-}
-
-.swap-card--rejected {
-  border-left: 3px solid #EF4444;
-}
-
 .swap-card--cancelled {
-  border-left: 3px solid #6B7280;
   opacity: 0.55;
 }
 
@@ -204,6 +192,8 @@
   border-radius: var(--radius-md);
   background: var(--surface-300);
   border: 1px solid var(--border-subtle);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .swap-chip-dot {
