@@ -188,6 +188,11 @@ export function StationSchedulePage() {
     setSelectedShift(null);
   }, [deleteShift]);
 
+  const handleDeleteGroup = useCallback((groupShifts: Shift[]) => {
+    if (!confirm(`Remover ${groupShifts.length} turno(s) deste serviço?`)) return;
+    groupShifts.forEach((s) => deleteShift.mutate(s.id));
+  }, [deleteShift]);
+
   const handleCloseEditor = useCallback(() => {
     setIsEditorOpen(false);
     setEditingShift(null);
@@ -336,7 +341,9 @@ export function StationSchedulePage() {
                 selectedDate={selectedDay}
                 onDateChange={(d) => { setSelectedDay(d); setCurrentMonth(startOfMonth(d)); }}
                 onShiftClick={handleEventClick}
+                onDeleteGroup={handleDeleteGroup}
                 isLoading={isLoading}
+                canEdit={canEdit}
               />
             </div>
           </div>

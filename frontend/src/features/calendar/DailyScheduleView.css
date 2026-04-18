@@ -156,7 +156,8 @@
   flex-shrink: 0;
 }
 
-.daily-view-slot-grat-tag {
+.daily-view-slot-grat-tag,
+.daily-view-slot-detail-tag {
   font-size: 10px;
   color: var(--text-muted);
   background: var(--surface-300);
@@ -239,6 +240,34 @@
   background: var(--surface-300);
   padding: 1px 6px;
   border-radius: var(--radius-sm);
+}
+
+/* ── Slot location & actions ─────────────────────────────── */
+
+.daily-view-slot-location {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.daily-view-slot-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-1) var(--space-3) var(--space-1);
+}
+
+.daily-view-btn-remove {
+  color: var(--color-error-400) !important;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.daily-view-btn-remove:hover {
+  background: var(--color-error-400) !important;
+  color: #fff !important;
 }
 
 /* ── Absences (inline chips) ────────────────────────────── */
@@ -354,83 +383,6 @@
   padding: 1px 7px;
   border-radius: var(--radius-full);
   font-variant-numeric: tabular-nums;
-}
-
-/* ── Detail cards (GRAT, INST) ─────────────────────────── */
-
-.daily-view-cards {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.daily-view-card {
-  background: var(--surface-200);
-  border-radius: var(--radius-lg);
-  border-left: 3px solid var(--color-primary-500);
-  padding: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.daily-view-card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.daily-view-card-code {
-  font-weight: var(--weight-bold);
-  font-size: var(--font-sm);
-  text-transform: uppercase;
-}
-
-.daily-view-card-type {
-  font-size: var(--font-xs);
-  color: var(--text-primary);
-  background: var(--surface-300);
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  font-weight: var(--weight-medium);
-}
-
-.daily-view-card-range {
-  font-size: var(--font-xs);
-  color: var(--text-muted);
-  margin-left: auto;
-  font-variant-numeric: tabular-nums;
-}
-
-.daily-view-card-location {
-  font-size: var(--font-xs);
-  color: var(--text-secondary);
-}
-
-.daily-view-card-members {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.daily-view-card-member {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 4px 8px;
-  border-radius: var(--radius-md);
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-  transition: background-color 0.15s ease;
-}
-
-.daily-view-card-member:hover {
-  background: var(--surface-300);
 }
 
 /* ── Mobile ────────────────────────────────────────────── */
