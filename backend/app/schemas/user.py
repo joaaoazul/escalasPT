@@ -28,8 +28,16 @@ class UserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     full_name: str = Field(..., min_length=2, max_length=200)
-    nip: str = Field(..., min_length=3, max_length=20)
-    numero_ordem: Optional[str] = Field(None, min_length=3, max_length=10)
+    nip: str = Field(
+        ..., min_length=7, max_length=7,
+        pattern=r"^\d{7}$",
+        description="NIM — Número de Identificação Militar (7 dígitos)",
+    )
+    numero_ordem: Optional[str] = Field(
+        None, min_length=1, max_length=4,
+        pattern=r"^\d{1,4}$",
+        description="Número de ordem do militar (1-4 dígitos, único por Comando Territorial)",
+    )
     phone: Optional[str] = Field(None, max_length=20)
 
     _sanitize_full_name = field_validator("full_name", mode="before")(_sanitize_text)
@@ -44,7 +52,11 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     full_name: Optional[str] = Field(None, min_length=2, max_length=200)
-    numero_ordem: Optional[str] = Field(None, min_length=3, max_length=10)
+    numero_ordem: Optional[str] = Field(
+        None, min_length=1, max_length=4,
+        pattern=r"^\d{1,4}$",
+        description="Número de ordem do militar (1-4 dígitos, único por Comando Territorial)",
+    )
     phone: Optional[str] = Field(None, max_length=20)
     role: Optional[UserRole] = None
     station_id: Optional[uuid.UUID] = None

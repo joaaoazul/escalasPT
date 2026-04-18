@@ -59,6 +59,7 @@ async def create_user(
         password_hash=hash_password(data.password),
         full_name=data.full_name,
         nip=data.nip,
+        numero_ordem=data.numero_ordem,
         role=data.role,
         station_id=data.station_id,
         phone=data.phone,

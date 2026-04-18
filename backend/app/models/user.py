@@ -42,12 +42,12 @@ class User(UUIDMixin, TimestampMixin, Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(200), nullable=False)
     nip: Mapped[str] = mapped_column(
-        String(20), unique=True, nullable=False, index=True,
-        comment="Número de Identificação Pessoal"
+        String(7), unique=True, nullable=False, index=True,
+        comment="NIM — Número de Identificação Militar (7 dígitos, único nacional)"
     )
     numero_ordem: Mapped[str | None] = mapped_column(
-        String(10), unique=True, nullable=True, index=True,
-        comment="Número de ordem do militar (3-4 dígitos)"
+        String(4), unique=True, nullable=True, index=True,
+        comment="Número de ordem do militar (1-4 dígitos, único por Comando Territorial)"
     )
     role: Mapped[str] = mapped_column(
         Enum(UserRole, name="user_role", create_constraint=True, values_callable=lambda obj: [e.value for e in obj]),

@@ -60,7 +60,7 @@ async def seed():
             email="admin@escalaspt.pt",
             password_hash=hash_password(SEED_ADMIN_PASSWORD),
             full_name="Administrador do Sistema",
-            nip="ADM001",
+            nip="0000001",
             role=UserRole.ADMIN,
             station_id=None,
         )
@@ -74,7 +74,8 @@ async def seed():
             email="silva@escalaspt.pt",
             password_hash=hash_password(SEED_CMDT_PASSWORD),
             full_name="Sargento-Ajudante António Silva",
-            nip="GNR10001",
+            nip="1000001",
+            numero_ordem="1",
             role=UserRole.COMANDANTE,
             station_id=station_id,
         )
@@ -88,7 +89,8 @@ async def seed():
             email="lima@escalaspt.pt",
             password_hash=hash_password(SEED_DEFAULT_PASSWORD),
             full_name="Guarda Ana Lima",
-            nip="GNR20001",
+            nip="2000001",
+            numero_ordem="2",
             role=UserRole.SECRETARIA,
             station_id=station_id,
             # default_shift_type_id set after shift types are created
@@ -99,10 +101,10 @@ async def seed():
         # ── 2 Cabos — NIC (Inquéritos) ───────────────────
         cabos_inq_users = []
         cabos_inq = [
-            ("cabo.ferreira", "ferreira@escalaspt.pt", "Cabo Manuel Ferreira",  "GNR30001"),
-            ("cabo.oliveira", "oliveira@escalaspt.pt", "Cabo Ricardo Oliveira", "GNR30002"),
+            ("cabo.ferreira", "ferreira@escalaspt.pt", "Cabo Manuel Ferreira",  "3000001", "3"),
+            ("cabo.oliveira", "oliveira@escalaspt.pt", "Cabo Ricardo Oliveira", "3000002", "4"),
         ]
-        for username, email, full_name, nip in cabos_inq:
+        for username, email, full_name, nip, n_ordem in cabos_inq:
             user = User(
                 id=uuid.uuid4(),
                 username=username,
@@ -110,6 +112,7 @@ async def seed():
                 password_hash=hash_password(SEED_DEFAULT_PASSWORD),
                 full_name=full_name,
                 nip=nip,
+                numero_ordem=n_ordem,
                 role=UserRole.MILITAR,
                 station_id=station_id,
             )
@@ -119,24 +122,24 @@ async def seed():
 
         # ── 16 Guardas — Patrulha + Atendimento ──────────
         guardas = [
-            ("guarda.costa",      "costa@escalaspt.pt",      "Guarda João Costa",         "GNR40001"),
-            ("guarda.santos",     "santos@escalaspt.pt",     "Guarda Pedro Santos",       "GNR40002"),
-            ("guarda.pereira",    "pereira@escalaspt.pt",    "Guarda Carlos Pereira",     "GNR40003"),
-            ("guarda.rodrigues",  "rodrigues@escalaspt.pt",  "Guarda Tiago Rodrigues",    "GNR40004"),
-            ("guarda.almeida",    "almeida@escalaspt.pt",    "Guarda Bruno Almeida",      "GNR40005"),
-            ("guarda.nunes",      "nunes@escalaspt.pt",      "Guarda Rui Nunes",          "GNR40006"),
-            ("guarda.marques",    "marques@escalaspt.pt",    "Guarda André Marques",      "GNR40007"),
-            ("guarda.sousa",      "sousa@escalaspt.pt",      "Guarda Hugo Sousa",         "GNR40008"),
-            ("guarda.mendes",     "mendes@escalaspt.pt",     "Guarda Diogo Mendes",       "GNR40009"),
-            ("guarda.lopes",      "lopes@escalaspt.pt",      "Guarda Marco Lopes",        "GNR40010"),
-            ("guarda.ribeiro",    "ribeiro@escalaspt.pt",    "Guarda Sérgio Ribeiro",     "GNR40011"),
-            ("guarda.fernandes",  "fernandes@escalaspt.pt",  "Guarda Paulo Fernandes",    "GNR40012"),
-            ("guarda.carvalho",   "carvalho@escalaspt.pt",   "Guarda Daniel Carvalho",    "GNR40013"),
-            ("guarda.gomes",      "gomes@escalaspt.pt",      "Guarda Francisco Gomes",    "GNR40014"),
-            ("guarda.martins",    "martins@escalaspt.pt",    "Guarda Luís Martins",       "GNR40015"),
-            ("guarda.dias",       "dias@escalaspt.pt",       "Guarda Miguel Dias",        "GNR40016"),
+            ("guarda.costa",      "costa@escalaspt.pt",      "Guarda João Costa",         "4000001", "5"),
+            ("guarda.santos",     "santos@escalaspt.pt",     "Guarda Pedro Santos",       "4000002", "6"),
+            ("guarda.pereira",    "pereira@escalaspt.pt",    "Guarda Carlos Pereira",     "4000003", "7"),
+            ("guarda.rodrigues",  "rodrigues@escalaspt.pt",  "Guarda Tiago Rodrigues",    "4000004", "8"),
+            ("guarda.almeida",    "almeida@escalaspt.pt",    "Guarda Bruno Almeida",      "4000005", "9"),
+            ("guarda.nunes",      "nunes@escalaspt.pt",      "Guarda Rui Nunes",          "4000006", "10"),
+            ("guarda.marques",    "marques@escalaspt.pt",    "Guarda André Marques",      "4000007", "11"),
+            ("guarda.sousa",      "sousa@escalaspt.pt",      "Guarda Hugo Sousa",         "4000008", "12"),
+            ("guarda.mendes",     "mendes@escalaspt.pt",     "Guarda Diogo Mendes",       "4000009", "13"),
+            ("guarda.lopes",      "lopes@escalaspt.pt",      "Guarda Marco Lopes",        "4000010", "14"),
+            ("guarda.ribeiro",    "ribeiro@escalaspt.pt",    "Guarda Sérgio Ribeiro",     "4000011", "15"),
+            ("guarda.fernandes",  "fernandes@escalaspt.pt",  "Guarda Paulo Fernandes",    "4000012", "16"),
+            ("guarda.carvalho",   "carvalho@escalaspt.pt",   "Guarda Daniel Carvalho",    "4000013", "17"),
+            ("guarda.gomes",      "gomes@escalaspt.pt",      "Guarda Francisco Gomes",    "4000014", "18"),
+            ("guarda.martins",    "martins@escalaspt.pt",    "Guarda Luís Martins",       "4000015", "19"),
+            ("guarda.dias",       "dias@escalaspt.pt",       "Guarda Miguel Dias",        "4000016", "20"),
         ]
-        for username, email, full_name, nip in guardas:
+        for username, email, full_name, nip, n_ordem in guardas:
             user = User(
                 id=uuid.uuid4(),
                 username=username,
@@ -144,6 +147,7 @@ async def seed():
                 password_hash=hash_password(SEED_DEFAULT_PASSWORD),
                 full_name=full_name,
                 nip=nip,
+                numero_ordem=n_ordem,
                 role=UserRole.MILITAR,
                 station_id=station_id,
             )
@@ -374,7 +378,7 @@ async def seed():
         print("\n" + "=" * 60)
         print("  SEED DATA CREATED SUCCESSFULLY")
         print("=" * 60)
-        print(f"\n  Station: {station.name} ({station.code})")
+        print(f"\n  Station: {station.name} ({station.code})") 
         print(f"\n  Personnel ({1 + 1 + 2 + 16} = 20):")
         print(f"    Admin:       admin              / {SEED_ADMIN_PASSWORD}")
         print(f"    Comandante:  cmdt.silva         / {SEED_CMDT_PASSWORD}  (Sargento-Ajudante)")
