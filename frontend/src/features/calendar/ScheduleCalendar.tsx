@@ -236,6 +236,7 @@ export function ScheduleCalendar({
         nowIndicator
         dayMaxEvents={4}
         moreLinkText={(n) => `+${n} mais`}
+        eventDisplay="block"
         eventContent={(arg) => {
           const shift = arg.event.extendedProps['shift'] as Shift | undefined;
           const timeText = arg.timeText;
