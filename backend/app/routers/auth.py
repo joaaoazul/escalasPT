@@ -4,7 +4,7 @@ Auth router — login, refresh, logout, TOTP.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Cookie, Depends, Request, Response
+from fastapi import APIRouter, Body, Cookie, Depends, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -42,8 +42,8 @@ def _get_client_ip(request: Request) -> str:
 @router.post("/login", response_model=LoginResponse)
 @limiter.limit(settings.RATE_LIMIT_LOGIN)
 async def login(
-    data: LoginRequest,
-    request: Request,
+    data: LoginRequest = Body(...),
+    request: Request = None,
     response: Response,
     db: AsyncSession = Depends(get_db),
 ):
@@ -82,8 +82,8 @@ async def login(
 @router.post("/login/totp", response_model=LoginResponse)
 @limiter.limit(settings.RATE_LIMIT_LOGIN)
 async def login_with_totp(
-    data: TOTPLoginRequest,
-    request: Request,
+    data: TOTPLoginRequest = Body(...),
+    request: Request = None,
     response: Response,
     db: AsyncSession = Depends(get_db),
 ):
