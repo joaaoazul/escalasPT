@@ -291,8 +291,21 @@
   font-style: italic;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .sgdp-panel {
     width: 100vw;
+  }
+
+  .sgdp-header {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .sgdp-body {
+    padding: var(--space-4);
+  }
+
+  .sgdp-footer {
+    padding: var(--space-3) var(--space-4);
   }
 }

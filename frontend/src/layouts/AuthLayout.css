@@ -174,3 +174,46 @@
 .totp-back:hover {
   color: var(--text-secondary);
 }
+
+/* ── Mobile ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .auth-layout {
+    padding: var(--space-3);
+    justify-content: flex-start;
+    padding-top: 10vh;
+  }
+
+  .auth-container {
+    padding: var(--space-5) var(--space-4);
+    border-radius: var(--radius-lg);
+  }
+
+  .auth-header {
+    margin-bottom: var(--space-5);
+  }
+
+  .auth-logo {
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--space-3);
+  }
+
+  .auth-title {
+    font-size: var(--font-xl);
+  }
+
+  .auth-form {
+    gap: var(--space-4);
+  }
+
+  .totp-input {
+    font-size: var(--font-xl);
+    letter-spacing: 0.2em;
+  }
+
+  .auth-footer {
+    position: relative;
+    bottom: auto;
+    margin-top: var(--space-6);
+  }
+}
