@@ -321,29 +321,19 @@ export function SwapsPage() {
   };
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <div className="page-header-left">
-          <ArrowLeftRight size={22} />
-          <div>
-            <h1 className="page-title">Trocas de Turno</h1>
-            <p className="page-subtitle">
-              {isCommand
-                ? 'Gerir pedidos de troca do posto'
-                : 'Os seus pedidos de troca'}
-            </p>
-          </div>
-        </div>
-        {canExportReport && (
+    <div className="swaps-page">
+      {/* Compact header — only report button for commanders */}
+      {canExportReport && (
+        <div className="swap-page-toolbar">
           <button
-            className="btn btn-ghost btn-sm swap-download-btn"
+            className="swap-action-btn swap-action-download"
             disabled={exportingReport}
             onClick={handleExportReport}
           >
             <FileText size={14} /> {exportingReport ? 'A gerar...' : 'Relatório Semanal'}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Filter bar */}
       <div className="swap-filter-bar">

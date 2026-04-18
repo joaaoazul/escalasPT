@@ -1,11 +1,22 @@
 /* SwapsPage styles — mobile-first */
 
+/* ── Page layout ──────────────────────────────────────── */
+.swaps-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: calc(68px + var(--space-4));
+}
+
+.swap-page-toolbar {
+  padding: 0 var(--space-3);
+}
+
 /* ── Filter bar ───────────────────────────────────────── */
 .swap-filter-bar {
   display: flex;
-  gap: var(--space-2);
+  gap: 6px;
   padding: 0 var(--space-3);
-  margin-bottom: var(--space-3);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -18,13 +29,13 @@
 .swap-filter-pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 4px;
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--border-subtle);
   background: var(--surface-200);
   color: var(--text-secondary);
-  font-size: var(--font-xs);
+  font-size: 12px;
   font-weight: var(--weight-medium);
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast),
@@ -49,7 +60,7 @@
   border-radius: 999px;
   padding: 1px 6px;
   font-size: 10px;
-  min-width: 18px;
+  min-width: 16px;
   text-align: center;
 }
 
@@ -59,7 +70,7 @@
 
 /* ── List area ───────────────────────────────────────── */
 .swap-list-area {
-  padding: 0 var(--space-3) calc(var(--space-6) + 68px);
+  padding: 0 var(--space-3);
 }
 
 .swap-card-list {
@@ -75,9 +86,10 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  padding: var(--space-12);
+  padding: var(--space-12) var(--space-4);
   color: var(--text-tertiary);
   font-size: var(--font-sm);
+  text-align: center;
 }
 
 .swap-empty--error {
@@ -112,18 +124,7 @@
 
 .swap-card--cancelled {
   border-left: 3px solid #6B7280;
-  opacity: 0.6;
-}
-
-/* Pulse animation for cards with pending actions */
-.swap-card--actionable.swap-card--pending_target,
-.swap-card--actionable.swap-card--pending_approval {
-  animation: swapPulse 3s ease-in-out infinite;
-}
-
-@keyframes swapPulse {
-  0%, 100% { box-shadow: 0 0 0 0 transparent; }
-  50% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-500) 20%, transparent); }
+  opacity: 0.55;
 }
 
 /* ── Card header (status + date) ───────────────────── */
@@ -137,7 +138,7 @@
 .swap-status-badge {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 4px;
   padding: 3px 10px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--sc-color) 15%, transparent);
@@ -148,25 +149,23 @@
 }
 
 .swap-card-meta {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-tertiary);
   white-space: nowrap;
 }
 
-/* ── Shifts comparison ─────────────────────────────── */
+/* ── Shifts comparison — VERTICAL on mobile ────────── */
 .swap-card-shifts {
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-3);
 }
 
 .swap-shift-side {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
+  gap: 4px;
 }
 
 .swap-shift-label {
@@ -181,18 +180,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  padding-top: 14px;
+  padding: 2px 0;
 }
 
 .swap-arrow-icon {
   color: var(--text-tertiary);
+  opacity: 0.5;
 }
 
 .swap-shift-unknown {
   font-size: var(--font-xs);
   color: var(--text-tertiary);
   font-style: italic;
+  padding: 6px 10px;
 }
 
 /* Shift chip */
@@ -200,11 +200,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: var(--radius-md);
   background: var(--surface-300);
   border: 1px solid var(--border-subtle);
-  min-width: 0;
 }
 
 .swap-chip-dot {
@@ -222,11 +221,11 @@
 }
 
 .swap-chip-meta {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   min-width: 0;
 }
 
@@ -241,7 +240,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
+  gap: 6px;
   padding: 10px 16px;
   border-radius: var(--radius-md);
   font-size: var(--font-sm);
@@ -269,8 +268,8 @@
 
 .swap-action-reject {
   background: rgba(239, 68, 68, 0.12);
-  color: var(--color-danger-400);
-  border-color: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
 .swap-action-reject:hover:not(:disabled) {
@@ -302,7 +301,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
+  gap: 4px;
   padding: var(--space-2) var(--space-3);
   font-size: 11px;
   color: var(--text-tertiary);
@@ -340,23 +339,28 @@
   font-style: italic;
 }
 
-/* ── Desktop enhancements ──────────────────────────── */
-
-/* Header report button */
-.swap-download-btn {
-  color: var(--color-primary-400) !important;
-  font-size: var(--font-xs);
-  gap: var(--space-1);
-}
-
+/* ── Desktop (769px+) ──────────────────────────────── */
 @media (min-width: 769px) {
+  .swaps-page {
+    padding-bottom: var(--space-6);
+  }
+
+  .swap-page-toolbar {
+    padding: 0 var(--space-6);
+  }
+
+  .swap-page-toolbar .swap-action-btn {
+    flex: none;
+    max-width: 200px;
+  }
+
   .swap-filter-bar {
     padding: 0 var(--space-6);
     flex-wrap: wrap;
   }
 
   .swap-list-area {
-    padding: 0 var(--space-6) var(--space-6);
+    padding: 0 var(--space-6);
   }
 
   .swap-card-header {
@@ -364,7 +368,18 @@
   }
 
   .swap-card-shifts {
+    flex-direction: row;
+    align-items: stretch;
     padding: var(--space-4);
+  }
+
+  .swap-shift-side {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .swap-arrow-wrap {
+    padding-top: 16px;
   }
 
   .swap-actions {
