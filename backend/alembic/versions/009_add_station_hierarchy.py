@@ -40,6 +40,10 @@ def upgrade() -> None:
     op.drop_index("ix_users_numero_ordem", table_name="users")
     op.create_index("ix_users_numero_ordem", "users", ["numero_ordem"], unique=False)
 
+    # Truncate existing NIP/numero_ordem values that exceed new limits
+    op.execute("UPDATE users SET nip = LEFT(nip, 7) WHERE LENGTH(nip) > 7")
+    op.execute("UPDATE users SET numero_ordem = LEFT(numero_ordem, 4) WHERE LENGTH(numero_ordem) > 4")
+
     # Shrink nip column to 7 chars and numero_ordem to 4 chars
     op.alter_column("users", "nip",
         type_=sa.String(7),
