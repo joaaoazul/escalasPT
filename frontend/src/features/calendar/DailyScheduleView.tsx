@@ -51,24 +51,24 @@ export function DailyScheduleView({
       .sort((a, b) => a.start_datetime.localeCompare(b.start_datetime));
   }, [shifts, dateStr]);
 
-  // Absence codes
-  const absenceCodes = ['CONV', 'DIL', 'F', 'FER', 'LIC', 'MF', 'INST', 'T'];
+  // Codes that appear as inline chips (not in the main service table)
+  const inlineCodes = ['CONV', 'DIL', 'F', 'FER', 'LIC', 'MF', 'INST', 'T', 'GRAT'];
 
-  // Group ALL shifts by shift type (including GRAT, absences)
-  const { serviceSlots, absenceSlots } = useMemo(() => {
+  // Group ALL shifts by shift type
+  const { serviceSlots, inlineSlots } = useMemo(() => {
     const slotMap = new Map<string, TimeSlotGroup>();
 
     dayShifts.forEach((s) => {
       const code = (s.shift_type_code ?? '').toUpperCase();
-      const isAbsence = absenceCodes.includes(code);
+      const isInline = inlineCodes.includes(code);
       const key = s.shift_type_id ?? 'other';
 
       if (!slotMap.has(key)) {
         slotMap.set(key, {
           label: s.shift_type_code ?? s.shift_type_name ?? 'Turno',
-          range: isAbsence ? 'Dia inteiro' : `${formatTime(s.start_datetime)} — ${formatTime(s.end_datetime)}`,
+          range: isInline ? '' : `${formatTime(s.start_datetime)} — ${formatTime(s.end_datetime)}`,
           shifts: [],
-          isAbsence,
+          isAbsence: isInline,
         });
       }
       slotMap.get(key)!.shifts.push(s);
@@ -82,11 +82,11 @@ export function DailyScheduleView({
         const bTime = b.shifts[0]?.start_datetime ?? '';
         return aTime.localeCompare(bTime);
       });
-    const absence = all
+    const inline = all
       .filter(([, g]) => g.isAbsence)
       .sort(([, a], [, b]) => a.label.localeCompare(b.label));
 
-    return { serviceSlots: service, absenceSlots: absence };
+    return { serviceSlots: service, inlineSlots: inline };
   }, [dayShifts]);
 
   if (isLoading) {
@@ -214,12 +214,12 @@ export function DailyScheduleView({
             </div>
           )}
 
-          {/* Absences — inline chips */}
-          {absenceSlots.length > 0 && (
+          {/* Gratificados, Ausências & Outros — inline chips */}
+          {inlineSlots.length > 0 && (
             <div className="daily-view-section">
-              <div className="daily-view-section-title">Ausências &amp; Outros</div>
+              <div className="daily-view-section-title">Gratificados, Ausências &amp; Outros</div>
               <div className="daily-view-absence-inline">
-                {absenceSlots.map(([key, group]) => (
+                {inlineSlots.map(([key, group]) => (
                   <div key={key} className="daily-view-absence-row">
                     <span
                       className="daily-view-absence-code-inline"
@@ -227,6 +227,12 @@ export function DailyScheduleView({
                     >
                       {group.label}
                     </span>
+                    {/* Show grat_type summary if present */}
+                    {group.shifts.some((s) => s.grat_type) && (
+                      <span className="daily-view-inline-tag">
+                        {[...new Set(group.shifts.map((s) => s.grat_type).filter(Boolean))].join(', ')}
+                      </span>
+                    )}
                     <div className="daily-view-absence-chips">
                       {group.shifts.map((s) => (
                         <button
@@ -237,6 +243,8 @@ export function DailyScheduleView({
                         >
                           <span className="daily-view-chip-num">{s.user_numero_ordem ?? '—'}</span>
                           <span className="daily-view-chip-name">{s.user_name ?? '?'}</span>
+                          {s.location && <span className="daily-view-chip-loc">{s.location}</span>}
+                          {s.grat_type && <span className="daily-view-chip-grat">{s.grat_type}</span>}
                         </button>
                       ))}
                     </div>
@@ -261,7 +269,7 @@ export function DailyScheduleView({
             <div className="daily-view-summary-item">
               <span>Ausências</span>
               <span className="daily-view-summary-val">
-                {absenceSlots.reduce((n, [, g]) => n + g.shifts.length, 0)}
+                {inlineSlots.reduce((n, [, g]) => n + g.shifts.length, 0)}
               </span>
             </div>
           </div>

@@ -309,6 +309,25 @@
   font-weight: var(--weight-medium);
 }
 
+.daily-view-chip-loc,
+.daily-view-chip-grat {
+  font-size: 9px;
+  color: var(--text-muted);
+  background: var(--surface-300);
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+}
+
+.daily-view-inline-tag {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--surface-300);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* ── Summary bar ───────────────────────────────────────── */
 
 .daily-view-summary {
