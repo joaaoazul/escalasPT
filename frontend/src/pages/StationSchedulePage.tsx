@@ -4,7 +4,7 @@
  * Includes a drag-from-sidebar shift library for comandante / adjunto.
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { startOfMonth, format, getMonth, getYear } from 'date-fns';
 import { LayoutList, CalendarDays, Plus, Calendar as CalendarIcon, AlertTriangle, ClipboardList, Download, Maximize2, Minimize2, CalendarRange } from 'lucide-react';
 import { useStationSchedule } from '../hooks/useStationSchedule';
@@ -189,9 +189,22 @@ export function StationSchedulePage() {
   }, [deleteShift]);
 
   const handleDeleteGroup = useCallback((groupShifts: Shift[]) => {
-    if (!confirm(`Remover ${groupShifts.length} turno(s) deste serviço?`)) return;
     groupShifts.forEach((s) => deleteShift.mutate(s.id));
+    setSelectedShift(null);
   }, [deleteShift]);
+
+  // Compute sibling shifts for the selected shift (same service group)
+  const siblingShifts = useMemo(() => {
+    if (!selectedShift || !shifts.length) return [];
+    return shifts.filter((s) =>
+      s.shift_type_id === selectedShift.shift_type_id &&
+      s.date === selectedShift.date &&
+      s.start_datetime === selectedShift.start_datetime &&
+      s.end_datetime === selectedShift.end_datetime &&
+      (s.grat_type ?? '') === (selectedShift.grat_type ?? '') &&
+      (s.location ?? '') === (selectedShift.location ?? '')
+    );
+  }, [selectedShift, shifts]);
 
   const handleCloseEditor = useCallback(() => {
     setIsEditorOpen(false);
@@ -341,9 +354,7 @@ export function StationSchedulePage() {
                 selectedDate={selectedDay}
                 onDateChange={(d) => { setSelectedDay(d); setCurrentMonth(startOfMonth(d)); }}
                 onShiftClick={handleEventClick}
-                onDeleteGroup={handleDeleteGroup}
                 isLoading={isLoading}
-                canEdit={canEdit}
               />
             </div>
           </div>
@@ -409,6 +420,8 @@ export function StationSchedulePage() {
         canEdit={canEdit}
         onEdit={handleEditShift}
         onDelete={handleDeleteShift}
+        siblingShifts={siblingShifts}
+        onDeleteGroup={handleDeleteGroup}
       />
 
       {selectedGroupShifts && (

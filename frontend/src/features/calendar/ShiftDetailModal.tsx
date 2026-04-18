@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { X, Clock, User, MapPin, FileText, Tag, CalendarDays, ArrowLeftRight, AlertTriangle, Trash2 } from 'lucide-react';
+import { X, Clock, User, Users, MapPin, FileText, Tag, CalendarDays, ArrowLeftRight, AlertTriangle, Trash2 } from 'lucide-react';
 import type { Shift } from '../../types';
 import { formatDate, formatTime, formatStatus, getStatusBadgeClass } from '../../utils/helpers';
 import { SwapRequestModal } from '../swaps/SwapRequestModal';
@@ -15,6 +15,10 @@ interface ShiftDetailModalProps {
   canEdit?: boolean;
   onEdit?: (shift: Shift) => void;
   onDelete?: (shift: Shift) => void;
+  /** Sibling shifts in the same service group (same type+date+time+grat_type+location) */
+  siblingShifts?: Shift[];
+  /** Delete all shifts in the group */
+  onDeleteGroup?: (shifts: Shift[]) => void;
   /** When set, shows the "Pedir Troca" button for this military's own published shifts */
   canRequestSwap?: boolean;
 }
@@ -25,20 +29,33 @@ export function ShiftDetailModal({
   canEdit = false,
   onEdit,
   onDelete,
+  siblingShifts = [],
+  onDeleteGroup,
   canRequestSwap = false,
 }: ShiftDetailModalProps) {
   const [showSwapModal, setShowSwapModal] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<'single' | 'group' | false>(false);
   if (!shift) return null;
 
   const isPublished = shift.status === 'published';
+  const hasGroup = siblingShifts.length > 1;
+  const allShiftsInGroup = siblingShifts.length > 0 ? siblingShifts : [shift];
 
   const handleDeleteClick = () => {
-    if (confirmDelete) {
+    if (confirmDelete === 'single') {
       onDelete?.(shift);
       setConfirmDelete(false);
     } else {
-      setConfirmDelete(true);
+      setConfirmDelete('single');
+    }
+  };
+
+  const handleDeleteGroupClick = () => {
+    if (confirmDelete === 'group') {
+      onDeleteGroup?.(allShiftsInGroup);
+      setConfirmDelete(false);
+    } else {
+      setConfirmDelete('group');
     }
   };
 
@@ -150,16 +167,49 @@ export function ShiftDetailModal({
           )}
         </div>
 
+        {/* Group members */}
+        {hasGroup && (
+          <div className="sdp-group">
+            <div className="sdp-group-header">
+              <Users size={14} />
+              <span>Militares neste serviço ({allShiftsInGroup.length})</span>
+            </div>
+            <div className="sdp-group-list">
+              {allShiftsInGroup.map((s) => (
+                <div
+                  key={s.id}
+                  className={`sdp-group-member${s.id === shift.id ? ' sdp-group-member--active' : ''}`}
+                >
+                  <span
+                    className="sdp-type-dot"
+                    style={{ backgroundColor: s.shift_type_color ?? 'var(--color-primary-500)' }}
+                  />
+                  <span className="sdp-group-member-num">{s.user_numero_ordem ?? '—'}</span>
+                  <span className="sdp-group-member-name">{s.user_name ?? '?'}</span>
+                  {s.id === shift.id && <span className="sdp-group-member-you">selecionado</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Delete Confirmation Banner */}
         {confirmDelete && (
           <div className="sdp-delete-confirm">
             <div className="sdp-delete-confirm-header">
               <AlertTriangle size={18} />
-              <strong>{isPublished ? 'Cancelar turno publicado' : 'Remover rascunho'}</strong>
+              <strong>
+                {confirmDelete === 'group'
+                  ? `Remover ${allShiftsInGroup.length} turno(s) deste serviço`
+                  : isPublished ? 'Cancelar turno publicado' : 'Remover rascunho'}
+              </strong>
             </div>
             <div className="sdp-delete-confirm-details">
-              {shift.user_name && (
+              {confirmDelete === 'single' && shift.user_name && (
                 <span><User size={14} /> {shift.user_name}</span>
+              )}
+              {confirmDelete === 'group' && (
+                <span><Users size={14} /> {allShiftsInGroup.map(s => s.user_name).filter(Boolean).join(', ')}</span>
               )}
               <span><Tag size={14} /> {shift.shift_type_name} ({shift.shift_type_code})</span>
               <span><CalendarDays size={14} /> {formatDate(shift.date, "dd/MM/yyyy")}</span>
@@ -167,7 +217,7 @@ export function ShiftDetailModal({
             </div>
             {isPublished && (
               <p className="sdp-delete-warning">
-                O militar será notificado do cancelamento.
+                {confirmDelete === 'group' ? 'Os militares serão notificados do cancelamento.' : 'O militar será notificado do cancelamento.'}
               </p>
             )}
           </div>
@@ -176,7 +226,7 @@ export function ShiftDetailModal({
         {/* Footer */}
         <div className="sdp-footer">
           {canEdit && !confirmDelete && (
-            <div style={{ display: 'flex', gap: 'var(--space-2)', marginRight: 'auto' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', marginRight: 'auto', flexWrap: 'wrap' }}>
               <button
                 className="btn btn-secondary"
                 onClick={() => onEdit?.(shift)}
@@ -190,6 +240,15 @@ export function ShiftDetailModal({
                 <Trash2 size={15} />
                 Remover
               </button>
+              {hasGroup && onDeleteGroup && (
+                <button
+                  className="btn btn-ghost sdp-btn-remove-group"
+                  onClick={handleDeleteGroupClick}
+                >
+                  <Trash2 size={15} />
+                  Remover serviço ({allShiftsInGroup.length})
+                </button>
+              )}
             </div>
           )}
           {canEdit && confirmDelete && (
@@ -202,10 +261,12 @@ export function ShiftDetailModal({
               </button>
               <button
                 className="btn btn-danger"
-                onClick={handleDeleteClick}
+                onClick={confirmDelete === 'group' ? handleDeleteGroupClick : handleDeleteClick}
               >
                 <Trash2 size={15} />
-                {isPublished ? 'Confirmar Cancelamento' : 'Confirmar Remoção'}
+                {confirmDelete === 'group'
+                  ? `Confirmar (${allShiftsInGroup.length} turnos)`
+                  : isPublished ? 'Confirmar Cancelamento' : 'Confirmar Remoção'}
               </button>
             </div>
           )}

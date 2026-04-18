@@ -6,7 +6,7 @@
 import { useState, useMemo } from 'react';
 import { format, addDays, subDays, isToday, isSameDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Calendar, Trash2, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Calendar, MapPin } from 'lucide-react';
 import type { Shift } from '../../types';
 import { formatTime } from '../../utils/helpers';
 import './DailyScheduleView.css';
@@ -16,9 +16,7 @@ interface DailyScheduleViewProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   onShiftClick: (shift: Shift) => void;
-  onDeleteGroup?: (shifts: Shift[]) => void;
   isLoading: boolean;
-  canEdit?: boolean;
 }
 
 interface TimeSlotGroup {
@@ -37,9 +35,7 @@ export function DailyScheduleView({
   selectedDate,
   onDateChange,
   onShiftClick,
-  onDeleteGroup,
   isLoading,
-  canEdit = false,
 }: DailyScheduleViewProps) {
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
   const [collapsedSlots, setCollapsedSlots] = useState<Set<string>>(new Set());
@@ -206,7 +202,6 @@ export function DailyScheduleView({
                 {serviceSlots.map(([key, slot]) => {
                   const isCollapsed = collapsedSlots.has(key);
                   const slotColor = slot.color ?? slot.shifts[0]?.shift_type_color ?? 'var(--color-primary-400)';
-                  const allDraft = slot.shifts.every((s) => s.status === 'draft');
                   return (
                     <div key={key} className="daily-view-slot">
                       <button
@@ -257,19 +252,6 @@ export function DailyScheduleView({
                               </button>
                             ))}
                           </div>
-                          {canEdit && onDeleteGroup && (
-                            <div className="daily-view-slot-actions">
-                              <button
-                                className="btn btn-ghost btn-xs daily-view-btn-remove"
-                                onClick={() => onDeleteGroup(slot.shifts)}
-                                type="button"
-                                title={allDraft ? 'Remover serviço' : 'Cancelar serviço'}
-                              >
-                                <Trash2 size={13} />
-                                {allDraft ? 'Remover tudo' : 'Cancelar tudo'}
-                              </button>
-                            </div>
-                          )}
                         </>
                       )}
                     </div>
