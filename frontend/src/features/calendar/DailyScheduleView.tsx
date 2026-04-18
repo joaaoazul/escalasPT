@@ -88,7 +88,6 @@ export function DailyScheduleView({
 
     return { serviceSlots: service, absenceSlots: absence };
   }, [dayShifts]);
-  }, [dayShifts]);
 
   if (isLoading) {
     return (
