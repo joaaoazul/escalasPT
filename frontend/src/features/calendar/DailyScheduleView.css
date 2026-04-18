@@ -388,34 +388,78 @@
 /* ── Mobile ────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
+  .daily-view {
+    gap: var(--space-2);
+  }
+
   .daily-view-table-header {
-    grid-template-columns: 70px 100px 1fr;
-    padding: var(--space-1) var(--space-2);
-    font-size: 9px;
+    display: none;
+  }
+
+  .daily-view-table {
+    border-radius: var(--radius-md);
   }
 
   .daily-view-slot-toggle {
-    grid-template-columns: 1fr 90px auto;
-    padding: var(--space-2);
-    gap: var(--space-1);
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .daily-view-slot-header-left {
+    flex: 1;
+    min-width: 0;
   }
 
   .daily-view-slot-code {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .daily-view-slot-range {
-    font-size: 10px;
+    font-size: 11px;
+    flex-shrink: 0;
   }
 
   .daily-view-slot-grat-tag,
   .daily-view-slot-detail-tag {
-    max-width: 120px;
+    max-width: 100px;
     font-size: 9px;
   }
 
+  .daily-view-slot-count {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+
   .daily-view-member {
-    padding: 4px var(--space-2) 4px calc(var(--space-2) + 4px);
+    padding: 8px 12px 8px 16px;
+    font-size: 13px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .daily-view-member:active {
+    background: var(--surface-200);
+  }
+
+  .daily-view-member-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .daily-view-member-name {
+    font-size: 13px;
+  }
+
+  .daily-view-member-num {
+    font-size: 10px;
+    min-width: 28px;
+  }
+
+  .daily-view-absence-inline {
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
   }
 
   .daily-view-absence-row {
@@ -424,16 +468,39 @@
     gap: var(--space-1);
   }
 
+  .daily-view-absence-chip {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
   .daily-view-summary {
     flex-wrap: wrap;
     gap: var(--space-2);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
   }
 
   .daily-view-nav {
-    gap: var(--space-1);
+    gap: 4px;
+    padding: var(--space-1) 0;
   }
 
   .daily-view-date {
     font-size: 13px;
+    gap: 6px;
+  }
+
+  .daily-view-section-title {
+    font-size: 9px;
+    padding-left: 2px;
+  }
+
+  .daily-view-empty {
+    padding: var(--space-6);
+  }
+
+  .daily-view-slot-location {
+    padding: 2px 12px;
+    font-size: 10px;
   }
 }

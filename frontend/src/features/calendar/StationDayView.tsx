@@ -1,12 +1,13 @@
 /**
- * StationDayView — station-wide schedule grouped by day.
- * Shows all military members' shifts for each day in a list view.
+ * StationDayView — station-wide schedule grouped by day, then by shift type.
+ * Each day is collapsible. Within a day, shifts are grouped by type showing
+ * assigned personnel underneath — much cleaner on mobile.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { format, eachDayOfInterval, startOfMonth, endOfMonth, isToday } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Clock, FileText } from 'lucide-react';
+import { ChevronDown, ChevronRight, Users } from 'lucide-react';
 import type { Shift } from '../../types';
 import { formatTime, getInitials } from '../../utils/helpers';
 import './StationDayView.css';
@@ -18,10 +19,19 @@ interface StationDayViewProps {
   isLoading: boolean;
 }
 
+interface ShiftTypeGroup {
+  code: string;
+  name: string;
+  color: string;
+  range: string;
+  shifts: Shift[];
+}
+
 interface DayGroup {
   date: Date;
   dateStr: string;
-  shifts: Shift[];
+  shiftGroups: ShiftTypeGroup[];
+  totalShifts: number;
 }
 
 export function StationDayView({
@@ -30,6 +40,18 @@ export function StationDayView({
   onShiftClick,
   isLoading,
 }: StationDayViewProps) {
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(() => new Set([todayStr]));
+
+  const toggleDay = (dateStr: string) => {
+    setExpandedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(dateStr)) next.delete(dateStr);
+      else next.add(dateStr);
+      return next;
+    });
+  };
+
   const dayGroups: DayGroup[] = useMemo(() => {
     const start = startOfMonth(currentMonth);
     const end = endOfMonth(currentMonth);
@@ -38,13 +60,30 @@ export function StationDayView({
     return days.map((day) => {
       const dayStr = format(day, 'yyyy-MM-dd');
       const dayShifts = shifts
-        .filter((s) => s.date === dayStr)
+        .filter((s) => s.date === dayStr && s.status !== 'cancelled')
         .sort((a, b) => a.start_datetime.localeCompare(b.start_datetime));
+
+      // Group by shift_type_id
+      const typeMap = new Map<string, ShiftTypeGroup>();
+      for (const s of dayShifts) {
+        const key = s.shift_type_id ?? 'other';
+        if (!typeMap.has(key)) {
+          typeMap.set(key, {
+            code: s.shift_type_code ?? s.shift_type_name ?? 'Turno',
+            name: s.shift_type_name ?? '',
+            color: s.shift_type_color ?? '#3B82F6',
+            range: `${formatTime(s.start_datetime)} — ${formatTime(s.end_datetime)}`,
+            shifts: [],
+          });
+        }
+        typeMap.get(key)!.shifts.push(s);
+      }
 
       return {
         date: day,
         dateStr: dayStr,
-        shifts: dayShifts,
+        shiftGroups: Array.from(typeMap.values()),
+        totalShifts: dayShifts.length,
       };
     });
   }, [shifts, currentMonth]);
@@ -59,80 +98,87 @@ export function StationDayView({
   }
 
   return (
-    <div className="station-day-view">
-      {dayGroups.map((group) => (
-        <div
-          key={group.dateStr}
-          className={`sdv-day ${isToday(group.date) ? 'sdv-day-today' : ''} ${
-            group.shifts.length === 0 ? 'sdv-day-empty' : ''
-          }`}
-        >
-          {/* Day header */}
-          <div className="sdv-day-header">
-            <div className="sdv-day-date">
-              <span className="sdv-day-number">
-                {format(group.date, 'dd')}
-              </span>
-              <span className="sdv-day-name">
-                {format(group.date, 'EEEE', { locale: pt })}
-              </span>
-            </div>
-            {group.shifts.length > 0 && (
-              <span className="sdv-day-count">
-                {group.shifts.length} turno{group.shifts.length !== 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
+    <div className="sdv">
+      {dayGroups.map((group) => {
+        const isExpanded = expandedDays.has(group.dateStr);
+        const today = isToday(group.date);
+        const empty = group.totalShifts === 0;
 
-          {/* Shifts */}
-          {group.shifts.length > 0 ? (
-            <div className="sdv-shifts">
-              {group.shifts.map((shift) => (
-                <button
-                  key={shift.id}
-                  className="sdv-shift"
-                  onClick={() => onShiftClick(shift)}
-                  type="button"
-                >
-                  <div
-                    className="sdv-shift-color"
-                    style={{
-                      backgroundColor:
-                        shift.shift_type_color ?? 'var(--color-primary-500)',
-                    }}
-                  />
-                  <div className="sdv-shift-info">
-                    <div className="sdv-shift-top">
-                      <span className="sdv-shift-type">
-                        {shift.shift_type_code ?? shift.shift_type_name ?? 'Turno'}
+        return (
+          <div
+            key={group.dateStr}
+            className={`sdv-day${today ? ' sdv-today' : ''}${empty ? ' sdv-empty' : ''}`}
+          >
+            <button
+              className="sdv-day-header"
+              onClick={() => toggleDay(group.dateStr)}
+              type="button"
+            >
+              <div className="sdv-day-left">
+                <span className="sdv-day-num">{format(group.date, 'dd')}</span>
+                <span className="sdv-day-name">
+                  {format(group.date, 'EEEE', { locale: pt })}
+                </span>
+                {today && <span className="sdv-badge-today">Hoje</span>}
+              </div>
+              <div className="sdv-day-right">
+                {group.totalShifts > 0 && (
+                  <span className="sdv-day-count">{group.totalShifts}</span>
+                )}
+                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </div>
+            </button>
+
+            {isExpanded && group.totalShifts > 0 && (
+              <div className="sdv-groups">
+                {group.shiftGroups.map((sg, i) => (
+                  <div key={i} className="sdv-type-group">
+                    <div className="sdv-type-header">
+                      <span
+                        className="sdv-type-bar"
+                        style={{ backgroundColor: sg.color }}
+                      />
+                      <span className="sdv-type-code" style={{ color: sg.color }}>
+                        {sg.code}
                       </span>
-                      <span className="sdv-shift-time">
-                        <Clock size={12} />
-                        {formatTime(shift.start_datetime)} — {formatTime(shift.end_datetime)}
+                      <span className="sdv-type-time">{sg.range}</span>
+                      <span className="sdv-type-count">
+                        <Users size={11} />
+                        {sg.shifts.length}
                       </span>
                     </div>
-                    <div className="sdv-shift-bottom">
-                      <span className="sdv-shift-user">
-                        <div className="avatar" style={{ width: 22, height: 22, fontSize: '0.55rem' }}>
-                          {getInitials(shift.user_name ?? '?')}
-                        </div>
-                        {shift.user_name}
-                      </span>
-                      {shift.notes && (
-                        <span className="sdv-shift-notes-icon" title="Tem notas">
-                          <FileText size={12} />
-                        </span>
-                      )}
+                    <div className="sdv-members">
+                      {sg.shifts.map((s) => (
+                        <button
+                          key={s.id}
+                          className="sdv-member"
+                          onClick={() => onShiftClick(s)}
+                          type="button"
+                        >
+                          <div
+                            className="sdv-member-avatar"
+                            style={{ backgroundColor: sg.color }}
+                          >
+                            {getInitials(s.user_name ?? '?')}
+                          </div>
+                          <span className="sdv-member-name">{s.user_name ?? '?'}</span>
+                          {s.user_numero_ordem && (
+                            <span className="sdv-member-num">#{s.user_numero_ordem}</span>
+                          )}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="sdv-no-shifts">Sem turnos</div>
-          )}
-        </div>
-      ))}
+                ))}
+              </div>
+            )}
+
+            {isExpanded && group.totalShifts === 0 && (
+              <div className="sdv-no-shifts">Sem turnos</div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

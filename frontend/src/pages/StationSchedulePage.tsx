@@ -61,7 +61,9 @@ interface DropState {
 
 export function StationSchedulePage() {
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
+  const [viewMode, setViewMode] = useState<ViewMode>(() =>
+    window.innerWidth <= 768 ? 'day' : 'calendar',
+  );
   const [selectedDay, setSelectedDay] = useState<Date>(() => new Date());
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [selectedGroupShifts, setSelectedGroupShifts] = useState<Shift[] | null>(null);
