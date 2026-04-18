@@ -42,9 +42,9 @@ def _get_client_ip(request: Request) -> str:
 @router.post("/login", response_model=LoginResponse)
 @limiter.limit(settings.RATE_LIMIT_LOGIN)
 async def login(
-    data: LoginRequest = Body(...),
-    request: Request = None,
+    request: Request,
     response: Response,
+    data: LoginRequest = Body(...),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -82,9 +82,9 @@ async def login(
 @router.post("/login/totp", response_model=LoginResponse)
 @limiter.limit(settings.RATE_LIMIT_LOGIN)
 async def login_with_totp(
-    data: TOTPLoginRequest = Body(...),
-    request: Request = None,
+    request: Request,
     response: Response,
+    data: TOTPLoginRequest = Body(...),
     db: AsyncSession = Depends(get_db),
 ):
     """Authenticate with username + password + TOTP code."""
