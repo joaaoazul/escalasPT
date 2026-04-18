@@ -6,7 +6,10 @@ import { format, parseISO, isValid } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
 export function formatDate(dateStr: string, fmt: string = 'dd/MM/yyyy'): string {
-  const date = parseISO(dateStr);
+  // Strip timezone offset so times display as stored (local Portuguese time),
+  // not converted to browser timezone.
+  const stripped = dateStr.replace(/([+-]\d{2}:\d{2}|Z)$/, '');
+  const date = parseISO(stripped);
   if (!isValid(date)) return dateStr;
   return format(date, fmt, { locale: pt });
 }
