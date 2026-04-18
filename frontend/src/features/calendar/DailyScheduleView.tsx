@@ -132,13 +132,11 @@ export function DailyScheduleView({
         return aTime.localeCompare(bTime);
       });
 
-    const service = [...regular, ...detail];
-
     const inline = all
       .filter(([, g]) => g.isAbsence)
       .sort(([, a], [, b]) => a.label.localeCompare(b.label));
 
-    return { serviceSlots: service, inlineSlots: inline };
+    return { regularSlots: regular, detailSlots: detail, inlineSlots: inline };
   }, [dayShifts]);
 
   if (isLoading) {
@@ -189,8 +187,8 @@ export function DailyScheduleView({
         </div>
       ) : (
         <div className="daily-view-content">
-          {/* Service shifts (AT, OC, GRAT, INST, SEC, INQ, etc.) */}
-          {serviceSlots.length > 0 && (
+          {/* Regular service shifts (AT, OC, SEC, INQ, etc.) */}
+          {regularSlots.length > 0 && (
             <div className="daily-view-section">
               <div className="daily-view-section-title">Turnos</div>
               <div className="daily-view-table">
@@ -199,7 +197,69 @@ export function DailyScheduleView({
                   <span className="daily-view-th-time">Horário</span>
                   <span className="daily-view-th-staff">Efetivo</span>
                 </div>
-                {serviceSlots.map(([key, slot]) => {
+                {regularSlots.map(([key, slot]) => {
+                  const isCollapsed = collapsedSlots.has(key);
+                  const slotColor = slot.shifts[0]?.shift_type_color ?? 'var(--color-primary-400)';
+                  return (
+                    <div key={key} className="daily-view-slot">
+                      <button
+                        className="daily-view-slot-header daily-view-slot-toggle"
+                        onClick={() => toggleSlot(key)}
+                        type="button"
+                      >
+                        <span className="daily-view-slot-header-left">
+                          <span
+                            className="daily-view-slot-code"
+                            style={{ color: slotColor }}
+                          >
+                            {slot.label}
+                          </span>
+                        </span>
+                        <span className="daily-view-slot-range">{slot.range}</span>
+                        <span className="daily-view-slot-header-right">
+                          <span className="daily-view-slot-count">{slot.shifts.length}</span>
+                          {isCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+                        </span>
+                      </button>
+                      {!isCollapsed && (
+                        <div className="daily-view-slot-members">
+                          {slot.shifts.map((s) => (
+                            <button
+                              key={s.id}
+                              className="daily-view-member"
+                              onClick={() => onShiftClick(s)}
+                              type="button"
+                            >
+                              <span
+                                className="daily-view-member-dot"
+                                style={{ backgroundColor: slotColor }}
+                              />
+                              <span className="daily-view-member-num">
+                                {s.user_numero_ordem ?? '—'}
+                              </span>
+                              <span className="daily-view-member-name">{s.user_name ?? '?'}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* GRAT / INST — detail services */}
+          {detailSlots.length > 0 && (
+            <div className="daily-view-section">
+              <div className="daily-view-section-title">Gratificados &amp; Instrução</div>
+              <div className="daily-view-table">
+                <div className="daily-view-table-header">
+                  <span className="daily-view-th-type">Tipo</span>
+                  <span className="daily-view-th-time">Horário</span>
+                  <span className="daily-view-th-staff">Efetivo</span>
+                </div>
+                {detailSlots.map(([key, slot]) => {
                   const isCollapsed = collapsedSlots.has(key);
                   const slotColor = slot.color ?? slot.shifts[0]?.shift_type_color ?? 'var(--color-primary-400)';
                   return (
@@ -302,7 +362,8 @@ export function DailyScheduleView({
             <div className="daily-view-summary-item">
               <span>Em serviço</span>
               <span className="daily-view-summary-val">
-                {serviceSlots.reduce((n, [, g]) => n + g.shifts.length, 0)}
+                {regularSlots.reduce((n, [, g]) => n + g.shifts.length, 0) +
+                  detailSlots.reduce((n, [, g]) => n + g.shifts.length, 0)}
               </span>
             </div>
             <div className="daily-view-summary-item">
