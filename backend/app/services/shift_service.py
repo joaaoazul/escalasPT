@@ -156,7 +156,8 @@ async def update_shift(
     await create_audit_log(
         db, user_id=updated_by, action="update",
         resource_type="shift", resource_id=str(shift.id),
-        old_data=old_data, new_data=update_dict,
+        old_data=old_data,
+        new_data={k: str(v) for k, v in update_dict.items()},
     )
 
     await db.refresh(shift, ["user", "shift_type"])
