@@ -17,6 +17,7 @@ import { fetchShifts } from '../../api/shifts';
 import { useCreateSwap } from '../../hooks/useSwaps';
 import { useAuth } from '../../hooks/useAuth';
 import type { Shift } from '../../types';
+import { Modal } from '../../components/ui/Modal';
 import './SwapRequestModal.css';
 
 /** Absence codes that CANNOT be swapped (backend also enforces this). */
@@ -264,8 +265,13 @@ export function SwapRequestModal({ myShift, targetShift, onClose }: SwapRequestM
 
   return (
     <>
-      <div className="modal-overlay" onClick={onClose} />
-      <div className="swap-modal animate-slide-in">
+      <Modal
+        onClose={onClose}
+        panelClassName="swap-modal"
+        className="animate-slide-in"
+        ariaLabel="Propor Troca de Turno"
+        closeDisabled={isPending}
+      >
         {/* Header */}
         <div className="swap-modal-header">
           <div className="swap-modal-title-row">
@@ -320,7 +326,7 @@ export function SwapRequestModal({ myShift, targetShift, onClose }: SwapRequestM
             Enviar Pedido
           </button>
         </div>
-      </div>
+      </Modal>
     </>
   );
 }

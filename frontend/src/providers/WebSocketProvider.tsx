@@ -41,7 +41,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
         ws.current = new WebSocket(wsUrl);
 
         ws.current.onopen = () => {
-          console.log('[WebSocket] Connected securely to EscalasPT');
+          if (import.meta.env.DEV) console.log('[WebSocket] Connected securely to EscalasPT');
           // Authenticate via first message (token never in URL/logs)
           ws.current?.send(JSON.stringify({ type: 'auth', token }));
           if (reconnectTimeout.current) {
@@ -90,12 +90,12 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
               ws.current?.send(JSON.stringify({ type: 'pong' }));
             }
           } catch (e) {
-            console.error('[WebSocket] Failed to parse message', e);
+            if (import.meta.env.DEV) console.error('[WebSocket] Failed to parse message', e);
           }
         };
 
         ws.current.onclose = () => {
-          console.log('[WebSocket] Disconnected');
+          if (import.meta.env.DEV) console.log('[WebSocket] Disconnected');
           // Reconnect logic
           if (isMounted && isAuthenticated) {
             reconnectTimeout.current = window.setTimeout(connect, 5000); // 5 sec backoff
@@ -103,7 +103,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
         };
 
       } catch (err) {
-        console.error('[WebSocket] Connection error:', err);
+        if (import.meta.env.DEV) console.error('[WebSocket] Connection error:', err);
       }
     };
 

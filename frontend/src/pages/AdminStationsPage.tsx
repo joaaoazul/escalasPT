@@ -4,6 +4,7 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import {
   Search, ShieldAlert, CheckCircle, XCircle, Plus,
   Edit, X, ChevronLeft, ChevronRight, Users, Building2, Rocket,
@@ -17,6 +18,8 @@ import { fetchUsers } from '../api/users';
 import { onboardStation, type StationOnboardRequest } from '../api/admin';
 import type { Station } from '../types';
 import './AdminPages.css';
+
+type ApiError = AxiosError<{ detail?: string }>;
 
 export function AdminStationsPage() {
   const queryClient = useQueryClient();
@@ -72,7 +75,7 @@ export function AdminStationsPage() {
       setShowCreateModal(false);
       setCreateForm({ name: '', phone: '', address: '' });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.detail || 'Erro ao criar posto'),
+    onError: (err: ApiError) => toast.error(err?.response?.data?.detail || 'Erro ao criar posto'),
   });
 
   const updateMutation = useMutation({
@@ -82,7 +85,7 @@ export function AdminStationsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-stations'] });
       setEditingStation(null);
     },
-    onError: (err: any) => toast.error(err?.response?.data?.detail || 'Erro ao atualizar'),
+    onError: (err: ApiError) => toast.error(err?.response?.data?.detail || 'Erro ao atualizar'),
   });
 
   const toggleActiveMutation = useMutation({
@@ -107,7 +110,7 @@ export function AdminStationsPage() {
         comandante_full_name: '', comandante_nip: '', comandante_phone: '',
       });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.detail || 'Erro ao provisionar posto'),
+    onError: (err: ApiError) => toast.error(err?.response?.data?.detail || 'Erro ao provisionar posto'),
   });
 
   const openEdit = (st: Station) => {

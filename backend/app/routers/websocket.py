@@ -44,6 +44,7 @@ async def websocket_endpoint(
         await websocket.close(code=4001, reason="Auth timeout")
         return
     except Exception:
+        logger.warning("WebSocket auth message parse failed", exc_info=True)
         await websocket.close(code=4001, reason="Auth error")
         return
 

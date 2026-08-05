@@ -63,6 +63,7 @@ class ConnectionManager:
             try:
                 await ws.send_json(message)
             except Exception:
+                logger.warning("Failed to broadcast WS message to user=%s", uid)
                 disconnected.append(uid)
 
         for uid in disconnected:

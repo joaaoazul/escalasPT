@@ -7,6 +7,7 @@ import { X, Clock, User, Users, MapPin, FileText, Tag, CalendarDays, ArrowLeftRi
 import type { Shift } from '../../types';
 import { formatDate, formatTime, formatStatus, getStatusBadgeClass } from '../../utils/helpers';
 import { SwapRequestModal } from '../swaps/SwapRequestModal';
+import { Modal } from '../../components/ui/Modal';
 import './ShiftDetailModal.css';
 
 interface ShiftDetailModalProps {
@@ -61,8 +62,12 @@ export function ShiftDetailModal({
 
   return (
     <>
-      <div className="modal-overlay" onClick={onClose} />
-      <div className="shift-detail-panel animate-slide-in">
+      <Modal
+        onClose={onClose}
+        panelClassName="shift-detail-panel"
+        className="animate-slide-in"
+        ariaLabel={shift.shift_type_name ?? 'Detalhe do turno'}
+      >
         {/* Header */}
         <div className="sdp-header">
           <div className="sdp-header-info">
@@ -284,7 +289,7 @@ export function ShiftDetailModal({
             Fechar
           </button>
         </div>
-      </div>
+      </Modal>
 
       {showSwapModal && (
         <SwapRequestModal

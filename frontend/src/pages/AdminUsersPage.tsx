@@ -5,6 +5,7 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import {
   Search, ShieldAlert, CheckCircle, XCircle, Plus,
   Edit, Key, Lock, Unlock, X,
@@ -16,6 +17,8 @@ import { fetchStations } from '../api/stations';
 import { adminResetPassword, unlockUser, revokeAllUserSessions } from '../api/admin';
 import type { User, UserRole } from '../types';
 import './AdminPages.css';
+
+type ApiError = AxiosError<{ detail?: string }>;
 
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: 'admin', label: 'Administrador' },
@@ -102,7 +105,7 @@ export function AdminUsersPage() {
       setShowCreateModal(false);
       setCreateForm({ username: '', email: '', password: '', full_name: '', nip: '', role: 'militar' });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.detail || 'Erro ao criar utilizador'),
+    onError: (err: ApiError) => toast.error(err?.response?.data?.detail || 'Erro ao criar utilizador'),
   });
 
   const updateMutation = useMutation({
@@ -112,7 +115,7 @@ export function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       setEditingUser(null);
     },
-    onError: (err: any) => toast.error(err?.response?.data?.detail || 'Erro ao atualizar'),
+    onError: (err: ApiError) => toast.error(err?.response?.data?.detail || 'Erro ao atualizar'),
   });
 
   const resetPasswordMutation = useMutation({
@@ -122,7 +125,7 @@ export function AdminUsersPage() {
       setPasswordResetUser(null);
       setNewPassword('');
     },
-    onError: (err: any) => toast.error(err?.response?.data?.detail || 'Erro ao redefinir password'),
+    onError: (err: ApiError) => toast.error(err?.response?.data?.detail || 'Erro ao redefinir password'),
   });
 
   const unlockMutation = useMutation({

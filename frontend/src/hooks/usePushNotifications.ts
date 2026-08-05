@@ -87,7 +87,7 @@ export function usePushNotifications() {
       setState('subscribed');
       return true;
     } catch (err) {
-      console.error('Push subscription failed:', err);
+      if (import.meta.env.DEV) console.error('Push subscription failed:', err);
       return false;
     }
   }, [vapidKey]);

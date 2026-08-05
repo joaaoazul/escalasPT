@@ -5,7 +5,6 @@ Provides: async DB session, HTTP client, authenticated users per role.
 
 from __future__ import annotations
 
-import asyncio
 import uuid
 from datetime import time
 from typing import AsyncGenerator
@@ -23,16 +22,6 @@ from app.models import Base, Station, ShiftType, User, UserRole
 from app.utils.security import create_access_token, hash_password
 
 settings = get_settings()
-
-
-# ── Async event loop ──────────────────────────────────────
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an event loop for the test session."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 # ── Database ──────────────────────────────────────────────
@@ -101,6 +90,8 @@ async def test_station(db_session: AsyncSession) -> Station:
         id=uuid.uuid4(),
         name="Posto de Teste",
         code="PT-TST",
+        comando_territorial="Comando de Teste",
+        destacamento="Destacamento de Teste",
         address="Rua de Teste, 1",
     )
     db_session.add(station)

@@ -299,6 +299,12 @@ async def decide_swap(
         req_shift = await db.get(Shift, swap.requester_shift_id)
         tgt_shift = await db.get(Shift, swap.target_shift_id)
         if req_shift and tgt_shift:
+            # Re-verify both shifts are still published — either could have been
+            # edited/cancelled by an admin while the swap was pending approval.
+            if req_shift.status != ShiftStatus.PUBLISHED or tgt_shift.status != ShiftStatus.PUBLISHED:
+                raise ValidationError(
+                    "Não é possível aprovar — um dos turnos já não está publicado"
+                )
             # Final conflict check before approving
             swap_conflicts = await validate_swap(db, req_shift, tgt_shift)
             errors = [c for c in swap_conflicts if c.severity == "error"]

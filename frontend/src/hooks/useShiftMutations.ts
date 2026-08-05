@@ -4,6 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import {
   createShift,
@@ -13,6 +14,8 @@ import {
   type ShiftCreateData,
   type ShiftUpdateData,
 } from '../api/shifts';
+
+type ApiError = AxiosError<{ detail?: string }>;
 
 export function useShiftMutations() {
   const queryClient = useQueryClient();
@@ -27,7 +30,7 @@ export function useShiftMutations() {
       }
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const msg = error.response?.data?.detail ?? 'Erro ao criar turno';
       toast.error(msg);
     },
@@ -44,7 +47,7 @@ export function useShiftMutations() {
       }
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const msg = error.response?.data?.detail ?? 'Erro ao atualizar turno';
       toast.error(msg);
     },
@@ -56,7 +59,7 @@ export function useShiftMutations() {
       toast.success('Turno eliminado');
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const msg = error.response?.data?.detail ?? 'Erro ao eliminar turno';
       toast.error(msg);
     },
@@ -78,7 +81,7 @@ export function useShiftMutations() {
       }
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const msg = error.response?.data?.detail ?? 'Erro ao publicar turnos';
       toast.error(msg);
     },

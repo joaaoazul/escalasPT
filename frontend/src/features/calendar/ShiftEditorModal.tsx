@@ -9,6 +9,7 @@ import { useStationUsers } from '../../hooks/useStationUsers';
 import { useShiftTypes } from '../../hooks/useShiftTypes';
 import { useShiftMutations } from '../../hooks/useShiftMutations';
 import type { Shift } from '../../types';
+import { Modal } from '../../components/ui/Modal';
 import './ShiftEditorModal.css';
 
 interface ShiftEditorModalProps {
@@ -117,8 +118,13 @@ export function ShiftEditorModal({
 
   return (
     <>
-      <div className="modal-overlay" onClick={isPending ? undefined : onClose} />
-      <div className="modal-container animate-scale-in">
+      <Modal
+        onClose={onClose}
+        panelClassName="modal-container"
+        className="animate-scale-in"
+        ariaLabel={isEdit ? 'Editar Turno' : 'Novo Turno'}
+        closeDisabled={isPending}
+      >
         <div className="modal-header">
           <h2 className="modal-title">
             {isEdit ? 'Editar Turno' : 'Novo Turno'}
@@ -287,7 +293,7 @@ export function ShiftEditorModal({
             </button>
           </div>
         </form>
-      </div>
+      </Modal>
     </>
   );
 }
