@@ -31,7 +31,15 @@ def _disable_rls(table: str) -> None:
 
 
 def upgrade() -> None:
-    # ── shifts ────────────────────────────────────────────
+    # ── shifts, shift_types, notifications ─────────────────
+    # 001_initial already enabled RLS and created bare station_id-match
+    # policies for these three tables. Replace them with the improved
+    # version below, which also bypasses RLS when app.current_station_id
+    # is unset (e.g. background tasks) and FORCEs RLS for the table owner.
+    op.execute("DROP POLICY IF EXISTS shifts_station_isolation ON shifts")
+    op.execute("DROP POLICY IF EXISTS shift_types_station_isolation ON shift_types")
+    op.execute("DROP POLICY IF EXISTS notifications_station_isolation ON notifications")
+
     _enable_rls("shifts")
     op.execute("""
         CREATE POLICY shifts_station_isolation ON shifts
