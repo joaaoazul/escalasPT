@@ -205,10 +205,24 @@ def upgrade() -> None:
     """)
 
     # ── Audit Log Protection ──────────────────────────────
-    # Revoke destructive operations from app user on audit_logs
-    op.execute("REVOKE UPDATE, DELETE ON audit_logs FROM gnr_app")
-    # Grant only INSERT and SELECT
-    op.execute("GRANT SELECT, INSERT ON audit_logs TO gnr_app")
+    # Revoke destructive operations from the limited app role on audit_logs.
+    # The role name differs between dev (gnr_app, scripts/init_db.sql) and
+    # prod (escalaspt_app, deploy/init_db.prod.sh) — grant to whichever exists.
+    op.execute("""
+        DO $$
+        DECLARE
+            app_role text;
+        BEGIN
+            SELECT rolname INTO app_role FROM pg_catalog.pg_roles
+            WHERE rolname IN ('gnr_app', 'escalaspt_app') LIMIT 1;
+
+            IF app_role IS NOT NULL THEN
+                EXECUTE format('REVOKE UPDATE, DELETE ON audit_logs FROM %I', app_role);
+                EXECUTE format('GRANT SELECT, INSERT ON audit_logs TO %I', app_role);
+            END IF;
+        END
+        $$;
+    """)
 
 
 def downgrade() -> None:
