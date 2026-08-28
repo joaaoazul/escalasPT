@@ -59,11 +59,18 @@ CADERNO_SEED_PASSWORD='...' python -m scripts.seed \
 
 ---
 
-## Pôr no VPS
+## Pôr num servidor
+
+Servidor limpo, do zero: [`deploy/SERVIDOR.md`](deploy/SERVIDOR.md) — o que
+instalar (Docker, Tailscale, firewall, actualizações automáticas, e mais nada),
+que máquina chega, cópias de segurança e restauro.
 
 ```bash
-bash deploy/setup.sh          # gera segredos, constrói, migra, sobe
+sudo bash deploy/provision.sh      # prepara o servidor
+sudo tailscale up --ssh
+bash deploy/setup.sh               # gera segredos, constrói, migra, sobe
 sudo tailscale serve --bg 8090
+sudo bash deploy/install-backups.sh
 ```
 
 O nginx só escuta em `127.0.0.1:8090`; quem publica é o `tailscale serve`, que

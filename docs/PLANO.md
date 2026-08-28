@@ -397,8 +397,11 @@ também não chega.
 ## 5. Deploy (VPS existente, só na tailnet)
 
 `docker compose` com `postgres`, `redis`, `api`, `nginx`, em rede própria
-`caderno-net`, no mesmo VPS do MAIA mas sem lhe tocar (nomes de contentor,
-volumes, rede e porta distintos).
+`caderno-net`. Se for no VPS do MAIA, não lhe toca — nomes de contentor,
+volumes, rede e porta distintos. **Se for um servidor limpo** (que passou a ser o
+caso), o que lá tem de ser instalado está em `deploy/SERVIDOR.md`: Docker,
+Tailscale, firewall, actualizações automáticas e o `age` das cópias — mais nada,
+porque tudo o resto corre em contentor.
 
 **Exposição**: o nginx **não** publica em `0.0.0.0`. Publica em `127.0.0.1:8090`
 e o acesso faz-se por **`tailscale serve --bg 8090`**, que termina TLS com o
