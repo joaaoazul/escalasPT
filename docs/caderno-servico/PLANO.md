@@ -13,10 +13,11 @@
 |---|---|---|
 | 1 | **Módulo de identificações entra no plano** (§9 + documento próprio) | Decisão do João. Deixa de ser "fase 5 condicional vaga" e passa a design completo, com portão de activação explícito. |
 | 2 | Nova correcção ao `escalasPT`: **`Permissions-Policy` e CSP** | O `SecurityHeadersMiddleware` do `escalasPT` envia `camera=(), geolocation=()`. Copiado tal e qual, **a câmara e o GPS não funcionam** — e são metade da app. Ver §1.3. |
-| 3 | Todas as afirmações sobre o `escalasPT` foram verificadas no código | Ficheiro e linha em §1.2 e §1.3. As sete estavam certas. |
+| 3 | Todas as afirmações sobre o `escalasPT` foram verificadas no código | Ficheiro e linha em §1.2 e §1.3. As sete estavam certas, e apareceram mais duas: os cabeçalhos (§1.3) e a revogação por roubo de token desfeita pelo rollback (§1.2 nº 5). |
 | 4 | Fase 5 passa a ter sub-fases com prova de feito | Um módulo com dados de pessoas não se entrega num salto. |
 | 5 | **§3 passa a ser o sistema de design herdado**, com inventário de tokens e componentes | A app é nova, a estética é a do `escalasPT`. Uma linha a dizer "tokens do `index.css`" não chega para isso acontecer. |
 | 6 | A Outfit passa a ser auto-alojada | `index.html:11` vai buscá-la ao Google. Com `default-src 'self'`, o pedido é bloqueado e a app perde a letra — ver §3.2. |
+| 7 | **A fase 0 está construída** no ramo `claude/caderno-fase-0` | Deixou de ser plano: 28 testes a passar contra Postgres 16, `npm run build` limpo. O que se aprendeu a construí-la está incorporado em §1.2 nº 2 e nº 5. |
 
 ---
 
@@ -76,11 +77,19 @@ Um `station_id` em falta ou inválido produz `SET LOCAL … = ''` → **bypass t
 → No caderno a policy é:
 ```sql
 CREATE POLICY registos_equipa_isolation ON registos
-USING (
-    nullif(current_setting('app.current_equipa_id', true), '') IS NOT NULL
-    AND equipa_id = current_setting('app.current_equipa_id')::uuid
-);
+FOR ALL
+USING      (equipa_id::text = nullif(current_setting('app.current_equipa_id', true), ''))
+WITH CHECK (equipa_id::text = nullif(current_setting('app.current_equipa_id', true), ''));
 ```
+Setting ausente ou vazio → `nullif` dá `NULL` → a comparação é `NULL` → **nenhuma
+linha**. Um valor que não seja UUID não corresponde a nada e **não rebenta**.
+
+Duas armadilhas encontradas a construir a fase 0, ambas com teste que as apanha:
+o `current_setting` tem de levar `missing_ok` (o segundo argumento `true`) nas
+**duas** metades — um `current_setting()` simples sobre um parâmetro nunca
+definido lança `unrecognized configuration parameter`, e o planeador é livre de o
+avaliar mesmo quando a guarda à frente é falsa; e comparar `::text` em vez de
+converter o setting para `uuid` evita o erro de conversão quando lá vem lixo.
 Os trabalhos de fundo (limpeza, backups, conservação) usam uma sessão que **define
 explicitamente** o contexto por equipa, ou corre com um role próprio
 `caderno_jobs` com `BYPASSRLS` — nunca por omissão silenciosa.
@@ -99,23 +108,36 @@ base de dados de desenvolvimento**.
 → No caderno: `TEST_DATABASE_URL` obrigatório, com validador que rejeita um nome
 que não termine em `_test`.
 
-**5. CI a sério.**
+**5. A detecção de roubo de refresh token tem de sobreviver ao rollback.**
+`auth_service.refresh_access_token` revoga a família e escreve na auditoria e
+**só depois** levanta `AuthenticationError`. Como a sessão do pedido faz
+`rollback()` em cima da excepção (`dependencies.py:83-86`), a revogação e o
+registo desaparecem: a resposta diz "sessão invalidada" e nada foi invalidado —
+o token roubado continua a servir. Apanhado pelos testes desta fase
+(`test_theft_detection_is_audited`).
+→ No caderno faz-se `commit()` antes de levantar, como o lockout já fazia, e
+revogam-se também as `active_sessions` da vítima — uma família revogada que
+deixa um access token vivo dá 15 minutos ao ladrão.
+
+**6. CI a sério.**
 Hoje só existe `.github/workflows/security.yml` (Bandit/pip-audit).
 → No caderno: job `pytest` com Postgres 16 e Redis 7 de serviço, `tsc -b`,
 `npm run build`, `npm audit`, Bandit e pip-audit em cada push.
 
-**6. Utilitários num só sítio.**
+**7. Utilitários num só sítio.**
 `.badge-*` está definido em `frontend/src/index.css:375-391` (`badge-green`,
 `badge-amber`, …) e outra vez em `frontend/src/pages/AdminPages.css:113-117`
 (`badge-success`, `badge-warning`, …), com valores diferentes — e a linha 113/114
 troca `--color-primary-400` com `--color-info-400`.
 → No caderno: uma escala de badges, no `index.css`, com nomes semânticos.
 
-**7. Ícones PWA em PNG 192/512 + maskable**, não um SVG único.
+**8. Ícones PWA em PNG 192/512 + maskable**, não um SVG único.
 
 ### 1.3 A correcção que decide se a app funciona
 
-`backend/app/middleware.py:64-73`, `SecurityHeadersMiddleware`:
+`backend/app/middleware.py:64-73`, `SecurityHeadersMiddleware` — e, palavra por
+palavra, outra vez em `nginx/nginx.conf:58-59`, que é o que governa a página
+servida ao telemóvel:
 
 ```python
 response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()"
@@ -242,7 +264,7 @@ no `escalasPT`.
 
 **Regra de ouro**: nenhum valor literal em componente nenhum. Se falta um token,
 acrescenta-se ao `index.css` — nunca se define uma cor ao lado. É exactamente
-assim que nasceu o bug dos badges duplicados (§1.2 nº 6).
+assim que nasceu o bug dos badges duplicados (§1.2 nº 7).
 
 **Sem tema claro.** O `escalasPT` é escuro e o caderno também: à noite, num carro,
 um ecrã branco é um problema operacional, não uma preferência.
@@ -521,6 +543,13 @@ Resumo do que decide a arquitectura:
 
 As fases 0–4 não dependem de nenhuma decisão do módulo 5. Se o portão nunca
 fechar, a app continua completa e útil — que é a razão de o desenho ser este.
+
+**Estado**: a fase 0 está feita (ramo `claude/caderno-fase-0`) — autenticação
+completa, sistema de design herdado com a Outfit auto-alojada, PWA instalável,
+RLS que nega por omissão, auditoria append-only verificada com o role limitado,
+docker, migrações, `deploy/setup.sh` e CI. Faltam-lhe apenas os passos que só
+correm na máquina: `docker compose up -d`, `alembic upgrade head` e
+`tailscale serve`.
 
 ---
 
