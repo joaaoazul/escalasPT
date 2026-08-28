@@ -15,6 +15,8 @@
 | 2 | Nova correcção ao `escalasPT`: **`Permissions-Policy` e CSP** | O `SecurityHeadersMiddleware` do `escalasPT` envia `camera=(), geolocation=()`. Copiado tal e qual, **a câmara e o GPS não funcionam** — e são metade da app. Ver §1.3. |
 | 3 | Todas as afirmações sobre o `escalasPT` foram verificadas no código | Ficheiro e linha em §1.2 e §1.3. As sete estavam certas. |
 | 4 | Fase 5 passa a ter sub-fases com prova de feito | Um módulo com dados de pessoas não se entrega num salto. |
+| 5 | **§3 passa a ser o sistema de design herdado**, com inventário de tokens e componentes | A app é nova, a estética é a do `escalasPT`. Uma linha a dizer "tokens do `index.css`" não chega para isso acontecer. |
+| 6 | A Outfit passa a ser auto-alojada | `index.html:11` vai buscá-la ao Google. Com `default-src 'self'`, o pedido é bloqueado e a app perde a letra — ver §3.2. |
 
 ---
 
@@ -50,7 +52,8 @@ Novo: **Dexie** (IndexedDB) e **MapLibre GL + PMTiles**.
 | Tarefa de limpeza de tokens/sessões no `lifespan` | `backend/app/main.py:47-86` |
 | Cliente axios com refresh + `failedQueue`, token só em memória | `frontend/src/api/client.ts` |
 | `Button` / `Input` / `Modal` (focus trap, Escape, devolve foco) | `frontend/src/components/ui/` |
-| Tokens e classes globais do design system | `frontend/src/index.css:1-120` |
+| Sistema de design completo: tokens, `.btn`, `.card`, `.input-*`, `.badge-*`, animações, tema dos toasts | `frontend/src/index.css` (inteiro — ver §3.1) |
+| Estrutura da app: barra lateral colapsável, cabeçalho, barra de separadores inferior com `safe-area` | `frontend/src/layouts/AppLayout.{tsx,css}` |
 | `Dockerfile` multi-stage, user não-root, healthchecks, limites de memória/CPU | `backend/Dockerfile`, `docker-compose.yml` |
 | `deploy/setup.sh`: gera segredos com `openssl rand` + `Fernet.generate_key()` | `deploy/setup.sh` |
 
@@ -195,9 +198,123 @@ equipa; o `admin` administra mas **não é excepção à auditoria**.
 
 ---
 
-## 3. Ecrãs
+## 3. Design e ecrãs
 
-Desenho móvel primeiro (é onde se usa), denso no desktop.
+A app é **nova, mas não é outra**. Quem fecha o `escalasPT` e abre o caderno tem
+de reconhecer o mesmo produto ao segundo: mesma paleta, mesma tipografia, mesmos
+gestos, mesmos componentes. O sistema de design **não se reescreve** — copia-se
+inteiro e estende-se só onde o terreno obriga.
+
+### 3.1 O que se herda, tal e qual
+
+`frontend/src/index.css` (641 linhas) e `frontend/src/layouts/AppLayout.css` vão
+inteiros para o caderno. Nada aqui é "inspirado em" — é o mesmo ficheiro.
+
+| Grupo | O que traz | Origem |
+|---|---|---|
+| **Marca** | Escala esmeralda `--color-primary-50…900`, com `500 = #10b981` | `index.css:9-18` |
+| **Sinais** | Âmbar `--color-accent-*`, vermelho `--color-danger-*`, laranja `--color-warning-*`, azul `--color-info-*` | `index.css:21-39` |
+| **Superfícies** | `--surface-0 #050810` a `--surface-600 #3b4a6b`; corpo assente em `--surface-50` | `index.css:42-49` |
+| **Texto e limites** | `--text-primary/secondary/tertiary/muted`, `--border-subtle/default/strong` | `index.css:52-61` |
+| **Sombras** | `sm/md/lg/xl` + `--shadow-glow` (halo esmeralda a 15 %) | `index.css:64-68` |
+| **Vidro** | `--glass-bg`, `--glass-border`, `--glass-blur: 16px` | `index.css:71-73` |
+| **Espaçamento** | `--space-1…16`, base 0.25 rem | `index.css:76-85` |
+| **Raios** | 6 / 10 / 14 / 20 px + `--radius-full` | `index.css:88-92` |
+| **Tipografia** | **Outfit** variável, `--font-xs…4xl`, pesos 400-700, `--leading-*` | `index.css:95-112` |
+| **Movimento** | `fast 150ms` / `base 250ms` / `slow 350ms`, todos `cubic-bezier(.4,0,.2,1)` | `index.css:115-117` |
+| **Estrutura** | `--sidebar-width: 220px` (56 px colapsada), `--header-height: 52px`, `--max-content: 1400px` | `index.css:120-123` |
+| **Base** | `html` a **19 px** no desktop e **16 px** ≤ 768 px, scrollbars de 6 px, `::selection` esmeralda | `index.css:136-208` |
+
+E com eles os utilitários já feitos: `.btn` (com o brilho branco a 6 % no hover e
+12 % no toque, e o `translateY(-1px)` do `.btn-primary` sobre gradiente
+135° `500→600`), `.card` / `.card-glass`, `.input-field` com anel de foco
+esmeralda de 3 px e etiquetas em maiúsculas, `.badge-*` em pílula, `.avatar` com
+gradiente, `.spinner`, `.page-container` / `.page-header` / `.page-title`, as
+animações `fadeIn` / `slideInRight` / `scaleIn`, e o tema completo dos toasts
+Sonner por tipo (`index.css:560-641`).
+
+Do `AppLayout`: barra lateral fixa de 220 px que colapsa a 56 px, cabeçalho de
+52 px, e — o que mais interessa aqui — a **barra de separadores inferior** de
+64 px que já existe para telemóvel, com `env(safe-area-inset-bottom)`, `backdrop-filter`
+de 16 px, ícone que encolhe a 0.85 no toque e indicador esmeralda de 2 px por cima
+do separador activo (`AppLayout.css:382-443`). Ícones `lucide-react` a 20 px, como
+no `escalasPT`.
+
+**Regra de ouro**: nenhum valor literal em componente nenhum. Se falta um token,
+acrescenta-se ao `index.css` — nunca se define uma cor ao lado. É exactamente
+assim que nasceu o bug dos badges duplicados (§1.2 nº 6).
+
+**Sem tema claro.** O `escalasPT` é escuro e o caderno também: à noite, num carro,
+um ecrã branco é um problema operacional, não uma preferência.
+
+### 3.2 A fonte tem de deixar de vir da internet
+
+`frontend/index.html:11` carrega a Outfit de `fonts.googleapis.com`. O caderno
+corre na tailnet, usa-se sem rede e tem `default-src 'self'` no CSP (§1.3):
+copiado tal e qual, **o pedido é bloqueado sempre** — não só offline — a Outfit
+nunca chega, e a app cai no `-apple-system`/sans do sistema. Fica igual em tudo
+menos naquilo que mais se dá por falta: a letra. É a diferença entre "é a mesma
+app" e "parece uma imitação".
+
+Solução, na fase 0: subconjunto woff2 da Outfit (latino + latino estendido, pesos
+400/500/600/700) em `frontend/public/fonts/`, servido pela própria app — a licença
+SIL OFL permite-o.
+
+```css
+@font-face {
+  font-family: 'Outfit';
+  src: url('/fonts/outfit-latin-var.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+```
+
+`--font-family` fica intocada, `<link rel="preload" as="font" crossorigin>` no
+`index.html`, e um passo de build que falha se aparecer `fonts.googleapis` ou
+`gstatic` no `dist/` — a mesma verificação apanha qualquer outro recurso externo
+que se instale por distracção.
+
+Do mesmo modo, `<meta name="theme-color" content="#0A0F1E">` (o valor do
+`escalasPT`, `index.html:7`) e, no `manifest.webmanifest`,
+`background_color` e `theme_color` iguais, com `display: standalone`. É o que faz
+a PWA abrir com a barra de estado escura e o arranque a condizer, em vez do
+clarão branco por omissão.
+
+### 3.3 O que muda por ser uma app de terreno
+
+O `escalasPT` é uma app de secretária que também funciona no telemóvel. O caderno
+é o contrário. Mesma linguagem visual, prioridades trocadas:
+
+| Ponto | `escalasPT` | Caderno | Porquê |
+|---|---|---|---|
+| Alvos de toque | `.btn-icon` 36 × 36 px (`index.css:293`) | 44 × 44 px abaixo de 768 px | Regra dos ≥ 44 px, com luvas e em andamento |
+| Acção principal | Botões no cabeçalho da página | **FAB "+ Registo"** de 56 px, acima da barra inferior, com folga de `env(safe-area-inset-bottom)` | Tem de ser alcançável com o polegar de uma mão |
+| Formulários | `Modal` centrado, `scaleIn` | **Bottom sheet** que sobe, com o mesmo focus trap e Escape do `Modal.tsx` | O teclado do telemóvel come metade do ecrã |
+| Estado da rede | Assumida | Chip de sincronização permanente no cabeçalho (`n por enviar`) | Offline é o caso normal, não a excepção |
+| Listas | Tabela | Tabela no desktop, cartões no telemóvel (padrão que as páginas actuais já usam) | Uma coluna, polegar, luz do sol |
+| Fotos | — | Grelha de miniaturas com estado *local* / *enviada* | §4 nº 5 |
+| Estados | `.badge-*` herdados | `badge-amber` = rascunho, `badge-green` = fechado/sincronizado, `badge-blue` = por enviar, `badge-red` = falhou | A escala existe; só se atribui significado |
+
+Toque e resposta: aproveita-se o que já lá está — `.card:active { transform: scale(.985) }`
+e a animação `mobilePageIn` (`index.css:543-557`), que é o que dá a sensação de
+app nativa em vez de página.
+
+### 3.4 Componentes novos, e de que padrão herdam
+
+| Novo | Herda de | Nota |
+|---|---|---|
+| `BottomSheet` | `Modal.tsx` (focus trap, Escape, devolve o foco) | Só muda a animação e a ancoragem |
+| `Chips` (tipo de registo) | `.badge` + `.btn-secondary` | Estado activo com o esmeralda de `.btb-tab-active` |
+| `FAB` | `.btn-primary` | Mesmo gradiente e mesma sombra, raio `--radius-full` |
+| `SyncIndicator` | `.badge` + `.spinner-sm` | Três estados: sincronizado, a enviar, falhou |
+| `PhotoGrid` | `.card` | Miniatura quadrada, `--radius-md` |
+| `Cronometro` | `.page-header` | `font-variant-numeric: tabular-nums` para não saltar |
+| `MapPanel` | `.card-glass` | O `--glass-blur` já existe |
+| `EmptyState` | `.card` + `--text-tertiary` | "Sem registos hoje. Toca em + para começar." |
+
+Nenhum destes introduz uma cor, um raio ou uma duração novos.
+
+### 3.5 Ecrãs
 
 - **`/`** — o dia: serviço aberto no topo com cronómetro, botão grande
   **"+ Registo"**, lista do que já foi registado hoje, indicador de sincronização
@@ -215,11 +332,9 @@ Desenho móvel primeiro (é onde se usa), denso no desktop.
   última cópia de segurança boa, e a **fila de conservação**: registos que
   passaram do prazo, para o João decidir (avisar, não apagar sozinho).
 
-Design: tokens do `escalasPT` (`index.css`), tema escuro,
-`--color-primary-500` esmeralda. Alvos de toque ≥ 44 px, uso a uma mão, botão de
-registo alcançável com o polegar.
-
----
+Barra inferior no telemóvel com quatro separadores — **Hoje**, **Serviços**,
+**Registos**, **Painel** — e o FAB por cima; barra lateral no desktop, com a
+administração no fundo, como no `escalasPT`.
 
 ## 4. Offline-first (a parte difícil)
 
@@ -392,7 +507,7 @@ Resumo do que decide a arquitectura:
 
 | Fase | Conteúdo | Prova de que está feito |
 |---|---|---|
-| **0** | Repo, docker, migração inicial, auth, design system, cabeçalhos da §1.3, deploy na tailnet | Entrar pelo telemóvel em `https://…ts.net`, instalar a PWA, e a câmara abrir |
+| **0** | Repo, docker, migração inicial, auth, sistema de design herdado (§3) com a Outfit auto-alojada, cabeçalhos da §1.3, deploy na tailnet | Entrar pelo telemóvel em `https://…ts.net`, instalar a PWA, a câmara abrir, e a letra ser a Outfit |
 | **1** | Serviços + registos + fotos + outbox offline | Registar em modo avião, ligar a rede, ver subir sozinho — uma só vez |
 | **2** | Redacção + PDF do turno | Copiar o texto de um registo e gerar o PDF do turno |
 | **3** | Painel + mapa | Gráficos e pontos quentes com dados reais, sem um pedido para fora |
@@ -425,7 +540,8 @@ fechar, a app continua completa e útil — que é a razão de o desenho ser est
 - identificações: portão fechado ⇒ 403; consulta sem motivo ⇒ 422; toda a consulta
   deixa linha em `ident_consultas`; limite de consultas por hora.
 
-**Frontend** — `npm run build` (corre `tsc -b`) e Vitest ao drainer do outbox:
+**Frontend** — `npm run build` (corre `tsc -b`), verificação de que o `dist/` não
+referencia `fonts.googleapis` nem `gstatic` (§3.2), e Vitest ao drainer do outbox:
 fila com falhas de rede intermitentes tem de convergir sem duplicar; blob de foto
 sobrevive a recarregar a página; dados de pessoa desaparecem do Dexie depois do
 `ack`.

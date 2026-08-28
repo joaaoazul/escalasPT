@@ -297,6 +297,10 @@ O que a app tem de conseguir fazer, e faz:
 
 ## 10. Ecrãs
 
+Mesmo sistema de design do resto da app (§3 do `PLANO.md`): os mesmos tokens, os
+mesmos componentes, sem cor nem tratamento próprios. Um ecrã que se distinga
+visualmente convida a ser usado como se fosse outra coisa.
+
 - **Activação** (`/admin/identificacoes`) — formulário do portão. Todos os campos
   da §3 obrigatórios; texto no topo a dizer, sem rodeios, que ligar isto cria um
   ficheiro de dados pessoais e quem passa a responder por ele. Botão de revogar

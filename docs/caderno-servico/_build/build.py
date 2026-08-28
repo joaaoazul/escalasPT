@@ -16,6 +16,30 @@ h1, h2 = [], []
 body1 = convert(plano, 'p', h1)
 body2 = convert(ident, 'i', h2)
 
+
+SWATCHES = [
+    ("Marca", [("primary-400","#34d399"),("primary-500","#10b981"),("primary-600","#059669"),("primary-700","#047857")]),
+    ("Sinais", [("accent-500","#f59e0b"),("danger-500","#ef4444"),("warning-500","#f97316"),("info-500","#3b82f6")]),
+    ("Superfícies", [("surface-0","#050810"),("surface-50","#0a0f1e"),("surface-100","#0f1629"),("surface-300","#1a2340"),("surface-500","#2e3a5a")]),
+    ("Texto", [("text-primary","#f1f5f9"),("text-secondary","#94a3b8"),("text-tertiary","#64748b"),("text-muted","#475569")]),
+]
+
+def swatches():
+    rows = []
+    for group, items in SWATCHES:
+        chips = "".join(
+            f'<div class="sw"><span class="chip" style="background:{hexv}"></span>'
+            f'<span class="swn">{name}</span><span class="swh">{hexv}</span></div>'
+            for name, hexv in items)
+        rows.append(f'<div class="swgroup"><div class="swlbl">{group}</div><div class="swrow">{chips}</div></div>')
+    return '<div class="swatches">' + "".join(rows) + '</div>'
+
+anchor = '<h3 id="p-3-1-o-que-se-herda-tal-e-qual">'
+i = body1.index(anchor)
+j = body1.index('</h3>', i) + 5
+k = body1.index('<div class="tablewrap">', j)
+body1 = body1[:k] + swatches() + body1[k:]
+
 def nav(items):
     out = []
     for sid, text in items:
@@ -128,6 +152,19 @@ th{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10.5px; font-w
 tbody tr:last-child td{border-bottom:0}
 td:first-child{font-variant-numeric:tabular-nums}
 main h2:first-of-type{margin-top:8px; border-top:0; padding-top:0}
+
+/* ── palette swatches ─────────────────────── */
+.swatches{margin:26px 0; display:flex; flex-direction:column; gap:16px;
+  padding:20px; background:#0A0F1E; border:1px solid var(--rule); border-radius:4px;
+  box-shadow:var(--shadow); overflow-x:auto}
+.swlbl{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10px;
+  letter-spacing:.16em; text-transform:uppercase; color:#64748b; margin-bottom:8px}
+.swrow{display:flex; gap:10px; flex-wrap:wrap}
+.sw{display:flex; flex-direction:column; gap:5px; min-width:88px}
+.sw .chip{display:block; height:38px; border-radius:6px; border:1px solid rgba(148,163,184,.18)}
+.swn{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10.5px; color:#94a3b8}
+.swh{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10px; color:#475569;
+  font-variant-numeric:tabular-nums}
 
 /* ── part divider ─────────────────────────── */
 .part{margin:96px 0 0; padding:26px 0 0; border-top:2px solid var(--accent)}
