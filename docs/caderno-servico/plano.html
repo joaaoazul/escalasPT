@@ -1,0 +1,351 @@
+<title>Caderno de Serviço</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3F4F0; --surface:#FBFBF9; --surface-2:#EDEFE9;
+  --text:#151C19; --muted:#5A6862; --faint:#8A968F;
+  --rule:#DBDED6; --rule-strong:#C5C9BF;
+  --accent:#0B6B4F; --accent-soft:rgba(11,107,79,.10);
+  --amber:#8F5D00; --amber-soft:rgba(143,93,0,.10);
+  --danger:#A2352C; --danger-soft:rgba(162,53,44,.09);
+  --shadow:0 1px 2px rgba(21,28,25,.05), 0 8px 24px -18px rgba(21,28,25,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1013; --surface:#111A1D; --surface-2:#162126;
+    --text:#E4EAE6; --muted:#93A49D; --faint:#6E7F79;
+    --rule:rgba(147,164,157,.18); --rule-strong:rgba(147,164,157,.30);
+    --accent:#43C295; --accent-soft:rgba(67,194,149,.12);
+    --amber:#DFA644; --amber-soft:rgba(223,166,68,.13);
+    --danger:#E2796E; --danger-soft:rgba(226,121,110,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1013; --surface:#111A1D; --surface-2:#162126;
+  --text:#E4EAE6; --muted:#93A49D; --faint:#6E7F79;
+  --rule:rgba(147,164,157,.18); --rule-strong:rgba(147,164,157,.30);
+  --accent:#43C295; --accent-soft:rgba(67,194,149,.12);
+  --amber:#DFA644; --amber-soft:rgba(223,166,68,.13);
+  --danger:#E2796E; --danger-soft:rgba(226,121,110,.13);
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  font-size:17px; line-height:1.62; -webkit-text-size-adjust:100%;
+}
+a{color:var(--accent); text-decoration:none; border-bottom:1px solid var(--accent-soft)}
+a:hover{border-bottom-color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:2px}
+
+/* ── masthead ─────────────────────────────── */
+.masthead{border-bottom:1px solid var(--rule-strong); background:var(--surface)}
+.masthead .in{max-width:1180px; margin:0 auto; padding:44px 24px 30px;
+  display:flex; flex-direction:column; gap:20px}
+.kicker{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--faint)}
+h1.title{font-family:"Zilla Slab",Georgia,serif; font-weight:600; font-size:clamp(2.3rem,6vw,3.4rem);
+  line-height:1.06; margin:0; letter-spacing:-.015em; text-wrap:balance}
+h1.title em{font-style:normal; color:var(--accent)}
+.standfirst{max-width:60ch; color:var(--muted); font-size:1.06rem; margin:0}
+.meta{display:flex; flex-wrap:wrap; gap:0 28px; row-gap:10px;
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:12px; color:var(--muted)}
+.meta b{color:var(--text); font-weight:500}
+
+/* ── shell ────────────────────────────────── */
+.shell{max-width:1180px; margin:0 auto; padding:0 24px 96px;
+  display:grid; grid-template-columns:236px minmax(0,1fr); gap:56px; align-items:start}
+nav.index{position:sticky; top:0; max-height:100vh; overflow-y:auto;
+  padding:40px 0 40px; font-size:14px}
+nav.index h2{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10.5px;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--faint);
+  margin:0 0 10px; padding-bottom:8px; border-bottom:1px solid var(--rule)}
+nav.index h2+h2{margin-top:26px}
+nav.index ul{list-style:none; margin:0 0 4px; padding:0; display:flex; flex-direction:column}
+nav.index a{display:flex; gap:9px; padding:4px 0; color:var(--muted); border:0; line-height:1.35}
+nav.index a:hover{color:var(--text)}
+nav.index .n{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px;
+  color:var(--faint); min-width:2.1em; padding-top:2px; font-variant-numeric:tabular-nums}
+main{padding:40px 0 0; max-width:70ch; min-width:0}
+
+/* ── prose ────────────────────────────────── */
+main h2{font-family:"Zilla Slab",Georgia,serif; font-weight:600; font-size:1.72rem;
+  line-height:1.2; margin:64px 0 4px; letter-spacing:-.01em; text-wrap:balance;
+  padding-top:22px; border-top:2px solid var(--rule-strong)}
+main h2 a,main h3 a{color:inherit; border:0}
+main h3{font-family:"Zilla Slab",Georgia,serif; font-weight:600; font-size:1.2rem;
+  margin:38px 0 2px; text-wrap:balance}
+main p{margin:14px 0}
+main ul,main ol{margin:14px 0; padding-left:1.25em; display:flex; flex-direction:column; gap:8px}
+main li::marker{color:var(--faint)}
+main ol li::marker{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.85em}
+hr{border:0; border-top:1px solid var(--rule); margin:52px 0 0}
+strong{font-weight:600}
+code{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.85em;
+  background:var(--surface-2); border:1px solid var(--rule);
+  padding:.08em .34em; border-radius:3px; word-break:break-word}
+.code{margin:20px 0; background:var(--surface); border:1px solid var(--rule);
+  border-left:3px solid var(--accent); border-radius:4px; overflow-x:auto; box-shadow:var(--shadow)}
+.code pre{margin:0; padding:16px 18px}
+.code code{background:none; border:0; padding:0; font-size:13px; line-height:1.6; white-space:pre}
+blockquote{margin:24px 0; padding:16px 20px; background:var(--amber-soft);
+  border:1px solid var(--rule); border-left:3px solid var(--amber); border-radius:4px}
+blockquote p{margin:8px 0; font-size:.97rem}
+blockquote p:first-child{margin-top:0} blockquote p:last-child{margin-bottom:0}
+.tablewrap{margin:24px 0; overflow-x:auto; border:1px solid var(--rule);
+  border-radius:4px; background:var(--surface); box-shadow:var(--shadow)}
+table{border-collapse:collapse; width:100%; font-size:14.5px}
+th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10.5px; font-weight:500;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--faint);
+  background:var(--surface-2); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-variant-numeric:tabular-nums}
+main h2:first-of-type{margin-top:8px; border-top:0; padding-top:0}
+
+/* ── part divider ─────────────────────────── */
+.part{margin:96px 0 0; padding:26px 0 0; border-top:2px solid var(--accent)}
+.part .lbl{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--accent)}
+.part h2.parttitle{font-size:2.05rem; border:0; padding:0; margin:6px 0 0}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr; gap:0; padding-bottom:64px}
+  nav.index{position:static; max-height:none; padding:26px 0 0;
+    border-bottom:1px solid var(--rule); margin-bottom:8px}
+  main{padding-top:26px}
+  body{font-size:16.5px}
+  .masthead .in{padding:32px 20px 24px}
+  .shell{padding-left:20px; padding-right:20px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="masthead">
+  <div class="in">
+    <div class="kicker">Plano de execução · versão 2 · app nova</div>
+    <h1 class="title">Caderno de <em>Serviço</em></h1>
+    <p class="standfirst">Registar o serviço no terreno — ocorrências, fiscalizações, notas — no telemóvel,
+    sem rede, dentro da tailnet. Três módulos: caderno, redacção e painel. Mais o módulo de
+    identificações, agora planeado, com portão de activação próprio.</p>
+    <div class="meta">
+      <span>Base: <b>escalasPT @556e3f9</b></span>
+      <span>Repo novo: <b>C:\Users\joaoa\caderno</b></span>
+      <span>Acesso: <b>tailscale serve · https://…ts.net</b></span>
+      <span>Fases: <b>0–4 autónomas · 5 com portão</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="index">
+    <h2>Parte I · Plano</h2>
+    <ul><li><a href="#p-0-o-que-mudou-face-a-v1"><span class="n">0</span><span>O que mudou face à v1</span></a></li>
+<li><a href="#p-1-repositorio-e-stack"><span class="n">1</span><span>Repositório e stack</span></a></li>
+<li><a href="#p-2-modelo-de-dados"><span class="n">2</span><span>Modelo de dados</span></a></li>
+<li><a href="#p-3-ecras"><span class="n">3</span><span>Ecrãs</span></a></li>
+<li><a href="#p-4-offline-first-a-parte-dificil"><span class="n">4</span><span>Offline-first (a parte difícil)</span></a></li>
+<li><a href="#p-5-deploy-vps-existente-so-na-tailnet"><span class="n">5</span><span>Deploy (VPS existente, só na tailnet)</span></a></li>
+<li><a href="#p-6-seguranca-e-conservacao"><span class="n">6</span><span>Segurança e conservação</span></a></li>
+<li><a href="#p-7-redaccao"><span class="n">7</span><span>Redacção</span></a></li>
+<li><a href="#p-8-painel-e-mapa"><span class="n">8</span><span>Painel e mapa</span></a></li>
+<li><a href="#p-9-modulo-de-identificacoes"><span class="n">9</span><span>Módulo de identificações</span></a></li>
+<li><a href="#p-10-fases"><span class="n">10</span><span>Fases</span></a></li>
+<li><a href="#p-11-verificacao"><span class="n">11</span><span>Verificação</span></a></li>
+<li><a href="#p-12-riscos-e-decisoes-em-aberto"><span class="n">12</span><span>Riscos e decisões em aberto</span></a></li></ul>
+    <h2>Parte II · Identificações</h2>
+    <ul><li><a href="#i-1-enquadramento-o-que-tem-de-estar-resolvido-antes-de-ligar"><span class="n">1</span><span>Enquadramento (o que tem de estar resolvido antes de ligar)</span></a></li>
+<li><a href="#i-2-principios-de-desenho-as-regras-que-nao-se-negoceiam"><span class="n">2</span><span>Princípios de desenho (as regras que não se negoceiam)</span></a></li>
+<li><a href="#i-3-modelo-de-dados"><span class="n">3</span><span>Modelo de dados</span></a></li>
+<li><a href="#i-4-como-se-chega-a-uma-pessoa"><span class="n">4</span><span>Como se chega a uma pessoa</span></a></li>
+<li><a href="#i-5-cifra-chaves-e-acesso"><span class="n">5</span><span>Cifra, chaves e acesso</span></a></li>
+<li><a href="#i-6-offline-a-excepcao-deliberada"><span class="n">6</span><span>Offline — a excepção deliberada</span></a></li>
+<li><a href="#i-7-conservacao-e-anonimizacao"><span class="n">7</span><span>Conservação e anonimização</span></a></li>
+<li><a href="#i-8-auditoria"><span class="n">8</span><span>Auditoria</span></a></li>
+<li><a href="#i-9-direitos-dos-titulares"><span class="n">9</span><span>Direitos dos titulares</span></a></li>
+<li><a href="#i-10-ecras"><span class="n">10</span><span>Ecrãs</span></a></li>
+<li><a href="#i-11-testes-que-este-modulo-tem-de-ter"><span class="n">11</span><span>Testes que este módulo tem de ter</span></a></li>
+<li><a href="#i-12-o-que-fica-de-fora-e-porque"><span class="n">12</span><span>O que fica de fora, e porquê</span></a></li></ul>
+  </nav>
+  <main>
+    <blockquote><p><strong>Versão 2</strong> — revista contra o código do <code>escalasPT</code> (commit <code>556e3f9</code>). A v1 excluía o registo de pessoas identificadas. Esta versão <strong>inclui-o</strong>, como módulo desenhado de raiz com as salvaguardas próprias: ver <a href="#i-1-enquadramento-o-que-tem-de-estar-resolvido-antes-de-ligar"><code>MODULO-IDENTIFICACOES.md</code></a>.</p></blockquote>
+<hr />
+<h2 id="p-0-o-que-mudou-face-a-v1"><a class="anchor" href="#p-0-o-que-mudou-face-a-v1">0. O que mudou face à v1</a></h2>
+<div class="tablewrap"><table><thead><tr><th>#</th><th>Mudança</th><th>Porquê</th></tr></thead><tbody><tr><td>1</td><td><strong>Módulo de identificações entra no plano</strong> (§9 + documento próprio)</td><td>Decisão do João. Deixa de ser "fase 5 condicional vaga" e passa a design completo, com portão de activação explícito.</td></tr><tr><td>2</td><td>Nova correcção ao <code>escalasPT</code>: <strong><code>Permissions-Policy</code> e CSP</strong></td><td>O <code>SecurityHeadersMiddleware</code> do <code>escalasPT</code> envia <code>camera=(), geolocation=()</code>. Copiado tal e qual, <strong>a câmara e o GPS não funcionam</strong> — e são metade da app. Ver §1.3.</td></tr><tr><td>3</td><td>Todas as afirmações sobre o <code>escalasPT</code> foram verificadas no código</td><td>Ficheiro e linha em §1.2 e §1.3. As sete estavam certas.</td></tr><tr><td>4</td><td>Fase 5 passa a ter sub-fases com prova de feito</td><td>Um módulo com dados de pessoas não se entrega num salto.</td></tr></tbody></table></div>
+<hr />
+<h2 id="p-1-repositorio-e-stack"><a class="anchor" href="#p-1-repositorio-e-stack">1. Repositório e stack</a></h2>
+<p>Repo novo em <code>C:\Users\joaoa\caderno</code>, a copiar a arquitectura do <code>escalasPT</code> (que fica intocado). Mesmas versões, porque estão provadas em produção.</p>
+<p><strong>Backend</strong> — FastAPI 0.115, SQLAlchemy 2.0 async, asyncpg, Alembic, Postgres 16, Redis 7 (rate limiting), PyJWT, passlib/bcrypt, pyotp, slowapi, python-json-logger, cryptography, WeasyPrint, pytest + httpx.</p>
+<p><strong>Frontend</strong> — React 19, Vite 6, TS 5.7, TanStack Query v5, Zustand, react-router 7, lucide-react, sonner, vite-plugin-pwa, Chart.js. <strong>CSS puro com custom properties</strong>, como no <code>escalasPT</code>. Novo: <strong>Dexie</strong> (IndexedDB) e <strong>MapLibre GL + PMTiles</strong>.</p>
+<p><strong>Estrutura a espelhar</strong>: <code>backend/app/{config,database,dependencies,exceptions,middleware,main}.py</code> + <code>models/ schemas/ routers/ services/ utils/</code>; <code>frontend/src/{api,store,providers,hooks,layouts,components,features,pages,types,utils}</code>.</p>
+<h3 id="p-1-1-o-que-se-copia-tal-e-qual"><a class="anchor" href="#p-1-1-o-que-se-copia-tal-e-qual">1.1 O que se copia tal e qual</a></h3>
+<div class="tablewrap"><table><thead><tr><th>Peça</th><th>Ficheiro no <code>escalasPT</code></th></tr></thead><tbody><tr><td><code>create_app()</code> + <code>lifespan</code> + ordem dos middlewares</td><td><code>backend/app/main.py:27-148</code></td></tr><tr><td><code>Settings</code> + validadores que matam o arranque com segredo default</td><td><code>backend/app/config.py</code></td></tr><tr><td>Hierarquia <code>AppException</code> + <code>register_exception_handlers</code></td><td><code>backend/app/exceptions.py</code></td></tr><tr><td>Logging JSON com redacção de `password</td><td>token</td><td>secret</td><td>…`</td><td><code>backend/app/utils/logging.py</code></td></tr><tr><td>Auth: rotação de refresh token, detecção de reutilização (revoga a família), lockout, sessões em <code>active_sessions</code>, TOTP cifrado</td><td><code>backend/app/services/auth_service.py</code>, <code>backend/app/utils/security.py</code></td></tr><tr><td><code>get_current_user</code> que valida o <code>sid</code> contra <code>active_sessions</code></td><td><code>backend/app/dependencies.py:91-146</code></td></tr><tr><td>Tarefa de limpeza de tokens/sessões no <code>lifespan</code></td><td><code>backend/app/main.py:47-86</code></td></tr><tr><td>Cliente axios com refresh + <code>failedQueue</code>, token só em memória</td><td><code>frontend/src/api/client.ts</code></td></tr><tr><td><code>Button</code> / <code>Input</code> / <code>Modal</code> (focus trap, Escape, devolve foco)</td><td><code>frontend/src/components/ui/</code></td></tr><tr><td>Tokens e classes globais do design system</td><td><code>frontend/src/index.css:1-120</code></td></tr><tr><td><code>Dockerfile</code> multi-stage, user não-root, healthchecks, limites de memória/CPU</td><td><code>backend/Dockerfile</code>, <code>docker-compose.yml</code></td></tr><tr><td><code>deploy/setup.sh</code>: gera segredos com <code>openssl rand</code> + <code>Fernet.generate_key()</code></td><td><code>deploy/setup.sh</code></td></tr></tbody></table></div>
+<h3 id="p-1-2-o-que-se-corrige-bugs-verificados-que-nao-se-replicam"><a class="anchor" href="#p-1-2-o-que-se-corrige-bugs-verificados-que-nao-se-replicam">1.2 O que se corrige (bugs verificados que não se replicam)</a></h3>
+<p><strong>1. A app liga-se com um role limitado.</strong> No <code>escalasPT</code>, <code>backend/scripts/init_db.sql</code> cria o role <code>gnr_app</code> e a migração <code>001_initial.py:207-225</code> faz <code>REVOKE UPDATE, DELETE ON audit_logs FROM %I</code> sobre ele — mas o <code>DATABASE_URL</code> usa <code>${POSTGRES_USER}</code> (<code>docker-compose.yml:57</code>, <code>deploy/docker-compose.prod.yml:59</code>), que é o <strong>dono das tabelas</strong>. O dono ignora o <code>REVOKE</code> e, por omissão, ignora RLS. Resultado: <strong>o audit log não é imutável e a RLS não se aplica ao role que a app realmente usa.</strong> → No caderno: <code>DATABASE_URL</code> usa <code>caderno_app</code>; o dono só é usado pelo Alembic. Teste que falha se isto regredir: <code>test_audit_log_is_append_only</code>.</p>
+<p><strong>2. Setting vazio = negar, não permitir.</strong> <code>007_add_rls_policies.py:44-48</code> (e as outras quatro policies): <code>current_setting('app.current_station_id', true) = '' OR station_id = …</code>. Um <code>station_id</code> em falta ou inválido produz <code>SET LOCAL … = ''</code> → <strong>bypass total</strong>. → No caderno a policy é:</p>
+<div class="code"><pre><code class="lang-sql">CREATE POLICY registos_equipa_isolation ON registos
+USING (
+    nullif(current_setting(&#x27;app.current_equipa_id&#x27;, true), &#x27;&#x27;) IS NOT NULL
+    AND equipa_id = current_setting(&#x27;app.current_equipa_id&#x27;)::uuid
+);</code></pre></div>
+<p>Os trabalhos de fundo (limpeza, backups, conservação) usam uma sessão que <strong>define explicitamente</strong> o contexto por equipa, ou corre com um role próprio <code>caderno_jobs</code> com <code>BYPASSRLS</code> — nunca por omissão silenciosa.</p>
+<p><strong>3. Migrações idempotentes e sem nomes de role hardcoded.</strong> <code>001_initial.py</code> cria policies que a <code>007</code> volta a criar; a <code>007</code> declara <code>APP_ROLE = "app_user"</code> — um role que não existe em lado nenhum (o real é <code>gnr_app</code>/<code>escalaspt_app</code>). Daí os dois commits de correcção <code>1116b5c</code> e <code>57c7b2b</code>. → No caderno: <code>DROP POLICY IF EXISTS</code> antes de cada <code>CREATE POLICY</code>, e o role resolve-se sempre em bloco <code>DO $$ … format('%I', role)</code>, como em <code>001_initial.py:210-224</code>.</p>
+<p><strong>4. Testes em base de dados dedicada.</strong> <code>backend/tests/conftest.py:31-45</code>: <code>TEST_DB_URL = settings.DATABASE_URL</code> seguido de <code>Base.metadata.drop_all</code> — correr <code>pytest</code> com o <code>.env</code> de desenvolvimento <strong>apaga a base de dados de desenvolvimento</strong>. → No caderno: <code>TEST_DATABASE_URL</code> obrigatório, com validador que rejeita um nome que não termine em <code>_test</code>.</p>
+<p><strong>5. CI a sério.</strong> Hoje só existe <code>.github/workflows/security.yml</code> (Bandit/pip-audit). → No caderno: job <code>pytest</code> com Postgres 16 e Redis 7 de serviço, <code>tsc -b</code>, <code>npm run build</code>, <code>npm audit</code>, Bandit e pip-audit em cada push.</p>
+<p><strong>6. Utilitários num só sítio.</strong> <code>.badge-*</code> está definido em <code>frontend/src/index.css:375-391</code> (<code>badge-green</code>, <code>badge-amber</code>, …) e outra vez em <code>frontend/src/pages/AdminPages.css:113-117</code> (<code>badge-success</code>, <code>badge-warning</code>, …), com valores diferentes — e a linha 113/114 troca <code>--color-primary-400</code> com <code>--color-info-400</code>. → No caderno: uma escala de badges, no <code>index.css</code>, com nomes semânticos.</p>
+<p><strong>7. Ícones PWA em PNG 192/512 + maskable</strong>, não um SVG único.</p>
+<h3 id="p-1-3-a-correccao-que-decide-se-a-app-funciona"><a class="anchor" href="#p-1-3-a-correccao-que-decide-se-a-app-funciona">1.3 A correcção que decide se a app funciona</a></h3>
+<p><code>backend/app/middleware.py:64-73</code>, <code>SecurityHeadersMiddleware</code>:</p>
+<div class="code"><pre><code class="lang-python">response.headers[&quot;Permissions-Policy&quot;] = &quot;camera=(), microphone=(), geolocation=(), payment=()&quot;
+response.headers[&quot;Content-Security-Policy&quot;] = (
+    &quot;default-src &#x27;self&#x27;; script-src &#x27;self&#x27;; style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27;; &quot;
+    &quot;img-src &#x27;self&#x27; data:; font-src &#x27;self&#x27;; connect-src &#x27;self&#x27; wss:; …&quot;
+)</code></pre></div>
+<p><code>camera=()</code> e <code>geolocation=()</code> significam <strong>negado a toda a gente, incluindo à própria origem</strong>. Copiar este ficheiro tal e qual entrega uma app em que o botão da câmara não abre nada e o GPS devolve <code>PERMISSION_DENIED</code> — e ninguém percebe porquê, porque não há erro visível de rede. O <code>img-src</code> sem <code>blob:</code> também parte as miniaturas locais das fotos ainda por sincronizar.</p>
+<p>Cabeçalhos do caderno:</p>
+<div class="code"><pre><code class="lang-python">response.headers[&quot;Permissions-Policy&quot;] = (
+    &quot;camera=(self), geolocation=(self), microphone=(), payment=(), interest-cohort=()&quot;
+)
+response.headers[&quot;Content-Security-Policy&quot;] = (
+    &quot;default-src &#x27;self&#x27;; script-src &#x27;self&#x27;; worker-src &#x27;self&#x27; blob:; &quot;
+    &quot;style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27;; img-src &#x27;self&#x27; data: blob:; &quot;
+    &quot;font-src &#x27;self&#x27;; connect-src &#x27;self&#x27;; frame-ancestors &#x27;none&#x27;; &quot;
+    &quot;base-uri &#x27;self&#x27;; form-action &#x27;self&#x27;&quot;
+)</code></pre></div>
+<p><code>worker-src blob:</code> é para o service worker e para os workers do MapLibre; <code>connect-src 'self'</code> chega — a app não fala com a internet (§8). <strong>Teste de fumo da fase 0</strong>: um teste que faz <code>GET /api/health</code> e afirma que <code>Permissions-Policy</code> contém <code>camera=(self)</code>. É barato e apanha a regressão.</p>
+<hr />
+<h2 id="p-2-modelo-de-dados"><a class="anchor" href="#p-2-modelo-de-dados">2. Modelo de dados</a></h2>
+<p>Tudo com <code>UUIDMixin</code> + <code>TimestampMixin</code> de <code>models/base.py</code>, <strong>mas o id é gerado no cliente</strong> (UUIDv7) — é o que torna a sincronização idempotente (§4). O <code>default=uuid.uuid4</code> do mixin fica como rede de segurança para escritas do servidor.</p>
+<ul><li><strong><code>users</code></strong> — <code>nome</code>, <code>nip</code>, <code>email</code>, <code>password_hash</code>, <code>role</code> (<code>agente</code> | <code>chefe_equipa</code> | <code>admin</code>), <code>equipa_id</code>, <code>is_active</code>, TOTP cifrado.</li><li><strong><code>equipas</code></strong> — unidade de isolamento (posto/secção/patrulha). Toda a RLS gira em torno de <code>equipa_id</code>.</li><li><strong><code>servicos</code></strong> — o turno: <code>inicio</code>, <code>fim</code>, <code>tipo</code> (patrulha, trânsito, investigação…), <code>viatura</code>, <code>acompanhantes</code> (M2M para <code>users</code>), <code>area</code>, <code>estado</code> (<code>aberto</code> | <code>fechado</code>), <code>autor_id</code>, <code>equipa_id</code>.</li><li><strong><code>registos</code></strong> — a entidade central, com discriminador <code>tipo</code>: <code>ocorrencia</code> | <code>fiscalizacao</code> | <code>nota</code>. <code>servico_id</code>, <code>autor_id</code>, <code>equipa_id</code>, <code>subtipo_id</code> (catálogo), <code>datahora</code>, <code>local_texto</code>, <code>lat</code>, <code>lon</code>, <code>freguesia</code>, <code>descricao</code> (cifrado), <code>resultado</code> (cifrado), <code>referencia_oficial</code> (nº de auto/NUIPC — texto), <code>contagens</code> (JSONB: veículos fiscalizados, testes de álcool, …), <code>estado</code> (<code>rascunho</code> | <code>fechado</code>), <code>conservar_ate</code> (date), <code>anonimizado_em</code>.</li><li><strong><code>anexos</code></strong> — <code>registo_id</code>, <code>finalidade</code> (<code>local</code> | <code>viatura</code> | <code>dano</code> | <code>objecto</code> | <code>documento_proprio</code>), <code>mime</code>, <code>bytes</code>, <code>sha256</code>, <code>caminho</code>, <code>thumb_caminho</code>, <code>autor_id</code>. Ficheiros <strong>cifrados em disco</strong> (§6), servidos só pela API.</li><li><strong><code>catalogos</code></strong> — tipos e subtipos configuráveis pelo João, sem deploy.</li><li><strong><code>modelos_texto</code></strong> — modelos de auto/relatório com marcadores (§7).</li><li><strong><code>audit_logs</code></strong> — como no <code>escalasPT</code> (<code>user_id</code>, <code>action</code>, <code>resource_type</code>, <code>resource_id</code>, <code>old_data</code>/<code>new_data</code> JSONB, <code>ip</code>, <code>user_agent</code>), append-only <strong>a sério</strong> (§1.2 nº 1), com <code>create_audit_log()</code> a sanitizar chaves sensíveis.</li><li><strong><code>refresh_tokens</code></strong>, <strong><code>active_sessions</code></strong> — copiados.</li></ul>
+<p>Tabelas do módulo de identificações (<code>pessoas</code>, <code>veiculos</code>, <code>registo_intervenientes</code>, <code>registo_veiculos</code>, <code>ident_activacoes</code>, <code>ident_consultas</code>) em <a href="#i-1-enquadramento-o-que-tem-de-estar-resolvido-antes-de-ligar"><code>MODULO-IDENTIFICACOES.md</code></a> §3. <strong>Existem no esquema desde a fase 1</strong> (para não haver migração dolorosa depois), mas ficam vazias e inacessíveis até o portão da §9 estar fechado.</p>
+<p><strong>RLS</strong> em <code>servicos</code>, <code>registos</code>, <code>anexos</code>, <code>catalogos</code>, <code>modelos_texto</code> e em todas as tabelas de identificação: isolamento por <code>equipa_id</code> via <code>SET LOCAL app.current_equipa_id</code>, com <code>ENABLE</code> + <code>FORCE ROW LEVEL SECURITY</code> e a policy da §1.2 nº 2. O <code>agente</code> só vê e edita o que é seu; o <code>chefe_equipa</code> vê a equipa; o <code>admin</code> administra mas <strong>não é excepção à auditoria</strong>.</p>
+<hr />
+<h2 id="p-3-ecras"><a class="anchor" href="#p-3-ecras">3. Ecrãs</a></h2>
+<p>Desenho móvel primeiro (é onde se usa), denso no desktop.</p>
+<ul><li><strong><code>/</code></strong> — o dia: serviço aberto no topo com cronómetro, botão grande <strong>"+ Registo"</strong>, lista do que já foi registado hoje, indicador de sincronização (quantos por enviar).</li><li><strong>Folha de registo</strong> — bottom sheet, um ecrã, sem navegação: tipo (chips) → hora (pré-preenchida) → local (GPS com um toque, editável) → descrição → fotos (câmara directa) → resultado/referência. Guarda-se em ~20 segundos.</li><li><strong><code>/servicos</code></strong> — histórico de turnos; abrir um mostra tudo o que lá dentro aconteceu e o botão de PDF.</li><li><strong><code>/registos</code></strong> — lista com pesquisa em texto livre, filtros por tipo, data, local. Tabela larga no desktop, cartões no telemóvel.</li><li><strong><code>/painel</code></strong> — KPIs, gráficos e mapa (§8).</li><li><strong><code>/redaccao/:id</code></strong> — texto gerado, editável, botão copiar (§7).</li><li><strong><code>/admin</code></strong> — utilizadores, catálogos, modelos de texto, auditoria, idade da última cópia de segurança boa, e a <strong>fila de conservação</strong>: registos que passaram do prazo, para o João decidir (avisar, não apagar sozinho).</li></ul>
+<p>Design: tokens do <code>escalasPT</code> (<code>index.css</code>), tema escuro, <code>--color-primary-500</code> esmeralda. Alvos de toque ≥ 44 px, uso a uma mão, botão de registo alcançável com o polegar.</p>
+<hr />
+<h2 id="p-4-offline-first-a-parte-dificil"><a class="anchor" href="#p-4-offline-first-a-parte-dificil">4. Offline-first (a parte difícil)</a></h2>
+<p><strong>Padrão outbox com ids gerados no cliente.</strong></p>
+<ol><li>Toda a escrita cria um <strong>UUIDv7 no telemóvel</strong> e grava primeiro no <strong>Dexie</strong> (<code>servicos</code>, <code>registos</code>, <code>anexos</code>, <code>outbox</code>). O ecrã actualiza imediatamente — nunca há um estado "a guardar".</li><li>A operação entra na tabela <code>outbox</code> (<code>{id, metodo, url, payload, tentativas, proxima_tentativa, erro}</code>).</li><li>Um <em>drainer</em> (<code>src/sync/outbox.ts</code>) esvazia a fila quando <code>navigator.onLine</code>, <strong>em série</strong>, com backoff exponencial e limite de tentativas. Acordado por: arranque da app, evento <code>online</code>, <code>visibilitychange</code> e <strong>Background Sync</strong> do service worker quando o browser o permite.</li><li>O servidor aceita o id do cliente como chave primária. <code>POST</code> de um id que já existe devolve <strong>200 com o registo existente</strong> em vez de 409 — a retentativa é inofensiva por construção. Sem remapeamento de ids depois de sincronizar.</li><li><strong>Fotos</strong>: o blob fica no Dexie; o upload é uma entrada de outbox própria, posterior à do registo. Enquanto não sobe, a UI mostra a miniatura local. Cada anexo leva o <code>sha256</code> para se detectar duplicado.</li><li><strong>Conflitos</strong>: um registo tem um único autor e só é editável por ele enquanto está em <code>rascunho</code>; o servidor recusa alterações a registos <code>fechado</code>. Com esta regra os conflitos deixam de existir na prática — e é por isso que ela existe, em vez de um resolvedor de merge que ninguém consegue testar.</li><li><strong>Leitura offline</strong>: <code>persistQueryClient</code> do TanStack Query com persister em IndexedDB, para o histórico recente estar lá sem rede.</li><li><strong>O que nunca fica em cache local</strong>: dados de pessoas. Escrevem-se no Dexie só enquanto estão pendentes e são apagados assim que o servidor confirma (<code>MODULO-IDENTIFICACOES.md</code> §6). O telemóvel não é um ficheiro de pessoas.</li></ol>
+<p><strong>Nota que decide o deploy:</strong> service worker, câmara e geolocalização exigem <strong>contexto seguro</strong>. <code>http://100.x.x.x</code> não é contexto seguro — a app não funcionaria. Daí o §5. E os cabeçalhos da §1.3, sem os quais o contexto seguro também não chega.</p>
+<hr />
+<h2 id="p-5-deploy-vps-existente-so-na-tailnet"><a class="anchor" href="#p-5-deploy-vps-existente-so-na-tailnet">5. Deploy (VPS existente, só na tailnet)</a></h2>
+<p><code>docker compose</code> com <code>postgres</code>, <code>redis</code>, <code>api</code>, <code>nginx</code>, em rede própria <code>caderno-net</code>, no mesmo VPS do MAIA mas sem lhe tocar (nomes de contentor, volumes, rede e porta distintos).</p>
+<p><strong>Exposição</strong>: o nginx <strong>não</strong> publica em <code>0.0.0.0</code>. Publica em <code>127.0.0.1:8090</code> e o acesso faz-se por <strong><code>tailscale serve --bg 8090</code></strong>, que termina TLS com o certificado <code>*.ts.net</code> da máquina. Resultado: <code>https://&lt;maquina&gt;.&lt;tailnet&gt;.ts.net</code> — certificado válido, contexto seguro, PWA instalável, câmara a funcionar, e <strong>zero superfície pública</strong>. Sem registo DNS, sem porta aberta, sem Funnel.</p>
+<p><code>deploy/setup.sh</code> no mesmo molde do <code>escalasPT</code>: gera segredos com <code>openssl rand</code> e <code>Fernet.generate_key()</code>, valida que não sobrou nenhum <code>GENERATE_ME</code>, sobe, espera pelo healthcheck e corre as migrações. Segredos a gerar: <code>JWT_SECRET</code>, <code>POSTGRES_PASSWORD</code>, <code>CADERNO_APP_DB_PASSWORD</code>, <code>REDIS_PASSWORD</code>, <code>TOTP_ENCRYPTION_KEY</code>, <code>ATTACHMENT_MASTER_KEY</code>, <code>FIELD_ENCRYPTION_KEY</code>, <code>IDENT_FIELD_KEY</code>, <code>IDENT_INDEX_KEY</code> (§9).</p>
+<p><strong>Ordem das migrações</strong> (aprendida no MAIA, e vale aqui): <code>build</code> → <code>docker compose run --rm --no-deps api alembic upgrade head</code> → <code>up -d --wait</code>. Nunca <code>up -d</code> antes da migração.</p>
+<blockquote><p>⚠️ O classificador de permissões bloqueia <code>docker compose up -d</code> e <code>alembic upgrade</code>. Esses passos corre-os o João, com <code>! ssh …</code> no prompt — aviso antes de começar o deploy, para não ficarmos a meio.</p></blockquote>
+<hr />
+<h2 id="p-6-seguranca-e-conservacao"><a class="anchor" href="#p-6-seguranca-e-conservacao">6. Segurança e conservação</a></h2>
+<ul><li><strong>Anexos cifrados em disco</strong>: AES-GCM com chave por ficheiro, embrulhada por uma chave-mestra em <code>ATTACHMENT_MASTER_KEY</code>. Nunca servidos como estáticos — passam sempre por <code>GET /api/anexos/{id}/conteudo</code>, que autoriza e <strong>regista o acesso na auditoria</strong>.</li><li><strong>Campos de texto livre</strong> (<code>descricao</code>, <code>resultado</code>) cifrados ao nível da aplicação com um <code>TypeDecorator</code> do SQLAlchemy — um dump da base de dados não é legível. (O <code>escalasPT</code> cifra à mão no service; aqui fica transparente e não há como esquecer.) Consequência assumida: não há <code>LIKE</code> no servidor sobre estes campos — a pesquisa em texto livre da §3 é feita no cliente sobre o que está em cache, ou por metadados (tipo, data, local, freguesia).</li><li><strong>Auditoria</strong> de tudo o que lê ou exporta: abrir anexo, gerar texto, gerar PDF, exportar estatística, consultar ficha. Append-only garantido pelo <code>REVOKE</code> — que desta vez funciona, porque a app liga com role limitado (§1.2 nº 1).</li><li><strong>Conservação</strong>: cada registo nasce com <code>conservar_ate</code> conforme o tipo (configurável em <code>/admin</code>). Passado o prazo entra na <strong>fila de revisão</strong> e a app avisa; <strong>nada é apagado sem o João carregar no botão</strong>. Ao apagar, os campos descritivos e os anexos vão-se e fica a linha estatística anónima (tipo, data, zona), para os gráficos não perderem histórico.</li><li><strong>Backups</strong>: <code>pg_dump</code> cifrado + anexos, com trabalho diário e verificação de que correu. No MAIA os backups estiveram 7 dias parados sem ninguém dar por isso — aqui o painel de admin mostra a <strong>idade da última cópia boa</strong>, e o healthcheck fica amarelo acima de 48 h. As chaves de cifra <strong>não</strong> vão no mesmo destino do backup.</li><li><strong>Bloqueio do dispositivo</strong>: PIN da app (≥ 6 dígitos) que fecha a sessão local e limpa a cache sensível ao fim de N minutos em segundo plano. Sem isto, "o telemóvel na mesa" é o modelo de ameaça real.</li></ul>
+<hr />
+<h2 id="p-7-redaccao"><a class="anchor" href="#p-7-redaccao">7. Redacção</a></h2>
+<p>Modelos por subtipo, guardados em <code>modelos_texto</code>, com marcadores (<code>{{datahora}}</code>, <code>{{local}}</code>, <code>{{descricao}}</code>, <code>{{referencia_oficial}}</code>…) e editáveis pelo João sem deploy. <code>POST /api/registos/{id}/texto</code> devolve o texto composto; o ecrã mostra-o editável com botão <strong>copiar</strong>.</p>
+<p><strong>Determinístico, sem LLM nesta fase</strong> — de propósito: o modelo local escreve a ~11 tokens/s e serve um pedido de cada vez, portanto uma geração no telemóvel a meio de um turno seria pior do que escrever à mão. Se mais tarde valer a pena, entra como botão opcional de "melhorar redacção", nunca no caminho crítico — e nunca com dados de pessoas no prompt.</p>
+<p><strong>PDF do turno</strong>: WeasyPrint no backend, com cabeçalho do serviço, registos por ordem cronológica e miniaturas dos anexos. Geração auditada.</p>
+<hr />
+<h2 id="p-8-painel-e-mapa"><a class="anchor" href="#p-8-painel-e-mapa">8. Painel e mapa</a></h2>
+<p>Gráficos com Chart.js (já usado no <code>escalasPT</code>): registos por tipo, por hora do dia, por dia da semana, evolução mensal, e o topo de locais.</p>
+<p><strong>Mapa auto-alojado, sem serviços externos</strong> (a app não fala com a internet): MapLibre GL + um extracto <strong>PMTiles</strong> da área de interesse (Algarve ≈ 100 MB), servido pelo próprio nginx com pedidos por intervalo (<code>Accept-Ranges</code>). Camada de pontos quentes por densidade de registos. O mesmo ficheiro serve o modo offline — a região fica em cache no telemóvel.</p>
+<p>Os pontos do mapa são de <strong>registos</strong>, nunca de pessoas: não há, e não haverá, mapa de moradas ou de paradeiros.</p>
+<hr />
+<h2 id="p-9-modulo-de-identificacoes"><a class="anchor" href="#p-9-modulo-de-identificacoes">9. Módulo de identificações</a></h2>
+<p>Desenho completo em <a href="#i-1-enquadramento-o-que-tem-de-estar-resolvido-antes-de-ligar"><code>MODULO-IDENTIFICACOES.md</code></a>. Resumo do que decide a arquitectura:</p>
+<ol><li><strong>Desligado por omissão.</strong> O código existe, as tabelas existem, mas a API devolve 403 enquanto não houver um registo de activação (<code>ident_activacoes</code>) com finalidade, base legal, responsável pelo tratamento, prazos e referência da autorização. Ligar o módulo é um acto documentado, não uma checkbox.</li><li><strong>O responsável pelo tratamento é a GNR, não o João.</strong> Um ficheiro de pessoas identificadas em serviço é tratamento de dados por autoridade competente para fins penais — Lei 59/2019 (Directiva (UE) 2016/680) — ou RGPD/Lei 58/2019 na parte contra-ordenacional. Antes de ligar: parecer do EPD da GNR, inscrição no registo de actividades de tratamento e, por haver categorias especiais e tecnologia nova, avaliação de impacto. <strong>Isto não bloqueia construir; bloqueia ligar</strong> — e a app é que faz cumprir o bloqueio.</li><li><strong>Minimização a sério</strong>: nome, data de nascimento, tipo e número de documento, papel no registo, referência do auto. Nada de saúde, religião, origem ou opinião. <strong>Biometria e reconhecimento facial: proibidos por desenho</strong> — a app nunca processa uma imagem além de lhe fazer miniatura.</li><li><strong>Sem navegação exploratória</strong>: não há listagem de pessoas nem <code>LIKE</code> sobre nomes. Chega-se a uma ficha a partir de um registo próprio, ou por pesquisa de <strong>correspondência exacta</strong> sobre um índice HMAC (documento, matrícula, nome completo normalizado), sempre com <strong>motivo obrigatório</strong> e sempre auditada.</li><li><strong>Cifra dedicada</strong>: campos identificativos com chave própria (<code>IDENT_FIELD_KEY</code>), índices de pesquisa com HMAC de chave separada (<code>IDENT_INDEX_KEY</code>). Comprometer o dump não chega para ler, e a chave de índice não abre os dados.</li><li><strong>Prazos curtos e revistos</strong>: 90 dias sem auto associado, 1 ano com auto (configuráveis). No fim, anonimização — fica a linha estatística, desaparece a pessoa.</li><li><strong>Nada disto vive no telemóvel</strong> (§4 nº 8).</li></ol>
+<hr />
+<h2 id="p-10-fases"><a class="anchor" href="#p-10-fases">10. Fases</a></h2>
+<div class="tablewrap"><table><thead><tr><th>Fase</th><th>Conteúdo</th><th>Prova de que está feito</th></tr></thead><tbody><tr><td><strong>0</strong></td><td>Repo, docker, migração inicial, auth, design system, cabeçalhos da §1.3, deploy na tailnet</td><td>Entrar pelo telemóvel em <code>https://…ts.net</code>, instalar a PWA, e a câmara abrir</td></tr><tr><td><strong>1</strong></td><td>Serviços + registos + fotos + outbox offline</td><td>Registar em modo avião, ligar a rede, ver subir sozinho — uma só vez</td></tr><tr><td><strong>2</strong></td><td>Redacção + PDF do turno</td><td>Copiar o texto de um registo e gerar o PDF do turno</td></tr><tr><td><strong>3</strong></td><td>Painel + mapa</td><td>Gráficos e pontos quentes com dados reais, sem um pedido para fora</td></tr><tr><td><strong>4</strong></td><td>Admin: catálogos, modelos, utilizadores, auditoria, fila de conservação, idade do backup</td><td>Apagar um registo expirado e ver ficar só a linha anónima</td></tr><tr><td><strong>5.0</strong></td><td><strong>Portão</strong> do módulo de identificações: finalidade, base legal, responsável, prazos, autorização</td><td><code>ident_activacoes</code> preenchido; sem ele, 403 em todas as rotas do módulo</td></tr><tr><td><strong>5.1</strong></td><td>Modelo, cifra, índices HMAC, RLS e auditoria das identificações (sem UI)</td><td>Testes: outra equipa recebe 404; setting vazio nega; consulta fica auditada</td></tr><tr><td><strong>5.2</strong></td><td>Intervenientes a partir do registo (sem pesquisa, sem ficha)</td><td>Associar pessoa/veículo a uma fiscalização e gerar o auto com os campos certos</td></tr><tr><td><strong>5.3</strong></td><td>Ficha de pessoa + pesquisa por correspondência exacta com motivo</td><td>Encontrar por nº de documento; ver no log quem consultou, quando e porquê</td></tr><tr><td><strong>5.4</strong></td><td>Conservação, anonimização e dossier do titular</td><td>Expirar uma ficha e ver ficar só a estatística; exportar o dossier de um titular</td></tr><tr><td><strong>5.5</strong></td><td><em>(decisão à parte)</em> Fotografia de pessoa/documento de terceiro</td><td>Só avança com fundamento escrito na activação</td></tr></tbody></table></div>
+<p>As fases 0–4 não dependem de nenhuma decisão do módulo 5. Se o portão nunca fechar, a app continua completa e útil — que é a razão de o desenho ser este.</p>
+<hr />
+<h2 id="p-11-verificacao"><a class="anchor" href="#p-11-verificacao">11. Verificação</a></h2>
+<p><strong>Backend</strong> — <code>cd backend &amp;&amp; pytest</code>, contra <code>caderno_test</code>:</p>
+<ul><li>auth: rotação e detecção de reutilização de refresh token, lockout, revogação de sessão;</li><li><strong>idempotência</strong>: o mesmo <code>POST</code> duas vezes dá um registo e 200 à segunda;</li><li><strong>RLS</strong>: utilizador de outra equipa recebe 404, e um setting vazio <strong>nega</strong> em vez de permitir (o teste que o <code>escalasPT</code> não tem);</li><li><strong>audit log append-only</strong>: <code>UPDATE</code>/<code>DELETE</code> como <code>caderno_app</code> levam <code>InsufficientPrivilege</code>;</li><li><strong>cabeçalhos</strong>: <code>Permissions-Policy</code> traz <code>camera=(self)</code> e <code>geolocation=(self)</code>;</li><li>conservação: expirar → fila → anonimizar deixa a linha estatística e apaga os anexos do disco;</li><li>identificações: portão fechado ⇒ 403; consulta sem motivo ⇒ 422; toda a consulta deixa linha em <code>ident_consultas</code>; limite de consultas por hora.</li></ul>
+<p><strong>Frontend</strong> — <code>npm run build</code> (corre <code>tsc -b</code>) e Vitest ao drainer do outbox: fila com falhas de rede intermitentes tem de convergir sem duplicar; blob de foto sobrevive a recarregar a página; dados de pessoa desaparecem do Dexie depois do <code>ack</code>.</p>
+<p><strong>Ponta a ponta, no telemóvel</strong> (é o único teste que conta): modo avião → dois registos com fotos → ligar → confirmar que subiram uma só vez, com as fotos certas, e que o PDF do turno os mostra.</p>
+<p><strong>CI</strong> — pytest + <code>npm run build</code> + Bandit + pip-audit + <code>npm audit</code> em cada push.</p>
+<hr />
+<h2 id="p-12-riscos-e-decisoes-em-aberto"><a class="anchor" href="#p-12-riscos-e-decisoes-em-aberto">12. Riscos e decisões em aberto</a></h2>
+<div class="tablewrap"><table><thead><tr><th>Risco</th><th>Mitigação</th></tr></thead><tbody><tr><td>O portão da fase 5 nunca fecha (autorização institucional demora ou não vem)</td><td>As fases 0–4 são autónomas e entregam a app completa. O módulo fica dormente, não meio-feito.</td></tr><tr><td>Telemóvel perdido com registos por sincronizar</td><td>PIN da app, limpeza automática da cache, sem dados de pessoas em local, e <code>tailscale device revoke</code> corta o acesso à API.</td></tr><tr><td>Cifra de campo impede pesquisa no servidor</td><td>Assumido: pesquisa por metadados no servidor, texto livre no cliente. Se um dia doer, entra um índice HMAC de palavras — não texto em claro.</td></tr><tr><td>PMTiles de 100 MB no telemóvel</td><td>Só a região à volta é que fica em cache; o ficheiro completo é servido pelo nginx sob pedido por intervalo.</td></tr><tr><td>Deriva face ao <code>escalasPT</code> (correcções que lá continuam por fazer)</td><td>As sete correcções da §1.2 estão descritas com ficheiro e linha; se valer a pena, entram no <code>escalasPT</code> como PR próprio.</td></tr></tbody></table></div>
+    <div class="part">
+      <div class="lbl">Parte II</div>
+      <h2 class="parttitle">Módulo de identificações — pessoas e veículos</h2>
+    </div>
+    <blockquote><p>Anexo ao <a href="#p-0-o-que-mudou-face-a-v1"><code>PLANO.md</code></a>. Cobre o que a v1 do plano tinha deixado de fora: registar <strong>quem</strong> foi identificado, fiscalizado ou interveio numa ocorrência, e conseguir voltar lá.</p></blockquote>
+<p>O resto do caderno regista o <strong>evento</strong>. Este módulo regista as <strong>pessoas e veículos</strong> que aparecem nesse evento. É a parte com mais valor prático no terreno e é, ao mesmo tempo, a única do sistema em que um erro de desenho tem consequências para terceiros. Daí ter documento próprio, portão de activação e regras que a app faz cumprir sozinha — em vez de confiar em boas intenções.</p>
+<hr />
+<h2 id="i-1-enquadramento-o-que-tem-de-estar-resolvido-antes-de-ligar"><a class="anchor" href="#i-1-enquadramento-o-que-tem-de-estar-resolvido-antes-de-ligar">1. Enquadramento (o que tem de estar resolvido antes de ligar)</a></h2>
+<p>Um ficheiro de pessoas identificadas em serviço não é uma nota pessoal: é <strong>tratamento de dados pessoais por autoridade competente</strong>. O regime aplicável depende da finalidade:</p>
+<ul><li><strong>Lei 59/2019</strong> (transpõe a Directiva (UE) 2016/680) — prevenção, detecção, investigação e repressão de infracções penais. É o regime da maior parte do que aqui se regista.</li><li><strong>RGPD + Lei 58/2019</strong> — o que for contra-ordenacional, administrativo ou de gestão interna.</li></ul>
+<p>Consequências que o desenho tem de reflectir, e reflecte:</p>
+<div class="tablewrap"><table><thead><tr><th>Exigência</th><th>Onde vive na app</th></tr></thead><tbody><tr><td><strong>Responsável pelo tratamento</strong> é a GNR, não o utilizador</td><td><code>ident_activacoes.responsavel</code> — texto obrigatório, sem default</td></tr><tr><td><strong>Finalidade determinada, explícita e legítima</strong></td><td><code>ident_activacoes.finalidade</code> + <code>base_legal</code>, obrigatórios</td></tr><tr><td><strong>Autorização institucional</strong> (despacho/ordem de serviço)</td><td><code>ident_activacoes.referencia_autorizacao</code></td></tr><tr><td><strong>Parecer do EPD</strong> e <strong>registo da actividade de tratamento</strong></td><td><code>ident_activacoes.parecer_epd</code> (referência + data)</td></tr><tr><td><strong>Avaliação de impacto</strong> (novas tecnologias + dados sensíveis)</td><td><code>ident_activacoes.aipd_referencia</code></td></tr><tr><td><strong>Minimização</strong></td><td>Esquema fechado, §3 — não há campo "outros dados"</td></tr><tr><td><strong>Limitação da conservação</strong></td><td><code>conservar_ate</code> por interveniente, §7</td></tr><tr><td><strong>Segurança</strong></td><td>Cifra dedicada, RLS, 2FA, §5</td></tr><tr><td><strong>Registo de acessos e consultas</strong> (art. 55.º-56.º Lei 59/2019)</td><td><code>ident_consultas</code> + <code>audit_logs</code>, §8</td></tr><tr><td><strong>Direitos do titular</strong></td><td>Dossier e apagamento, §9</td></tr></tbody></table></div>
+<p><strong>Nada disto impede escrever o código.</strong> O que impede é <em>ligar o módulo em produção com dados reais</em> — e essa é uma decisão do João com o seu comando e o EPD da GNR, não uma decisão técnica. A app existe para tornar essa fronteira verificável: sem <code>ident_activacoes</code> válido, as rotas devolvem 403 e as tabelas ficam vazias.</p>
+<blockquote><p><strong>Uso pessoal vs institucional.</strong> Se o módulo for usado como memória privada do próprio, fora de qualquer autorização, o utilizador fica sozinho como responsável pelo tratamento, com tudo o que isso implica. É por isso que o ecrã de activação obriga a escrever quem é o responsável: para que a resposta seja escrita por alguém, uma vez, em vez de assumida todos os dias.</p></blockquote>
+<hr />
+<h2 id="i-2-principios-de-desenho-as-regras-que-nao-se-negoceiam"><a class="anchor" href="#i-2-principios-de-desenho-as-regras-que-nao-se-negoceiam">2. Princípios de desenho (as regras que não se negoceiam)</a></h2>
+<ol><li><strong>Desligado por omissão.</strong> Fase 5.0 fecha o portão; até lá, 403.</li><li><strong>Sem navegação exploratória.</strong> Não existe <code>GET /api/pessoas</code>. Não há listagem, não há paginação de pessoas, não há <code>LIKE '%…%'</code> sobre nomes. Só se chega a uma ficha por um caminho legítimo (§4).</li><li><strong>Sem biometria.</strong> Nenhum processamento de rosto, impressão digital ou voz. Sem descritores, sem comparação de imagens, sem "pesquisar por foto". Se um dia isso for preciso, é o sistema oficial que o faz — não este.</li><li><strong>Motivo obrigatório em toda a consulta.</strong> Curto, com sugestões, guardado. Uma consulta sem motivo é 422, não é um aviso.</li><li><strong>A app aponta para o auto, não o substitui.</strong> <code>referencia_oficial</code> continua a ser o elo com o sistema oficial; este módulo é apoio ao trabalho do próprio, não um cadastro paralelo.</li><li><strong>Prazos curtos por omissão.</strong> Guardar durante anos "por precaução" é exactamente o que a lei não permite.</li><li><strong>Nada em cache no telemóvel</strong> (§6).</li><li><strong>O admin não é excepção.</strong> Vê a auditoria; também é auditado.</li></ol>
+<hr />
+<h2 id="i-3-modelo-de-dados"><a class="anchor" href="#i-3-modelo-de-dados">3. Modelo de dados</a></h2>
+<p>Todas as tabelas com <code>UUIDMixin</code> + <code>TimestampMixin</code>, <code>equipa_id</code>, RLS por equipa (policy da §1.2 nº 2 do <code>PLANO.md</code>), e criação no cliente proibida — <strong>as pessoas são sempre criadas com o servidor online</strong>, ao contrário dos registos (§6).</p>
+<h3 id="i-pessoas"><a class="anchor" href="#i-pessoas"><code>pessoas</code></a></h3>
+<div class="tablewrap"><table><thead><tr><th>Coluna</th><th>Tipo</th><th>Notas</th></tr></thead><tbody><tr><td><code>id</code></td><td>uuid</td><td>PK</td></tr><tr><td><code>equipa_id</code></td><td>uuid</td><td>FK, RLS</td></tr><tr><td><code>autor_id</code></td><td>uuid</td><td>FK <code>users</code> — quem criou</td></tr><tr><td><code>nome</code></td><td><code>EncryptedStr</code></td><td>cifrado com <code>IDENT_FIELD_KEY</code></td></tr><tr><td><code>nome_idx</code></td><td>bytea</td><td>HMAC-SHA256 do nome normalizado (§4)</td></tr><tr><td><code>data_nascimento</code></td><td><code>EncryptedDate</code></td><td>opcional</td></tr><tr><td><code>tipo_documento</code></td><td>enum</td><td><code>cc</code>, <code>passaporte</code>, <code>titulo_residencia</code>, <code>carta_conducao</code>, <code>outro</code></td></tr><tr><td><code>numero_documento</code></td><td><code>EncryptedStr</code></td><td>opcional</td></tr><tr><td><code>documento_idx</code></td><td>bytea</td><td>HMAC do documento normalizado, <code>UNIQUE (equipa_id, documento_idx)</code></td></tr><tr><td><code>nacionalidade</code></td><td>char(2)</td><td>ISO 3166-1, não cifrado (baixa identificabilidade, serve estatística)</td></tr><tr><td><code>morada</code></td><td><code>EncryptedStr</code></td><td>opcional; nunca geocodificada, nunca no mapa</td></tr><tr><td><code>contacto</code></td><td><code>EncryptedStr</code></td><td>opcional</td></tr><tr><td><code>notas</code></td><td><code>EncryptedText</code></td><td>livre, com aviso no ecrã (§10)</td></tr><tr><td><code>conservar_ate</code></td><td>date</td><td>calculado, §7</td></tr><tr><td><code>anonimizada_em</code></td><td>timestamptz</td><td>nulo enquanto viva</td></tr></tbody></table></div>
+<p><strong>Não existe</strong> — e uma migração que o adicione deve ser recusada em revisão: saúde, origem étnica, religião, opiniões políticas, vida sexual, filiação sindical, dados biométricos, "alcunha", "grupo", "perigosidade", "sinalizado".</p>
+<h3 id="i-veiculos"><a class="anchor" href="#i-veiculos"><code>veiculos</code></a></h3>
+<p><code>matricula</code> (<code>EncryptedStr</code>) + <code>matricula_idx</code> (HMAC, <code>UNIQUE (equipa_id, matricula_idx)</code>), <code>marca</code>, <code>modelo</code>, <code>cor</code>, <code>observacoes</code> (cifrado), <code>conservar_ate</code>, <code>anonimizado_em</code>.</p>
+<h3 id="i-registo-intervenientes"><a class="anchor" href="#i-registo-intervenientes"><code>registo_intervenientes</code></a></h3>
+<p>Liga um registo a uma pessoa. É aqui que está o significado.</p>
+<div class="tablewrap"><table><thead><tr><th>Coluna</th><th>Notas</th></tr></thead><tbody><tr><td><code>registo_id</code>, <code>pessoa_id</code></td><td>PK composta com <code>id</code> próprio para idempotência</td></tr><tr><td><code>papel</code></td><td><code>identificado</code> | <code>condutor</code> | <code>passageiro</code> | <code>testemunha</code> | <code>denunciante</code> | <code>ofendido</code> | <code>suspeito</code></td></tr><tr><td><code>resultado</code></td><td><code>identificado</code> | <code>notificado</code> | <code>autuado</code> | <code>detido</code> | <code>sem_seguimento</code></td></tr><tr><td><code>referencia_oficial</code></td><td>nº do auto/NUIPC que cobre esta pessoa</td></tr><tr><td><code>observacoes</code></td><td>cifrado</td></tr><tr><td><code>conservar_ate</code></td><td>derivado do papel + resultado (§7)</td></tr></tbody></table></div>
+<h3 id="i-registo-veiculos"><a class="anchor" href="#i-registo-veiculos"><code>registo_veiculos</code></a></h3>
+<p><code>registo_id</code>, <code>veiculo_id</code>, <code>papel</code> (<code>fiscalizado</code>, <code>interveniente</code>, <code>abandonado</code>, <code>apreendido</code>), <code>referencia_oficial</code>, <code>observacoes</code>.</p>
+<h3 id="i-ident-activacoes-o-portao"><a class="anchor" href="#i-ident-activacoes-o-portao"><code>ident_activacoes</code> (o portão)</a></h3>
+<p><code>equipa_id</code> (único, activo), <code>finalidade</code>, <code>base_legal</code> (enum: <code>lei_59_2019</code> \| <code>rgpd</code>), <code>responsavel</code>, <code>referencia_autorizacao</code>, <code>parecer_epd</code>, <code>aipd_referencia</code>, <code>prazos</code> (JSONB: prazo por papel/resultado), <code>fotos_pessoa_permitidas</code> (bool, default <code>false</code>), <code>activada_por</code>, <code>activada_em</code>, <code>revogada_em</code>, <code>revogada_por</code>, <code>motivo_revogacao</code>.</p>
+<p>Uma linha activa (<code>revogada_em IS NULL</code>) é condição necessária para tudo o resto. A revogação <strong>não apaga</strong> — congela: leitura continua possível para cumprir prazos e responder a pedidos, escrita fica bloqueada.</p>
+<h3 id="i-ident-consultas-o-registo-de-acessos"><a class="anchor" href="#i-ident-consultas-o-registo-de-acessos"><code>ident_consultas</code> (o registo de acessos)</a></h3>
+<p><code>utilizador_id</code>, <code>datahora</code>, <code>tipo</code> (<code>pesquisa</code> \| <code>abertura_ficha</code> \| <code>dossier</code> \| <code>exportacao</code>), <code>criterio_idx</code> (o <strong>HMAC</strong> do termo pesquisado, nunca o termo em claro), <code>pessoa_id</code> (quando aplicável), <code>motivo</code>, <code>resultado</code> (<code>encontrado</code> \| <code>nao_encontrado</code> \| <code>negado</code>), <code>ip</code>, <code>user_agent</code>. Append-only pelas mesmas garantias de <code>audit_logs</code> (<code>REVOKE UPDATE, DELETE</code>).</p>
+<hr />
+<h2 id="i-4-como-se-chega-a-uma-pessoa"><a class="anchor" href="#i-4-como-se-chega-a-uma-pessoa">4. Como se chega a uma pessoa</a></h2>
+<p>Três caminhos, e mais nenhum:</p>
+<p><strong>A. A partir de um registo próprio.</strong> <code>GET /api/registos/{id}</code> devolve os intervenientes. É o caminho normal: estou a rever a minha fiscalização de ontem e vejo quem lá estava. Não pede motivo — o motivo é o próprio registo, e a abertura fica na auditoria na mesma.</p>
+<p><strong>B. Pesquisa por correspondência exacta.</strong> <code>POST /api/identificacoes/pesquisa</code> com <code>{criterio: "documento"|"matricula"|"nome", valor, motivo}</code>. O servidor normaliza (<code>trim</code>, maiúsculas, sem acentos, sem espaços duplos; matrícula sem hífenes), calcula <code>HMAC-SHA256(IDENT_INDEX_KEY, criterio || ":" || valor_normalizado)</code> e faz igualdade sobre a coluna <code>*_idx</code>. <strong>Não há prefixo, não há semelhança, não há "talvez seja este".</strong> Quem pesquisa tem de saber o que procura — que é precisamente o controlo de proporcionalidade. Devolve no máximo os intervenientes dos registos da própria equipa.</p>
+<p><strong>C. Ficha, vinda de A ou B.</strong> <code>GET /api/pessoas/{id}</code> — dados + lista dos registos onde aparece, <strong>filtrada por RLS</strong> (só os da equipa). Exige <code>motivo</code> quando não vem imediatamente de A.</p>
+<p><strong>Limites</strong>: 30 pesquisas por hora e por utilizador (slowapi, mesmo padrão do <code>escalasPT</code>); acima disso, 429 e aviso ao admin no painel. Sem exportação em massa: o único export é o dossier de <strong>uma</strong> pessoa (§9), auditado.</p>
+<p><strong>Porque é que o nome também é HMAC e não texto pesquisável</strong>: um índice de nome pesquisável por prefixo transforma isto num cadastro consultável — que é a diferença entre "confirmo a pessoa que identifiquei" e "vejo o que há sobre este sujeito". A primeira coisa é apoio ao serviço; a segunda é um sistema que precisaria de um enquadramento que esta app não tem.</p>
+<hr />
+<h2 id="i-5-cifra-chaves-e-acesso"><a class="anchor" href="#i-5-cifra-chaves-e-acesso">5. Cifra, chaves e acesso</a></h2>
+<ul><li><code>IDENT_FIELD_KEY</code> — AES-GCM (via <code>TypeDecorator</code> <code>EncryptedStr</code>/<code>EncryptedText</code>), <strong>distinta</strong> de <code>FIELD_ENCRYPTION_KEY</code> (usada em <code>registos.descricao</code>) e de <code>ATTACHMENT_MASTER_KEY</code>. Um comprometimento parcial não abre o módulo.</li><li><code>IDENT_INDEX_KEY</code> — chave HMAC dos índices de pesquisa. Não decifra nada; sem ela não se consegue sequer testar hipóteses ("será que o cidadão X está aqui?") contra um dump roubado.</li><li>Rotação: procedimento escrito em <code>docs/OPERACAO.md</code> — decifrar/recifrar em lote numa janela de manutenção, com <code>key_version</code> guardado em cada valor cifrado (prefixo de 1 byte), para a rotação ser incremental e não um big-bang.</li><li><strong>2FA obrigatória</strong> para qualquer utilizador com acesso ao módulo: sem TOTP activo, as rotas devolvem 403 mesmo com o portão aberto.</li><li><strong>Step-up</strong>: abrir uma ficha exige uma sessão com TOTP validado nas últimas 8 h; caso contrário, pede o código outra vez. Sessão de módulo curta, por desenho.</li><li>Acesso por papel: <code>agente</code> vê as fichas ligadas aos <strong>seus</strong> registos; <code>chefe_equipa</code> vê as da equipa; <code>admin</code> <strong>não vê fichas</strong> — administra utilizadores, prazos e auditoria. Separar quem administra de quem consulta é o controlo mais barato que existe contra o abuso.</li></ul>
+<hr />
+<h2 id="i-6-offline-a-excepcao-deliberada"><a class="anchor" href="#i-6-offline-a-excepcao-deliberada">6. Offline — a excepção deliberada</a></h2>
+<p>O resto da app é offline-first. <strong>Este módulo não é</strong>, e é uma decisão, não uma limitação:</p>
+<ul><li>Criar/associar uma pessoa <strong>exige rede</strong>. Sem rede, a folha de registo aceita o registo normalmente e deixa os intervenientes por associar, com um aviso "por identificar (sem rede)" — e o registo fica na fila.</li><li>O que existe localmente é uma escrita <strong>pendente</strong>, apagada do Dexie assim que o servidor confirma (<code>ack</code>) — nunca uma cópia de leitura.</li><li><strong>Não há pesquisa offline de pessoas.</strong> Um telemóvel com um índice de pessoas pesquisável é, na prática, um ficheiro no bolso, com o modelo de ameaça de um telemóvel (perda, apreensão, curiosidade alheia).</li><li><code>logout</code>, PIN falhado 5 vezes, ou 30 dias sem abrir ⇒ <code>Dexie.delete()</code> da store sensível.</li></ul>
+<p>Custo assumido: numa zona sem rede, a identificação anota-se no campo livre do registo e associa-se depois, no fim do turno. Foi a troca escolhida.</p>
+<hr />
+<h2 id="i-7-conservacao-e-anonimizacao"><a class="anchor" href="#i-7-conservacao-e-anonimizacao">7. Conservação e anonimização</a></h2>
+<p><code>conservar_ate</code> calcula-se na criação do interveniente, a partir de <code>prazos</code> na activação. Valores por omissão (configuráveis em <code>/admin</code>, nunca "sem prazo"):</p>
+<div class="tablewrap"><table><thead><tr><th>Situação</th><th>Prazo</th></tr></thead><tbody><tr><td>Identificação sem seguimento</td><td><strong>90 dias</strong></td></tr><tr><td>Notificado / autuado (com <code>referencia_oficial</code>)</td><td><strong>1 ano</strong></td></tr><tr><td>Ofendido, testemunha, denunciante</td><td><strong>90 dias</strong></td></tr><tr><td>Suspeito / detido, com NUIPC</td><td><strong>1 ano</strong> (o processo vive no sistema oficial)</td></tr><tr><td>Veículo fiscalizado</td><td><strong>90 dias</strong></td></tr></tbody></table></div>
+<p>Trabalho diário: o que passou do prazo entra na <strong>fila de conservação</strong> em <code>/admin</code>, junto com a dos registos. O João revê e confirma. Ao anonimizar:</p>
+<ol><li><code>pessoas</code>: apaga-se <code>nome</code>, <code>nome_idx</code>, <code>numero_documento</code>, <code>documento_idx</code>, <code>data_nascimento</code>, <code>morada</code>, <code>contacto</code>, <code>notas</code>; fica <code>id</code>, <code>nacionalidade</code>, <code>anonimizada_em</code>.</li><li><code>registo_intervenientes</code>: fica <code>papel</code>, <code>resultado</code>, <code>registo_id</code> — a estatística ("12 identificados, 3 autuados") sobrevive; a pessoa não.</li><li>Anexos com finalidade de pessoa: apagados do disco, com a linha de auditoria.</li><li>Tudo isto numa transacção, com <code>audit_logs</code> a guardar o <strong>quê</strong> (contagens, ids) e nunca o conteúdo apagado.</li></ol>
+<p>Uma pessoa cujo prazo expirou em todos os intervenientes é anonimizada; se continuar ligada a um interveniente ainda dentro do prazo, mantém-se — e a fila mostra a data mais tardia.</p>
+<p>Aviso preventivo: 15 dias antes, o painel mostra quantas fichas vão expirar. <strong>Nada é apagado sozinho.</strong> Nada fica para sempre.</p>
+<hr />
+<h2 id="i-8-auditoria"><a class="anchor" href="#i-8-auditoria">8. Auditoria</a></h2>
+<p>Além do <code>audit_logs</code> geral, este módulo escreve em <code>ident_consultas</code> <strong>em todos</strong> os caminhos de leitura: pesquisa (encontrada ou não), abertura de ficha, dossier, exportação, e também as <strong>negadas</strong> (portão fechado, 2FA em falta, limite excedido) — as negadas são as mais interessantes.</p>
+<p>Ecrã <code>/admin/auditoria</code> com filtros por utilizador, data e tipo, e três números que a página mostra sempre: consultas nos últimos 7 dias, utilizadores distintos, e pesquisas sem resultado (um número alto de pesquisas falhadas é o padrão típico de sondagem). O registo de acessos é para ser <strong>olhado</strong>, não só escrito.</p>
+<hr />
+<h2 id="i-9-direitos-dos-titulares"><a class="anchor" href="#i-9-direitos-dos-titulares">9. Direitos dos titulares</a></h2>
+<p>Não se prevê atendimento directo na app — os pedidos entram pela GNR e pelo EPD. O que a app tem de conseguir fazer, e faz:</p>
+<ul><li><code>GET /api/pessoas/{id}/dossier</code> — tudo o que existe sobre aquela pessoa (ficha, intervenientes, registos onde aparece, anexos com finalidade de pessoa), em JSON e PDF, para instruir a resposta. Auditado como <code>dossier</code>.</li><li><code>POST /api/pessoas/{id}/apagar</code> — apagamento fora de prazo, com <code>motivo</code> obrigatório e a mesma mecânica de anonimização da §7. Auditado, irreversível, só <code>chefe_equipa</code>.</li><li><code>POST /api/pessoas/{id}/rectificar</code> — correcção de dados errados, com o valor anterior guardado em <code>audit_logs.old_data</code> (cifrado) durante 1 ano.</li><li>Limitação do tratamento: <code>estado = 'limitada'</code> — a ficha deixa de aparecer em pesquisas e só é legível por <code>chefe_equipa</code> com motivo, mas não é apagada enquanto a limitação durar.</li></ul>
+<hr />
+<h2 id="i-10-ecras"><a class="anchor" href="#i-10-ecras">10. Ecrãs</a></h2>
+<ul><li><strong>Activação</strong> (<code>/admin/identificacoes</code>) — formulário do portão. Todos os campos da §3 obrigatórios; texto no topo a dizer, sem rodeios, que ligar isto cria um ficheiro de dados pessoais e quem passa a responder por ele. Botão de revogar sempre visível.</li><li><strong>Intervenientes</strong>, dentro da folha de registo — uma linha por pessoa: nome, documento, papel, resultado. Adicionar abre um formulário curto; se a pessoa já existe (documento igual), reutiliza a ficha em vez de duplicar.</li><li><strong>Ficha</strong> (<code>/pessoas/:id</code>) — dados, e a lista de registos onde aparece com data, tipo e referência do auto. Cabeçalho com <code>conservar_ate</code> e um aviso quando falta menos de 15 dias. Sem foto de rosto, sem "histórico de comportamento", sem campos de opinião.</li><li><strong>Pesquisa</strong> — um campo, um seletor de critério, um campo de motivo. O botão só activa com motivo preenchido. Zero resultados diz "sem correspondência exacta" e não sugere aproximações.</li><li>O campo <code>notas</code> mostra, por baixo, uma linha permanente: <em>"Factos observados no serviço. Não escrever apreciações pessoais, saúde, origem, religião ou convicções."</em> É o único sítio onde o desenho não consegue impedir o mau uso — por isso avisa.</li></ul>
+<hr />
+<h2 id="i-11-testes-que-este-modulo-tem-de-ter"><a class="anchor" href="#i-11-testes-que-este-modulo-tem-de-ter">11. Testes que este módulo tem de ter</a></h2>
+<div class="tablewrap"><table><thead><tr><th>Teste</th><th>O que garante</th></tr></thead><tbody><tr><td><code>test_portao_fechado_devolve_403</code></td><td>Sem <code>ident_activacoes</code> activo, nenhuma rota funciona</td></tr><tr><td><code>test_activacao_exige_todos_os_campos</code></td><td>Não se liga o módulo com campos por preencher</td></tr><tr><td><code>test_revogacao_bloqueia_escrita_mas_permite_leitura</code></td><td>Congela, não apaga</td></tr><tr><td><code>test_sem_2fa_devolve_403</code></td><td>2FA é condição, não sugestão</td></tr><tr><td><code>test_pesquisa_sem_motivo_422</code></td><td>Motivo obrigatório</td></tr><tr><td><code>test_pesquisa_parcial_nao_encontra</code></td><td>Não há <code>LIKE</code>: "Silv" não encontra "Silva"</td></tr><tr><td><code>test_pesquisa_regista_hmac_nao_o_termo</code></td><td><code>ident_consultas.criterio_idx</code> nunca tem texto em claro</td></tr><tr><td><code>test_pesquisa_negada_tambem_e_registada</code></td><td>As negadas ficam</td></tr><tr><td><code>test_rls_outra_equipa_404</code></td><td>Isolamento por equipa</td></tr><tr><td><code>test_rls_setting_vazio_nega</code></td><td>O bug do <code>escalasPT</code> não se repete aqui</td></tr><tr><td><code>test_admin_nao_le_fichas</code></td><td>Separação administrar/consultar</td></tr><tr><td><code>test_limite_consultas_por_hora</code></td><td>429 acima de 30/h</td></tr><tr><td><code>test_anonimizacao_preserva_estatistica</code></td><td>Contagens sobrevivem, pessoa não</td></tr><tr><td><code>test_anonimizacao_apaga_anexos_do_disco</code></td><td>Não fica ficheiro órfão</td></tr><tr><td><code>test_dossier_inclui_tudo</code></td><td>Direito de acesso executável</td></tr><tr><td><code>test_dexie_limpa_pessoa_apos_ack</code> (Vitest)</td><td>Nada de pessoas em cache local</td></tr></tbody></table></div>
+<hr />
+<h2 id="i-12-o-que-fica-de-fora-e-porque"><a class="anchor" href="#i-12-o-que-fica-de-fora-e-porque">12. O que fica de fora, e porquê</a></h2>
+<ul><li><strong>Reconhecimento facial e qualquer biometria</strong> — §2 nº 3.</li><li><strong>Ligação a bases oficiais</strong> (SIIOP, SEF, registo automóvel) — não há integração, nem screen scraping, nem "colar aqui a consulta". O que vem do sistema oficial fica no sistema oficial; aqui fica a referência.</li><li><strong>Partilha entre equipas ou exportação global</strong> — RLS por equipa, sem excepção, sem endpoint de export total.</li><li><strong>Alertas/marcações sobre pessoas</strong> ("atenção a este") — é perfilagem, não é o que esta app é, e teria um enquadramento próprio.</li><li><strong>Mapa de pessoas ou moradas</strong> — o mapa é de registos (§8 do <code>PLANO.md</code>).</li></ul>
+<p>Se alguma destas precisar mesmo de existir, entra como decisão separada, com fundamento escrito na activação — nunca como "aproveitando que já cá está".</p>
+  </main>
+</div>
