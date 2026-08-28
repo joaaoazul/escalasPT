@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: pytest
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: caderno_owner
+          POSTGRES_PASSWORD: ci_owner_password
+          POSTGRES_DB: caderno_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U caderno_owner -d caderno_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      APP_ENV: development
+      JWT_SECRET_KEY: ci-only-secret-not-used-anywhere-else
+      # The app connects as the limited role and Alembic as the owner — the same
+      # split as production, which is what makes the append-only audit test real.
+      TEST_DATABASE_URL: postgresql+asyncpg://caderno_app:ci_app_password@localhost:5432/caderno_test
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://caderno_owner:ci_owner_password@localhost:5432/caderno_test
+      DATABASE_URL: postgresql+asyncpg://caderno_app:ci_app_password@localhost:5432/caderno_test
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - name: Create the limited application role
+        env:
+          PGPASSWORD: ci_owner_password
+          CADERNO_APP_DB_PASSWORD: ci_app_password
+        run: |
+          psql -h localhost -U caderno_owner -d caderno_test \
+               -v ON_ERROR_STOP=1 -f backend/scripts/init_db.sql
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run tests
+        working-directory: backend
+        run: pytest -q
+
+  frontend:
+    name: tsc + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # `npm run build` is tsc -b, then vite build, then the check that no
+      # external origin leaked into dist/ (docs/PLANO.md §3.2).
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  security:
+    name: bandit + audits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install audit tooling
+        run: pip install bandit==1.8.0 pip-audit==2.9.0
+
+      - name: Bandit
+        working-directory: backend
+        run: bandit -r app -ll
+
+      - name: pip-audit
+        working-directory: backend
+        run: pip-audit -r requirements.txt --strict
+
+      - name: npm audit
+        working-directory: frontend
+        run: npm audit --audit-level=high

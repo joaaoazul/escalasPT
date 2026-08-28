@@ -1,0 +1,17 @@
+# Development only — docker compose reads this automatically.
+# Exposes Postgres and Redis on localhost so `pytest` and `npm run dev` can
+# reach them. Never copy this to the VPS.
+
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:5433:5432"
+
+  redis:
+    ports:
+      - "127.0.0.1:6380:6379"
+
+  api:
+    environment:
+      APP_ENV: development
+      APP_DEBUG: "true"

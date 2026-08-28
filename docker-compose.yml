@@ -1,0 +1,141 @@
+# Caderno de Serviço — production compose.
+#
+# Nothing is published on 0.0.0.0. nginx binds to 127.0.0.1:8090 and the app is
+# reached over the tailnet with `tailscale serve --bg 8090`, which terminates
+# TLS with the machine's *.ts.net certificate. That gives a valid certificate
+# and therefore a secure context — without which the service worker, the camera
+# and geolocation do not work at all (docs/PLANO.md §5).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: caderno-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-caderno}
+      # Read by scripts/init_db.sql to create the limited application role.
+      CADERNO_APP_DB_PASSWORD: ${CADERNO_APP_DB_PASSWORD:?Set CADERNO_APP_DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-caderno}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+    networks: [caderno-net]
+
+  redis:
+    image: redis:7-alpine
+    container_name: caderno-redis
+    restart: unless-stopped
+    command: >
+      redis-server --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
+      --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=$$REDIS_PASSWORD redis-cli ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+          cpus: '0.5'
+    networks: [caderno-net]
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: caderno-api
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      # The application connects as the LIMITED role. Alembic uses the owner
+      # (MIGRATION_DATABASE_URL) — that separation is what makes the audit log
+      # append-only and RLS effective (docs/PLANO.md §1.2).
+      DATABASE_URL: postgresql+asyncpg://caderno_app:${CADERNO_APP_DB_PASSWORD}@postgres:5432/${POSTGRES_DB:-caderno}
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-caderno}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '1.5'
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks: [caderno-net]
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: caderno-nginx
+    restart: unless-stopped
+    ports:
+      # Localhost only. `tailscale serve --bg 8090` puts it on the tailnet.
+      - "127.0.0.1:8090:8080"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - frontend_dist:/usr/share/nginx/html:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.5'
+    networks: [caderno-net]
+
+  # One-shot: builds the SPA into the volume nginx serves. Run with
+  #   docker compose --profile build run --rm frontend-build
+  frontend-build:
+    image: node:22-alpine
+    container_name: caderno-frontend-build
+    profiles: ["build"]
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - frontend_dist:/app/dist
+    command: sh -c "npm ci && npm run build"
+    networks: [caderno-net]
+
+volumes:
+  postgres_data:
+    name: caderno_postgres_data
+  redis_data:
+    name: caderno_redis_data
+  frontend_dist:
+    name: caderno_frontend_dist
+
+networks:
+  caderno-net:
+    name: caderno-net
