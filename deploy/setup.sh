@@ -101,7 +101,9 @@ echo "    sudo tailscale serve --bg 8090"
 echo
 info "Depois: https://\$(tailscale status --json | grep -o '\"DNSName\":\"[^\"]*' | head -1 | cut -d'\"' -f4)"
 echo
-info "Primeiro utilizador:"
-echo "    CADERNO_SEED_PASSWORD='...' $COMPOSE run --rm api \\"
+info "Primeiro utilizador (o -e é o que leva a palavra-passe para dentro do contentor):"
+echo "    read -rsp 'Palavra-passe: ' SEED_PW && echo"
+echo "    $COMPOSE run --rm -e CADERNO_SEED_PASSWORD=\"\$SEED_PW\" api \\"
 echo "        python -m scripts.seed --equipa 'Posto X' --codigo PX \\"
 echo "        --username joao --nome 'João' --nip 1234567 --email joao@example.pt"
+echo "    unset SEED_PW"

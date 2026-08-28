@@ -51,11 +51,17 @@ npm run dev                   # http://localhost:5173
 Primeiro utilizador:
 
 ```bash
+# desenvolvimento (fora do Docker)
 cd backend
-CADERNO_SEED_PASSWORD='...' python -m scripts.seed \
+read -rsp "Palavra-passe: " CADERNO_SEED_PASSWORD && export CADERNO_SEED_PASSWORD && echo
+python -m scripts.seed \
     --equipa "Posto de Castro Marim" --codigo CTM \
     --username joao --nome "João Azul" --nip 1234567 --email joao@example.pt
+unset CADERNO_SEED_PASSWORD
 ```
+
+No servidor é com `docker compose run --rm -e CADERNO_SEED_PASSWORD=... api` —
+ver [`deploy/SERVIDOR.md`](deploy/SERVIDOR.md) §6.
 
 ---
 

@@ -51,14 +51,50 @@ Cada um destes é mais uma coisa a actualizar e mais uma porta a fechar.
 
 ---
 
-## 3. Preparar o servidor
+## 3. Puxar o código e preparar o servidor
 
 ```bash
-# no servidor, como utilizador com sudo
-git clone <repo> /opt/caderno/app
+# no servidor, como utilizador com sudo (não root)
+sudo apt-get update && sudo apt-get install -y git
+
+sudo mkdir -p /opt/caderno && sudo chown "$USER:$USER" /opt/caderno
+git clone -b claude/caderno-fase-0 --single-branch \
+    https://github.com/joaaoazul/escalasPT.git /opt/caderno/app
+
 cd /opt/caderno/app
 sudo bash deploy/provision.sh
 ```
+
+O ramo `claude/caderno-fase-0` é órfão: tem a app na raiz e histórico próprio,
+nada do escalasPT.
+
+> **O repositório `escalasPT` é público.** O código não tem segredos — o `.env`
+> é ignorado pelo git e o `.env.example` só tem `GENERATE_ME` — mas a partir do
+> momento em que isto guarda serviço real, o sítio dele é um repositório
+> **privado**. Como passar a ter um (§3.1).
+
+### 3.1 Fazer disto um repositório teu
+
+```bash
+git clone -b claude/caderno-fase-0 --single-branch \
+    https://github.com/joaaoazul/escalasPT.git caderno
+cd caderno
+rm -rf .git
+git init -b main
+git add -A
+git commit -m "Caderno de Serviço — fase 0"
+
+# com o gh cli:
+gh repo create caderno --private --source=. --push
+# ou, criando o repositório vazio em github.com primeiro:
+git remote add origin git@github.com:<utilizador>/caderno.git
+git push -u origin main
+```
+
+Depois é esse o URL que se clona no servidor. Num repositório privado, o
+servidor precisa de credenciais: o mais simples é uma **deploy key** só de
+leitura (`ssh-keygen -t ed25519 -C caderno-servidor`, e a pública em
+Settings → Deploy keys do repositório).
 
 Fecha o porto 22 à internet por omissão. Se ainda não tens o Tailscale a
 funcionar e não queres ficar de fora, corre `sudo bash deploy/provision.sh
@@ -96,6 +132,19 @@ para o volume que o nginx serve, sobe a base de dados, corre
 subir a API antes da migração dá um serviço que responde 500 com healthcheck
 verde.
 
+Para os comandos manuais que se seguem, vale a pena fixar o ficheiro do compose
+na sessão:
+
+```bash
+echo 'export COMPOSE_FILE=docker-compose.yml' >> ~/.bashrc && source ~/.bashrc
+```
+
+Sem isto, um `docker compose ps` dentro da pasta também carrega o
+`docker-compose.override.yml`, que é o ficheiro de desenvolvimento e expõe o
+Postgres e o Redis em `127.0.0.1`. Não é uma brecha — é só ruído que não
+pertence a um servidor. O `deploy/setup.sh` já passa `-f docker-compose.yml`
+explicitamente, portanto nunca o usa.
+
 ---
 
 ## 5. Publicar na tailnet
@@ -119,15 +168,25 @@ este desenho evita.
 
 ```bash
 cd /opt/caderno/app
-CADERNO_SEED_PASSWORD='<palavra-passe forte>' \
-docker compose run --rm api python -m scripts.seed \
+read -rsp "Palavra-passe: " SEED_PW && echo
+
+docker compose -f docker-compose.yml run --rm \
+    -e CADERNO_SEED_PASSWORD="$SEED_PW" api \
+    python -m scripts.seed \
     --equipa "Posto de Castro Marim" --codigo CTM \
     --username joao --nome "João Azul" --nip 1234567 --email joao@example.pt
+
+unset SEED_PW
 ```
 
 A palavra-passe vai por variável de ambiente, não por argumento — argumentos
-ficam no histórico da shell e na lista de processos. Mínimo 12 caracteres com
-maiúscula, minúscula, algarismo e símbolo; o script recusa o resto.
+ficam no histórico da shell e na lista de processos. O `read -rsp` não a mostra
+no ecrã nem a deixa no histórico, e o `-e` é o que a faz chegar **dentro** do
+contentor: um `VAR=x docker compose run` define-a só na shell do anfitrião, e o
+seed responde `FATAL: set CADERNO_SEED_PASSWORD`.
+
+Mínimo 12 caracteres com maiúscula, minúscula, algarismo e símbolo; o script
+recusa o resto.
 
 ---
 
@@ -232,12 +291,59 @@ continua a funcionar; entra por lá e `sudo ufw allow 22/tcp`.
 ## 10. Resumo, para copiar
 
 ```bash
-git clone <repo> /opt/caderno/app && cd /opt/caderno/app
+# 1. código
+sudo apt-get update && sudo apt-get install -y git
+sudo mkdir -p /opt/caderno && sudo chown "$USER:$USER" /opt/caderno
+git clone -b claude/caderno-fase-0 --single-branch \
+    https://github.com/joaaoazul/escalasPT.git /opt/caderno/app
+cd /opt/caderno/app
+
+# 2. servidor
 sudo bash deploy/provision.sh          # docker, tailscale, firewall, swap
 sudo tailscale up --ssh                # autenticar no link que aparece
-# sair e voltar a entrar (grupo docker)
+exit                                   # sair e voltar a entrar (grupo docker)
+
+# 3. app
+cd /opt/caderno/app
 bash deploy/setup.sh                   # segredos, build, migrações, up
 sudo tailscale serve --bg 8090         # TLS e endereço ts.net
-sudo bash deploy/install-backups.sh    # chaves + temporizador + primeira cópia
-# e criar o primeiro utilizador (§6)
+
+# 4. utilizador
+read -rsp "Palavra-passe: " SEED_PW && echo
+docker compose -f docker-compose.yml run --rm -e CADERNO_SEED_PASSWORD="$SEED_PW" api \
+    python -m scripts.seed --equipa "Posto de Castro Marim" --codigo CTM \
+    --username joao --nome "João Azul" --nip 1234567 --email joao@example.pt
+unset SEED_PW
+
+# 5. cópias de segurança
+sudo bash deploy/install-backups.sh
+```
+
+Confirmar, por esta ordem:
+
+```bash
+docker compose -f docker-compose.yml ps            # 4 serviços, healthy
+curl -s localhost:8090/health                       # ok
+tailscale serve status                              # o endereço https://…ts.net
+curl -sI https://<maquina>.<tailnet>.ts.net/api/health | grep -i permissions-policy
+```
+
+O último tem de dizer `camera=(self)`. E depois abrir o endereço no telemóvel,
+entrar, e instalar a PWA — que é a prova de que a fase 0 está feita.
+
+---
+
+## 11. Actualizar mais tarde
+
+```bash
+cd /opt/caderno/app
+git pull
+bash deploy/setup.sh          # mantém o .env que já existe
+```
+
+O `setup.sh` só gera segredos se o `.env` não existir; nas execuções seguintes
+reconstrói, migra e sobe. Para actualizar também as imagens de base:
+
+```bash
+docker compose -f docker-compose.yml pull && bash deploy/setup.sh
 ```
