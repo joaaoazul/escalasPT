@@ -1,6 +1,11 @@
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+# Os dois têm de dizer o mesmo. Com as fixtures em "session" e os testes no
+# loop de cada função (o valor por omissão), a ligação asyncpg que o engine de
+# sessão abre num loop é usada noutro, e todo o teste que toca na base de dados
+# rebenta com "attached to a different loop".
 asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]

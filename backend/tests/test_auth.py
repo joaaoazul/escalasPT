@@ -72,8 +72,12 @@ class TestRefreshToken:
         })
         assert login_resp.status_code == 200
 
-        # Then refresh (cookie should be set automatically by httpx)
-        refresh_resp = await client.post("/api/auth/refresh")
+        # Then refresh (cookie should be set automatically by httpx).
+        # X-Requested-With is the endpoint's CSRF check: a cross-origin form
+        # can't set a custom header, so its absence is refused outright.
+        refresh_resp = await client.post(
+            "/api/auth/refresh", headers={"X-Requested-With": "XMLHttpRequest"}
+        )
         assert refresh_resp.status_code == 200
         assert "access_token" in refresh_resp.json()
 
@@ -146,9 +150,9 @@ class TestRBAC:
         response = await client.post("/api/users/", headers=headers, json={
             "username": "created_by_admin",
             "email": "created@gnr.pt",
-            "password": "Created123!",
+            "password": "CreatedByAdmin123!",
             "full_name": "Created User",
-            "nip": "CRT001",
+            "nip": "1234567",
         })
         assert response.status_code == 201
         assert response.json()["username"] == "created_by_admin"
