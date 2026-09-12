@@ -256,8 +256,8 @@ export function AdminStationsPage() {
                   <span>Código *</span>
                   <input
                     required
-                    value={(createForm as any).code || ''}
-                    onChange={e => setCreateForm(f => ({ ...f, code: e.target.value } as any))}
+                    value={createForm.code || ''}
+                    onChange={e => setCreateForm(f => ({ ...f, code: e.target.value }))}
                     placeholder="Ex: PT-SINTRA"
                   />
                 </label>

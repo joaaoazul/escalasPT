@@ -39,10 +39,13 @@ jobs:
           bandit -r app/ -c pyproject.toml -f json -o bandit-report.json || true
           bandit -r app/ -c pyproject.toml -ll
 
+      # No "|| true" here. It was hiding 30 advisories across pyjwt,
+      # cryptography, starlette, python-multipart and aiosmtplib — the
+      # signing library, the encryption library and the web core among them.
       - name: pip-audit — Dependency vulnerabilities
         run: |
           pip install pip-audit
-          pip-audit --require-hashes=false --desc || true
+          pip-audit --require-hashes=false --desc
 
       - name: Upload Bandit report
         if: always()
@@ -71,11 +74,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: npm audit — Dependency vulnerabilities
-        run: npm audit --audit-level=critical || true
-
+      # The critical-level run that used to sit here was both redundant with
+      # this one and silenced by "|| true".
       - name: npm audit — Check for high+ vulnerabilities
         run: npm audit --audit-level=high --omit=dev
 
-      - name: ESLint security rules
-        run: npx eslint src/ --max-warnings=0 || true
+      # eslint was being invoked without ever being installed and with no
+      # config file in the repo, so this only ever "passed" because of the
+      # "|| true" that used to be here. Errors now fail the job; warnings
+      # (exhaustive-deps, set-state-in-effect) stay visible without blocking.
+      - name: ESLint
+        run: npm run lint
