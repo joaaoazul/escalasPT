@@ -42,8 +42,12 @@ jobs:
       # No "|| true" here. It was hiding 30 advisories across pyjwt,
       # cryptography, starlette, python-multipart and aiosmtplib — the
       # signing library, the encryption library and the web core among them.
+      # --require-hashes is a flag, not a switch: the old
+      # "--require-hashes=false" made pip-audit exit 2 on its own argument
+      # parser every single run. The "|| true" that used to be here meant
+      # nobody ever saw it, so this step had never actually audited anything.
       - name: pip-audit — Dependency vulnerabilities
-        run: pip-audit --require-hashes=false --desc
+        run: pip-audit --desc
 
       - name: Upload Bandit report
         if: always()
