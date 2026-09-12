@@ -1,13 +1,22 @@
 # EscalasPT — Ignore patterns
 
 # Python
+# dist/ e build/ ficam presos ao backend de propósito: soltos, apanhavam também
+# o dist/ de cada pacote dentro de node_modules, que é onde o código deles vive.
 __pycache__/
 *.py[cod]
 *.egg-info/
-dist/
-build/
+backend/dist/
+backend/build/
 .eggs/
 *.egg
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/dev-dist/
+*.tsbuildinfo
+npm-debug.log*
 
 # Env
 .env
@@ -42,6 +51,7 @@ me.json
 users.json
 types.json
 api_logs.txt
+trace_ext.py
 
 # Coverage
 htmlcov/
