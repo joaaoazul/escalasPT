@@ -25,6 +25,14 @@ error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 command -v docker >/dev/null 2>&1 || { error "Docker not installed"; exit 1; }
 command -v docker compose >/dev/null 2>&1 || { error "Docker Compose (v2) not installed"; exit 1; }
 
+# The compose file declares `web` as external, so it has to exist before `up`
+# or the whole stack refuses to start. It is the network the shared Caddy uses
+# to reach escalaspt-nginx by name.
+if ! docker network inspect web >/dev/null 2>&1; then
+    info "Creating the shared 'web' network..."
+    docker network create web >/dev/null
+fi
+
 # ── Reset mode ────────────────────────────────────────────────
 if [[ "${1:-}" == "--reset" ]]; then
     warn "RESET MODE: This will destroy ALL data (database, redis, frontend build)."
@@ -83,7 +91,7 @@ if [[ ! -f "$ENV_FILE" ]]; then
     cat "$ENV_FILE"
     echo "─────────────────────────────────────────────────"
     echo ""
-    warn "Edit CORS_ORIGINS if your domain is not escalaspt.duckdns.org"
+    warn "Edit CORS_ORIGINS if your domain is not escalas.joaoazul.dev"
     echo ""
     read -rp "Continue with these values? [Y/n]: " CONFIRM
     if [[ "${CONFIRM,,}" == "n" ]]; then
@@ -158,12 +166,11 @@ info " EscalasPT deployed successfully!"
 info "========================================="
 info " Internal:  http://localhost:${PORT}"
 info ""
-info " Next steps:"
-info "   1. Set up DuckDNS subdomain pointing to this server's IP"
-info "   2. Install Caddy: sudo apt install caddy"
-info "   3. Copy deploy/Caddyfile to /etc/caddy/Caddyfile"
-info "   4. Replace YOURDOMAIN with your DuckDNS subdomain"
-info "   5. sudo systemctl restart caddy"
-info "   6. Update CORS_ORIGINS in .env.prod with your https:// domain"
-info "   7. Restart API: docker restart escalaspt-api"
+info " Next steps (TLS is handled by the Caddy already on this host):"
+info "   1. Point escalas.joaoazul.dev at this server's IP"
+info "   2. Paste deploy/Caddyfile's site block into that Caddy's Caddyfile"
+info "   3. Put its Caddy service on the same network: docker network connect web <caddy-container>"
+info "   4. Reload it: docker exec <caddy-container> caddy reload --config /etc/caddy/Caddyfile"
+info "   5. Check CORS_ORIGINS in .env.prod matches the https:// domain"
+info "   6. If you changed it: docker restart escalaspt-api"
 info "========================================="

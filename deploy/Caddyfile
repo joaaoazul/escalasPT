@@ -1,36 +1,57 @@
-# EscalasPT — Caddy reverse proxy
-# Place this file at /etc/caddy/Caddyfile on the VPS
-# Replace YOURDOMAIN with your DuckDNS subdomain (e.g., escalaspt.duckdns.org)
+# EscalasPT — site block for the shared Caddy
+#
+# This is NOT a standalone Caddyfile. The target VPS already runs Caddy in a
+# container (the Quota/LigaDosPobres stack) and it owns ports 80 and 443, so a
+# second Caddy cannot start there. Paste this block into that Caddyfile,
+# alongside the site block already in it, and reload.
+#
+# Two things have to be true first:
+#
+#   1. A shared Docker network exists and both sides are on it:
+#        docker network create web
+#      EscalasPT's nginx joins it via deploy/docker-compose.prod.yml. Add the
+#      same external network to the Caddy service on the other stack, so that
+#      `escalaspt-nginx` resolves. Proxying to localhost would not work: from
+#      inside the Caddy container that is the container itself, and EscalasPT's
+#      host port is bound to 127.0.0.1 on the host, out of its reach.
+#
+#   2. escalas.joaoazul.dev resolves to this server, so the certificate can be
+#      issued. Caddy handles HTTPS automatically; nothing to install by hand.
+#      If the record is proxied through Cloudflare, keep the global
+#      trusted_proxies list that is already in that Caddyfile — without it,
+#      {client_ip} below is Cloudflare's address rather than the visitor's,
+#      and every visitor lands in the same rate-limit bucket.
 
-YOURDOMAIN.duckdns.org {
-	reverse_proxy localhost:8443 {
-		# Overwrite, never append. Caddy's default is to keep whatever
-		# X-Forwarded-For the client sent and add the peer to it, which lets
-		# anyone put an address of their choosing at the front of the chain —
-		# and nginx and the API both read that header to decide who is being
-		# rate limited.
-		#
-		# {client_ip}, not {remote_host}: behind a CDN the immediate peer is
-		# the CDN, and using it would put every visitor in one bucket again.
-		# {client_ip} is whatever the global trusted_proxies setting resolves
-		# the real client to, and falls back to the peer when there is no CDN
-		# in front. If you put Cloudflare (or anything similar) ahead of this,
-		# set trusted_proxies to its ranges in the global block or the value
-		# here is the CDN's address.
-		header_up X-Forwarded-For {client_ip}
-	}
+escalas.joaoazul.dev {
+	encode zstd gzip
 
-	# Compress responses
-	encode gzip zstd
-
-	# Security headers (supplement nginx)
 	header {
 		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
 	}
 
-	# Logging
+	# nginx inside the EscalasPT stack serves the built frontend and proxies
+	# /api and /ws onwards. It sets the rest of the security headers, including
+	# the CSP, which is why they are not repeated here.
+	reverse_proxy escalaspt-nginx:80 {
+		# Overwrite, never append. Caddy's default keeps whatever
+		# X-Forwarded-For the client sent and adds the peer to it, which would
+		# let anyone put an address of their choosing at the front of the
+		# chain — and nginx and the API both read this header to decide who is
+		# being rate limited.
+		#
+		# {client_ip}, not {remote_host}: behind a CDN the immediate peer is
+		# the CDN. {client_ip} resolves through trusted_proxies and falls back
+		# to the peer when there is nothing in front, so it is right either way.
+		header_up X-Forwarded-For {client_ip}
+
+		health_uri /api/health
+		health_interval 30s
+	}
+
 	log {
 		output file /var/log/caddy/escalaspt.log {
 			roll_size 10mb
