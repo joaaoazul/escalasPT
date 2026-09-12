@@ -7,13 +7,14 @@ from __future__ import annotations
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.config import get_settings
+from app.rate_limit import limiter
 from app.dependencies import close_redis
 from app.exceptions import register_exception_handlers
 from app.middleware import RLSMiddleware, SecurityHeadersMiddleware
@@ -86,6 +87,33 @@ async def _cleanup_expired_tokens_loop():
             logger.exception("Token cleanup task error")
 
 
+async def _check_database() -> bool:
+    """One trivial round trip — enough to prove the pool can still reach Postgres."""
+    from sqlalchemy import text
+    from app.database import async_session_factory
+
+    try:
+        async with async_session_factory() as db:
+            await db.execute(text("SELECT 1"))
+        return True
+    except Exception:
+        get_logger(__name__).warning("Health check: database unreachable", exc_info=True)
+        return False
+
+
+async def _check_redis() -> bool:
+    """Redis holds the rate-limit counters; without it the limits stop applying."""
+    from app.dependencies import get_redis
+
+    try:
+        client = await get_redis()
+        await client.ping()
+        return True
+    except Exception:
+        get_logger(__name__).warning("Health check: redis unreachable", exc_info=True)
+        return False
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     application = FastAPI(
@@ -99,13 +127,12 @@ def create_app() -> FastAPI:
     )
 
     # ── Rate Limiting ─────────────────────────────────────
-    limiter = Limiter(
-        key_func=get_remote_address,
-        default_limits=[settings.RATE_LIMIT_DEFAULT],
-        storage_uri=settings.REDIS_URL,
-    )
+    # SlowAPIMiddleware is what applies default_limits. Without it, only the
+    # endpoints carrying an explicit @limiter.limit decorator were ever
+    # checked, and RATE_LIMIT_DEFAULT was decoration.
     application.state.limiter = limiter
     application.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    application.add_middleware(SlowAPIMiddleware)
 
     # ── CORS ──────────────────────────────────────────────
     application.add_middleware(
@@ -136,11 +163,27 @@ def create_app() -> FastAPI:
     application.include_router(websocket.router)
 
     # ── Health Check ──────────────────────────────────────
+    # Exempt from the default limit: this is what Docker polls, and a
+    # throttled health check reads as a dead container.
     @application.get("/api/health", tags=["Health"])
-    async def health_check():
+    @limiter.exempt
+    async def health_check(response: Response):
+        """
+        Reports on the dependencies the app cannot serve a request without.
+
+        It used to answer "healthy" unconditionally, which meant the Docker
+        health check passed with the database down — and nginx waits on
+        exactly that condition before it starts, so a broken stack looked
+        like a working one.
+        """
+        checks = {"database": await _check_database(), "redis": await _check_redis()}
+        healthy = all(checks.values())
+        if not healthy:
+            response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return {
-            "status": "healthy",
+            "status": "healthy" if healthy else "unhealthy",
             "service": settings.APP_NAME,
+            "checks": {name: "up" if ok else "down" for name, ok in checks.items()},
         }
 
     return application

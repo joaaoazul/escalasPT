@@ -3,23 +3,30 @@
 # Replace YOURDOMAIN with your DuckDNS subdomain (e.g., escalaspt.duckdns.org)
 
 YOURDOMAIN.duckdns.org {
-    reverse_proxy localhost:8443
+	reverse_proxy localhost:8443 {
+		# Overwrite, never append. Caddy's default is to keep whatever
+		# X-Forwarded-For the client sent and add the peer to it, which lets
+		# anyone put an address of their choosing at the front of the chain —
+		# and nginx and the API both read that header to decide who is being
+		# rate limited. {remote_host} is the address Caddy itself saw.
+		header_up X-Forwarded-For {remote_host}
+	}
 
-    # Compress responses
-    encode gzip zstd
+	# Compress responses
+	encode gzip zstd
 
-    # Security headers (supplement nginx)
-    header {
-        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "DENY"
-    }
+	# Security headers (supplement nginx)
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+	}
 
-    # Logging
-    log {
-        output file /var/log/caddy/escalaspt.log {
-            roll_size 10mb
-            roll_keep 3
-        }
-    }
+	# Logging
+	log {
+		output file /var/log/caddy/escalaspt.log {
+			roll_size 10mb
+			roll_keep 3
+		}
+	}
 }

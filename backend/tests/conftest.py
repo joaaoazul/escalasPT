@@ -37,6 +37,7 @@ from app.dependencies import get_db
 from app.main import create_app
 from app.models import Base, Station, ShiftType, User, UserRole
 from app.models.user import ActiveSession
+from app.rate_limit import limiter
 from app.utils.security import create_access_token, hash_password
 
 settings = get_settings()
@@ -146,6 +147,21 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
 
 
 # ── Application ───────────────────────────────────────────
+
+@pytest.fixture(autouse=True)
+def _disable_rate_limiting():
+    """
+    Rate limiting is off for the suite.
+
+    Every test drives the app from the same client address, so the global
+    60/minute default would start returning 429 partway through a run and
+    make failures depend on test order. It also needs Redis, which the suite
+    otherwise doesn't. The limits are exercised against a real Redis instead.
+    """
+    limiter.enabled = False
+    yield
+    limiter.enabled = True
+
 
 @pytest_asyncio.fixture
 async def app(db_session):

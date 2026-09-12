@@ -10,6 +10,8 @@ backend/dist/
 backend/build/
 .eggs/
 *.egg
+.venv/
+venv/
 
 # Node / frontend
 node_modules/

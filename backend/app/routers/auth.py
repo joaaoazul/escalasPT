@@ -3,8 +3,6 @@ Auth router — login, refresh, logout, TOTP.
 """
 
 from fastapi import APIRouter, Body, Cookie, Depends, Request, Response
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db, require_role
@@ -22,11 +20,11 @@ from app.schemas.auth import (
 )
 from app.services import auth_service
 from app.config import get_settings
+from app.rate_limit import limiter
 
 settings = get_settings()
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
-limiter = Limiter(key_func=get_remote_address)
 
 
 def _get_client_ip(request: Request) -> str:
