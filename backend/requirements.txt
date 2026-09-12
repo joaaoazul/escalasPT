@@ -32,13 +32,8 @@ slowapi==0.1.9
 # Logging
 python-json-logger==3.2.1
 
-# Testing
-pytest==9.1.1
-pytest-asyncio==1.4.0
+# HTTP client (used at runtime by app/utils/security.py)
 httpx==0.28.1
-
-# Security auditing
-pip-audit==2.9.0
 
 # PDF generation
 reportlab==4.2.5

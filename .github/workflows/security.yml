@@ -29,13 +29,13 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-dev.txt
 
       - name: Bandit — Python SAST
         run: |
-          pip install bandit
           bandit -r app/ -c pyproject.toml -f json -o bandit-report.json || true
           bandit -r app/ -c pyproject.toml -ll
 
@@ -43,9 +43,7 @@ jobs:
       # cryptography, starlette, python-multipart and aiosmtplib — the
       # signing library, the encryption library and the web core among them.
       - name: pip-audit — Dependency vulnerabilities
-        run: |
-          pip install pip-audit
-          pip-audit --require-hashes=false --desc
+        run: pip-audit --require-hashes=false --desc
 
       - name: Upload Bandit report
         if: always()

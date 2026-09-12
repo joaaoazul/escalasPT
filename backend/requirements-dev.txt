@@ -1,0 +1,13 @@
+# Development and CI only. The Dockerfile installs requirements.txt alone, so
+# none of this reaches the production image — a test runner and an audit tool
+# sitting in a running container are weight and attack surface, not features.
+
+-r requirements.txt
+
+# Testing
+pytest==9.1.1
+pytest-asyncio==1.4.0
+
+# Security auditing
+pip-audit==2.9.0
+bandit==1.9.4
