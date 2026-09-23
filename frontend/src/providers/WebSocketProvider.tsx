@@ -34,8 +34,12 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       const token = getAccessToken();
       if (!token) return; // No token yet, wait for next cycle
 
+      // On Vercel the page and the API live on different hosts: /api is
+      // rewritten to the VPS, but Vercel cannot proxy WebSockets, so the
+      // socket has to go there directly. VITE_WS_URL names that endpoint;
+      // left unset, it is the same host, as behind nginx.
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      const wsUrl = import.meta.env.VITE_WS_URL || `${protocol}//${window.location.host}/ws`;
       
       try {
         ws.current = new WebSocket(wsUrl);

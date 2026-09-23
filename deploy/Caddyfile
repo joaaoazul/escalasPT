@@ -33,23 +33,46 @@ escalas.joaoazul.dev {
 		-Server
 	}
 
-	# nginx inside the EscalasPT stack serves the built frontend and proxies
-	# /api and /ws onwards. It sets the rest of the security headers, including
-	# the CSP, which is why they are not repeated here.
-	reverse_proxy escalaspt-nginx:80 {
-		# Overwrite, never append. Caddy's default keeps whatever
-		# X-Forwarded-For the client sent and adds the peer to it, which would
-		# let anyone put an address of their choosing at the front of the
-		# chain — and nginx and the API both read this header to decide who is
-		# being rate limited.
-		#
-		# {client_ip}, not {remote_host}: behind a CDN the immediate peer is
-		# the CDN. {client_ip} resolves through trusted_proxies and falls back
-		# to the peer when there is nothing in front, so it is right either way.
-		header_up X-Forwarded-For {client_ip}
+	# Requests relayed by the frontend on Vercel. vercel.json rewrites /api/*
+	# here and stamps each one with X-Escalas-Proxy-Secret; the peer is then a
+	# Vercel edge node, not the visitor. Vercel publishes no stable egress
+	# ranges, so trusted_proxies cannot vouch for it. The shared secret can:
+	# only with it do we believe the client address Vercel sends in X-Real-IP
+	# (Vercel overwrites that header itself, so a visitor cannot pick it).
+	# Without this every Vercel user would share one rate-limit bucket, and the
+	# login limit would be 5/minute for the whole country.
+	#
+	# {$ESCALAS_PROXY_SECRET} is substituted when the Caddyfile is loaded, from
+	# the Caddy container's environment. Unset or shorter than 32 characters,
+	# the matcher never matches and these requests fall through to the handle
+	# below — still served, just with the Vercel node as the client.
+	@vercel_proxy expression `{http.request.header.X-Escalas-Proxy-Secret} == "{$ESCALAS_PROXY_SECRET}" && size("{$ESCALAS_PROXY_SECRET}") >= 32`
+	handle @vercel_proxy {
+		reverse_proxy escalaspt-nginx:80 {
+			header_up -X-Escalas-Proxy-Secret
+			header_up X-Forwarded-For {http.request.header.X-Real-IP}
+		}
+	}
 
-		health_uri /api/health
-		health_interval 30s
+	handle {
+		# nginx inside the EscalasPT stack serves the built frontend and proxies
+		# /api and /ws onwards. It sets the rest of the security headers, including
+		# the CSP, which is why they are not repeated here.
+		reverse_proxy escalaspt-nginx:80 {
+			# Overwrite, never append. Caddy's default keeps whatever
+			# X-Forwarded-For the client sent and adds the peer to it, which would
+			# let anyone put an address of their choosing at the front of the
+			# chain — and nginx and the API both read this header to decide who is
+			# being rate limited.
+			#
+			# {client_ip}, not {remote_host}: behind a CDN the immediate peer is
+			# the CDN. {client_ip} resolves through trusted_proxies and falls back
+			# to the peer when there is nothing in front, so it is right either way.
+			header_up X-Forwarded-For {client_ip}
+
+			health_uri /api/health
+			health_interval 30s
+		}
 	}
 
 	log {
