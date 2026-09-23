@@ -15,6 +15,8 @@ from app.config import get_settings
 from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+_in_flight: set[asyncio.Task] = set()
 settings = get_settings()
 
 # Notification types that trigger email
@@ -99,7 +101,25 @@ async def send_notification_email(
         return
 
     html = _build_notification_email(title, message)
-    # Fire and forget — don't block the notification flow
-    asyncio.create_task(
+    # Fire and forget — don't block the notification flow. The set holds a
+    # reference until it finishes: the event loop keeps only a weak one, so
+    # an unreferenced task can be garbage-collected mid-send.
+    task = asyncio.create_task(
         send_email(to_email, f"EscalasPT — {title}", html, body_text=message)
     )
+    _in_flight.add(task)
+    task.add_done_callback(_in_flight.discard)
+
+
+async def drain(timeout: float = 10.0) -> None:
+    """
+    Wait for the emails already started, up to ``timeout`` seconds.
+
+    For serverless only, where get_db calls it before the response: once a
+    Vercel function has answered, nothing promises it runs any further, so a
+    send still in flight could be frozen and lost. They still go out in
+    parallel — a schedule published to twenty people costs one wait, not
+    twenty.
+    """
+    if _in_flight:
+        await asyncio.wait(set(_in_flight), timeout=timeout)

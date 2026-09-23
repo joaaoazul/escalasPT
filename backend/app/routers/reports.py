@@ -36,7 +36,7 @@ async def swaps_report_pdf(
     current_user: User = Depends(
         require_role(UserRole.COMANDANTE, UserRole.ADJUNTO, UserRole.SECRETARIA)
     ),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Response:
     """Export approved swaps in a date range as PDF.
 
@@ -132,7 +132,7 @@ async def schedule_pdf(
     current_user: User = Depends(
         require_role(UserRole.COMANDANTE, UserRole.ADJUNTO, UserRole.SECRETARIA)
     ),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Response:
     """Export the monthly station schedule as a landscape PDF grid.
 

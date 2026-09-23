@@ -33,7 +33,7 @@ async def list_notifications(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Get notifications for the current user."""
     notifications, total, unread_count = await notification_service.get_user_notifications(
@@ -50,7 +50,7 @@ async def list_notifications(
 async def mark_read(
     data: NotificationMarkReadRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Mark notifications as read."""
     count = await notification_service.mark_notifications_read(
@@ -86,7 +86,7 @@ async def get_vapid_public_key(
 async def push_subscribe(
     data: PushSubscriptionRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Register a push subscription for the current user/device."""
     sub = await push_service.subscribe(
@@ -103,7 +103,7 @@ async def push_subscribe(
 async def push_unsubscribe(
     data: PushUnsubscribeRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Remove a push subscription."""
     removed = await push_service.unsubscribe(db, current_user.id, data.endpoint)

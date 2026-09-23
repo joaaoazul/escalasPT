@@ -28,7 +28,7 @@ _STATION_MANAGEABLE_ROLES = {UserRole.MILITAR, UserRole.SECRETARIA, UserRole.ADJ
 async def create_user(
     data: UserCreate,
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     Create a new user.
@@ -61,7 +61,7 @@ async def list_users(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO, UserRole.SECRETARIA)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     List users. Admin sees all; comandante/adjunto/secretaria see only their station.
@@ -80,7 +80,7 @@ async def list_users(
 async def get_user(
     user_id: uuid.UUID,
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO, UserRole.SECRETARIA)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Get a single user by ID."""
     user = await user_service.get_user_by_id(db, user_id)
@@ -98,7 +98,7 @@ async def update_user(
     user_id: uuid.UUID,
     data: UserUpdate,
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     Update a user.
@@ -136,7 +136,7 @@ async def update_user(
 async def anonymize_user(
     user_id: uuid.UUID,
     current_user: User = Depends(require_role(UserRole.ADMIN)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     RGPD Art. 17 — Anonymize a deactivated user's personal data.

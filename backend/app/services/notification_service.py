@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.notification import Notification, NotificationType
 from app.models.user import User
+from app.services import realtime
 from app.services.email_service import send_notification_email
 from app.services.push_service import send_push_to_user
 from app.utils.logging import get_logger
@@ -78,6 +79,15 @@ class ConnectionManager:
 ws_manager = ConnectionManager()
 
 
+async def broadcast_calendar_sync(db: AsyncSession, station_id: str, reason: str) -> None:
+    """Tell everyone at the station to refetch shifts and swaps."""
+    await ws_manager.broadcast_to_station(station_id, {
+        "type": "calendar_sync",
+        "reason": reason,
+    })
+    realtime.queue(db, realtime.station_channel(station_id), "calendar_sync")
+
+
 # ── Notification CRUD ─────────────────────────────────────
 
 
@@ -116,6 +126,7 @@ async def create_notification(
         },
     }
     await ws_manager.send_to_user(str(user_id), str(station_id), ws_payload)
+    realtime.queue(db, realtime.user_channel(str(user_id)), "notification")
 
     # Email notification (fire-and-forget)
     user_result = await db.execute(select(User).where(User.id == user_id))

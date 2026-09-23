@@ -59,3 +59,6 @@ trace_ext.py
 htmlcov/
 .coverage
 .coverage.*
+
+# Vercel CLI
+.vercel/

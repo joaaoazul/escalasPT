@@ -41,7 +41,7 @@ async def login(
     request: Request,
     response: Response,
     data: LoginRequest = Body(...),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     Authenticate with username + password.
@@ -81,7 +81,7 @@ async def login_with_totp(
     request: Request,
     response: Response,
     data: TOTPLoginRequest = Body(...),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Authenticate with username + password + TOTP code."""
     ip = _get_client_ip(request)
@@ -112,7 +112,7 @@ async def refresh_token(
     request: Request,
     response: Response,
     refresh_token: str | None = Cookie(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     Refresh the access token using the HttpOnly refresh cookie.
@@ -150,7 +150,7 @@ async def logout(
     request: Request,
     response: Response,
     refresh_token: str | None = Cookie(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Logout — revoke refresh token family and clear cookie."""
     if refresh_token:
@@ -168,7 +168,7 @@ async def logout(
 @router.post("/totp/setup", response_model=TOTPSetupResponse)
 async def setup_totp(
     current_user: User = Depends(require_role(UserRole.COMANDANTE)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     Generate TOTP secret and provisioning URI.
@@ -185,7 +185,7 @@ async def setup_totp(
 async def verify_totp(
     data: TOTPVerifyRequest,
     current_user: User = Depends(require_role(UserRole.COMANDANTE)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     Verify TOTP code and enable 2FA.

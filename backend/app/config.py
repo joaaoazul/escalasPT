@@ -6,11 +6,12 @@ Uses pydantic-settings for validation and type casting.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from functools import lru_cache
 from typing import List
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _INSECURE_JWT_DEFAULTS = {"CHANGE-ME-IN-PRODUCTION", "", "secret", "changeme"}
@@ -32,11 +33,61 @@ class Settings(BaseSettings):
     APP_DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
 
+    # ── Runtime ───────────────────────────────────────────────
+    # True on Vercel, which sets VERCEL=1 in every function. Each instance
+    # there is short-lived and may be frozen between requests, so nothing can
+    # hold a connection pool or run a background loop — see database.py and
+    # the lifespan in main.py.
+    SERVERLESS: bool = Field(default_factory=lambda: bool(os.getenv("VERCEL")))
+
     # ── Database ──────────────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://user:pass@localhost:5432/escalaspt"
+    # Supabase only accepts TLS from outside its network. asyncpg ignores the
+    # sslmode= parameter in the connection strings Supabase hands out, so it
+    # is asked for here instead.
+    DATABASE_SSL: bool = False
 
     # ── Redis ─────────────────────────────────────────────────
     REDIS_URL: str = "redis://:pass@localhost:6379/0"
+
+    # ── Supabase Realtime ─────────────────────────────────────
+    # Replaces the /ws endpoint where the API cannot hold a socket open. All
+    # four empty means realtime is off and the frontend uses /ws, as before.
+    SUPABASE_URL: str = ""
+    SUPABASE_PUBLISHABLE_KEY: str = ""  # handed to the browser; public by design
+    SUPABASE_SECRET_KEY: str = ""  # server only: lets the API broadcast
+    # Channel names are derived from this, so knowing a user's id is not
+    # enough to listen in on their channel.
+    REALTIME_CHANNEL_SECRET: str = ""
+
+    # ── Scheduled jobs ────────────────────────────────────────
+    # Vercel Cron sends it as "Authorization: Bearer <CRON_SECRET>".
+    CRON_SECRET: str = ""
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def use_asyncpg_driver(cls, v: str) -> str:
+        # Supabase, Neon and the Vercel integrations all give out plain
+        # postgres:// URLs. The engine is async and needs the asyncpg driver
+        # named; the libpq-only query parameters would be rejected by asyncpg.
+        for prefix in ("postgres://", "postgresql://"):
+            if v.startswith(prefix):
+                v = "postgresql+asyncpg://" + v[len(prefix):]
+                break
+        if v.startswith("postgresql+asyncpg://") and "?" in v:
+            base, query = v.split("?", 1)
+            kept = [p for p in query.split("&") if p.split("=", 1)[0] not in {"sslmode", "pgbouncer", "supa"}]
+            v = base + ("?" + "&".join(kept) if kept else "")
+        return v
+
+    @property
+    def realtime_enabled(self) -> bool:
+        return all((
+            self.SUPABASE_URL,
+            self.SUPABASE_PUBLISHABLE_KEY,
+            self.SUPABASE_SECRET_KEY,
+            self.REALTIME_CHANNEL_SECRET,
+        ))
 
     # ── JWT ───────────────────────────────────────────────────
     JWT_SECRET_KEY: str = "CHANGE-ME-IN-PRODUCTION"

@@ -37,7 +37,7 @@ router = APIRouter(prefix="/shifts", tags=["Shifts"])
 async def create_shift(
     data: ShiftCreate,
     current_user: User = Depends(require_role(UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Create a new shift in draft status. Comandante or Adjunto."""
     shift, warnings = await shift_service.create_shift(
@@ -61,7 +61,7 @@ async def list_shifts(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     List shifts with filters.
@@ -97,7 +97,7 @@ async def list_shifts(
 async def get_shift(
     shift_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Get a single shift."""
     from app.exceptions import AuthorizationError
@@ -121,7 +121,7 @@ async def update_shift(
     shift_id: uuid.UUID,
     data: ShiftUpdate,
     current_user: User = Depends(require_role(UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Update a draft shift. Comandante or Adjunto."""
     shift, warnings = await shift_service.update_shift(
@@ -139,7 +139,7 @@ async def update_shift(
 async def delete_shift(
     shift_id: uuid.UUID,
     current_user: User = Depends(require_role(UserRole.COMANDANTE)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Cancel a shift. Comandante only."""
     await shift_service.delete_shift(
@@ -153,7 +153,7 @@ async def delete_shift(
 async def publish_shifts(
     data: ShiftPublishRequest,
     current_user: User = Depends(require_role(UserRole.COMANDANTE)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     Publish a batch of draft shifts.
@@ -229,7 +229,7 @@ async def publish_shifts(
 async def validate_shifts(
     data: ShiftValidateRequest,
     current_user: User = Depends(require_role(UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Dry-run validation — check for conflicts without publishing."""
     from app.services.conflict_detector import validate_shifts as do_validate
@@ -247,7 +247,7 @@ async def validate_shifts(
 async def bulk_create_shifts(
     data: ShiftBulkCreate,
     current_user: User = Depends(require_role(UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Create multiple shifts at once (e.g., from template)."""
     shifts, warnings = await shift_service.bulk_create_shifts(

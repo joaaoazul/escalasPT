@@ -30,7 +30,7 @@ router = APIRouter(prefix="/stations", tags=["Stations"])
 async def create_station(
     data: StationCreate,
     current_user: User = Depends(require_role(UserRole.ADMIN)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Create a new station. Admin only."""
     # Check code uniqueness
@@ -63,7 +63,7 @@ async def list_stations(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     current_user: User = Depends(require_role(UserRole.ADMIN)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """List all stations. Admin only."""
     query = select(Station)
@@ -91,7 +91,7 @@ async def list_stations(
 async def get_station(
     station_id: uuid.UUID,
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Get a single station."""
     station = await db.get(Station, station_id)
@@ -111,7 +111,7 @@ async def update_station(
     station_id: uuid.UUID,
     data: StationUpdate,
     current_user: User = Depends(require_role(UserRole.ADMIN)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Update a station. Admin only."""
     station = await db.get(Station, station_id)

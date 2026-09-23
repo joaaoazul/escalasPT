@@ -23,7 +23,7 @@ from app.schemas.shift import (
 )
 from app.services.audit_service import create_audit_log
 from app.services.conflict_detector import validate_shifts, validate_single_shift
-from app.services.notification_service import ws_manager
+from app.services.notification_service import broadcast_calendar_sync
 from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -212,10 +212,7 @@ async def delete_shift(
         )
 
     # Broadcast calendar sync to all station members
-    await ws_manager.broadcast_to_station(str(station_id), {
-        "type": "calendar_sync",
-        "reason": "shift_cancelled",
-    })
+    await broadcast_calendar_sync(db, str(station_id), "shift_cancelled")
 
 
 async def get_shift(db: AsyncSession, shift_id: uuid.UUID) -> Shift:

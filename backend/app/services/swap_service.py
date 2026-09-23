@@ -25,7 +25,6 @@ from app.models.shift import Shift, ShiftStatus, ShiftSwapRequest, SwapStatus
 from app.models.user import User, UserRole
 from app.services import notification_service
 from app.services.conflict_detector import validate_swap
-from app.services.notification_service import ws_manager
 from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -334,12 +333,8 @@ async def decide_swap(
         )
 
     # Broadcast calendar sync to ALL station members
-    await ws_manager.broadcast_to_station(
-        str(station_id),
-        {
-            "type": "calendar_sync",
-            "reason": "swap_approved" if approve else "swap_rejected",
-        },
+    await notification_service.broadcast_calendar_sync(
+        db, str(station_id), "swap_approved" if approve else "swap_rejected",
     )
 
     logger.info(

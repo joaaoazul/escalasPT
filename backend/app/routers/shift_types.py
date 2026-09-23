@@ -30,7 +30,7 @@ router = APIRouter(prefix="/shift-types", tags=["Shift Types"])
 async def create_shift_type(
     data: ShiftTypeCreate,
     current_user: User = Depends(require_role(UserRole.COMANDANTE)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Create a new shift type for the commander's station."""
     shift_type = ShiftType(
@@ -64,7 +64,7 @@ async def list_shift_types(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """List shift types for the user's station."""
     from app.exceptions import AuthorizationError
@@ -100,7 +100,7 @@ async def update_shift_type(
     shift_type_id: uuid.UUID,
     data: ShiftTypeUpdate,
     current_user: User = Depends(require_role(UserRole.COMANDANTE)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Update a shift type. Comandante only."""
     from app.exceptions import AuthorizationError

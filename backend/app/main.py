@@ -5,9 +5,10 @@ EscalasPT — FastAPI application factory.
 from __future__ import annotations
 
 import asyncio
+import hmac
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Response, status
+from fastapi import FastAPI, Header, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -18,7 +19,7 @@ from app.rate_limit import limiter
 from app.dependencies import close_redis
 from app.exceptions import register_exception_handlers
 from app.middleware import RLSMiddleware, SecurityHeadersMiddleware
-from app.routers import admin, auth, notifications, reports, shifts, shift_types, stations, swaps, users, websocket
+from app.routers import admin, auth, notifications, realtime, reports, shifts, shift_types, stations, swaps, users, websocket
 from app.utils.logging import get_logger, setup_logging
 
 settings = get_settings()
@@ -31,56 +32,68 @@ async def lifespan(app: FastAPI):
     logger = get_logger(__name__)
     logger.info("Starting %s (env=%s)", settings.APP_NAME, settings.APP_ENV)
 
-    # Start background cleanup task for expired tokens/sessions
-    cleanup_task = asyncio.create_task(_cleanup_expired_tokens_loop())
+    # Start background cleanup task for expired tokens/sessions. Not on
+    # serverless: an instance there is frozen between requests, so an hourly
+    # loop would run whenever it happened to be thawed, or never. Vercel Cron
+    # calls /api/internal/cleanup instead.
+    cleanup_task = None
+    if not settings.SERVERLESS:
+        cleanup_task = asyncio.create_task(_cleanup_expired_tokens_loop())
 
     yield
 
-    cleanup_task.cancel()
-    try:
-        await cleanup_task
-    except asyncio.CancelledError:
-        pass
+    if cleanup_task is not None:
+        cleanup_task.cancel()
+        try:
+            await cleanup_task
+        except asyncio.CancelledError:
+            pass
     await close_redis()
     logger.info("Shutting down %s", settings.APP_NAME)
 
 
-async def _cleanup_expired_tokens_loop():
-    """Periodically remove expired refresh tokens and stale sessions."""
-    from datetime import datetime, timezone
+async def cleanup_expired_tokens() -> tuple[int, int]:
+    """Remove expired refresh tokens and stale sessions. Returns the counts."""
+    from datetime import datetime, timedelta, timezone
     from sqlalchemy import delete
     from app.database import async_session_factory
     from app.models.user import ActiveSession, RefreshToken
 
+    async with async_session_factory() as db:
+        now = datetime.now(timezone.utc)
+        # Delete expired refresh tokens
+        result = await db.execute(
+            delete(RefreshToken).where(RefreshToken.expires_at < now)
+        )
+        expired_tokens = result.rowcount
+        # Delete revoked sessions older than 7 days
+        cutoff = now - timedelta(days=7)
+        result2 = await db.execute(
+            delete(ActiveSession).where(
+                ActiveSession.is_revoked == True,
+                ActiveSession.created_at < cutoff,
+            )
+        )
+        stale_sessions = result2.rowcount
+        await db.commit()
+
+    if expired_tokens or stale_sessions:
+        get_logger(__name__).info(
+            "Cleanup: removed %d expired tokens, %d stale sessions",
+            expired_tokens, stale_sessions,
+        )
+    return expired_tokens, stale_sessions
+
+
+async def _cleanup_expired_tokens_loop():
+    """Periodically remove expired refresh tokens and stale sessions."""
     logger = get_logger(__name__)
     INTERVAL = 3600  # every hour
 
     while True:
         try:
             await asyncio.sleep(INTERVAL)
-            async with async_session_factory() as db:
-                now = datetime.now(timezone.utc)
-                # Delete expired refresh tokens
-                result = await db.execute(
-                    delete(RefreshToken).where(RefreshToken.expires_at < now)
-                )
-                expired_tokens = result.rowcount
-                # Delete revoked sessions older than 7 days
-                from datetime import timedelta
-                cutoff = now - timedelta(days=7)
-                result2 = await db.execute(
-                    delete(ActiveSession).where(
-                        ActiveSession.is_revoked == True,
-                        ActiveSession.created_at < cutoff,
-                    )
-                )
-                stale_sessions = result2.rowcount
-                await db.commit()
-                if expired_tokens or stale_sessions:
-                    logger.info(
-                        "Cleanup: removed %d expired tokens, %d stale sessions",
-                        expired_tokens, stale_sessions,
-                    )
+            await cleanup_expired_tokens()
         except asyncio.CancelledError:
             raise
         except Exception:
@@ -160,6 +173,7 @@ def create_app() -> FastAPI:
     application.include_router(notifications.router, prefix="/api")
     application.include_router(swaps.router, prefix="/api")
     application.include_router(reports.router, prefix="/api")
+    application.include_router(realtime.router, prefix="/api")
     application.include_router(websocket.router)
 
     # ── Health Check ──────────────────────────────────────
@@ -185,6 +199,21 @@ def create_app() -> FastAPI:
             "service": settings.APP_NAME,
             "checks": {name: "up" if ok else "down" for name, ok in checks.items()},
         }
+
+    # ── Scheduled cleanup (Vercel Cron) ───────────────────
+    # Vercel calls this on the schedule in vercel.json, with CRON_SECRET as a
+    # bearer token. Without a secret configured it does not exist at all, so
+    # the self-hosted deployment, which runs the loop above, exposes nothing.
+    @application.get("/api/internal/cleanup", include_in_schema=False)
+    @limiter.exempt
+    async def scheduled_cleanup(authorization: str | None = Header(None)):
+        expected = f"Bearer {settings.CRON_SECRET}"
+        if not settings.CRON_SECRET or not hmac.compare_digest(
+            (authorization or "").encode(), expected.encode()
+        ):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        expired_tokens, stale_sessions = await cleanup_expired_tokens()
+        return {"expired_tokens": expired_tokens, "stale_sessions": stale_sessions}
 
     return application
 

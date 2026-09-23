@@ -70,7 +70,7 @@ def _swap_out(swap) -> Dict[str, Any]:
 async def create_swap(
     data: SwapCreateRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Dict[str, Any]:
     """Military creates a swap request targeting another person's shift."""
     swap = await swap_service.create_swap(
@@ -88,7 +88,7 @@ async def create_swap(
 async def list_swaps(
     status: Optional[SwapStatus] = Query(None),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> List[Dict[str, Any]]:
     """
     List swap requests.
@@ -110,7 +110,7 @@ async def list_swaps(
 async def get_swap(
     swap_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Dict[str, Any]:
     swap = await swap_service.get_swap(db, swap_id)
     # Only parties and commanders can see the swap
@@ -127,7 +127,7 @@ async def respond_to_swap(
     swap_id: uuid.UUID,
     accept: bool = Query(..., description="true to accept, false to reject"),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Dict[str, Any]:
     """Target militar responds to a swap request directed at them."""
     swap = await swap_service.respond_to_swap(db, swap_id, current_user.id, accept)
@@ -142,7 +142,7 @@ async def decide_swap(
     current_user: User = Depends(
         require_role(UserRole.COMANDANTE, UserRole.ADJUNTO, UserRole.ADMIN)
     ),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Dict[str, Any]:
     """Comandante approves or rejects a mutually-agreed swap."""
     swap = await swap_service.decide_swap(db, swap_id, current_user.id, approve)
@@ -154,7 +154,7 @@ async def decide_swap(
 async def cancel_swap(
     swap_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Dict[str, Any]:
     """Requester cancels their own pending swap request."""
     swap = await swap_service.cancel_swap(db, swap_id, current_user.id)
@@ -166,7 +166,7 @@ async def cancel_swap(
 async def download_swap_pdf(
     swap_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Response:
     """Download a PDF receipt for an approved swap.
 

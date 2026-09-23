@@ -16,6 +16,7 @@ from app.config import get_settings
 from app.database import async_session_factory
 from app.exceptions import AuthenticationError, AuthorizationError
 from app.models.user import ActiveSession, User, UserRole
+from app.services import email_service, realtime
 from app.utils.logging import get_logger
 from app.utils.security import decode_token
 
@@ -58,7 +59,16 @@ async def close_redis() -> None:
 
 
 async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
-    """Yield an async DB session with auto-commit/rollback and RLS context."""
+    """
+    Yield an async DB session with auto-commit/rollback and RLS context.
+
+    Always depend on it with ``scope="function"``. With the default scope,
+    FastAPI runs everything after the ``yield`` — the commit included — only
+    once the response has already gone out. The client then hears 200 about
+    a write that may not have happened yet, and on Vercel nothing promises
+    the function keeps running after it has answered: the commit, and the
+    Realtime signals sent after it, could simply never run.
+    """
     async with async_session_factory() as session:
         try:
             # Set RLS station context if resolved by middleware
@@ -78,8 +88,12 @@ async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
                     )
             yield session
             await session.commit()
+            await realtime.flush(session)
+            if settings.SERVERLESS:
+                await email_service.drain()
         except Exception:
             await session.rollback()
+            realtime.discard(session)
             raise
         finally:
             await session.close()
@@ -91,7 +105,7 @@ async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
 async def get_current_user(
     request: Request,
     authorization: str | None = Header(None, alias="Authorization"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> User:
     """
     Extract and validate the current user from the Authorization header.

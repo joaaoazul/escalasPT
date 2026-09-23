@@ -1,0 +1,3 @@
+# Read by Vercel when it builds the function in api/. The list itself is kept
+# in one place, next to the code that needs it.
+-r backend/requirements.txt

@@ -129,7 +129,7 @@ class StationOnboardResponse(BaseModel):
 @router.get("/stats", response_model=SystemStatsResponse)
 async def get_system_stats(
     current_user: User = Depends(require_role(UserRole.ADMIN)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Get system-wide statistics. Admin only."""
     # Users
@@ -198,7 +198,7 @@ async def list_audit_logs(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     List audit logs.
@@ -253,7 +253,7 @@ async def admin_reset_password(
     user_id: uuid.UUID,
     body: PasswordResetRequest,
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Reset a user's password. Admin or station commander."""
     user = await _get_user_check_station(db, user_id, current_user)
@@ -285,7 +285,7 @@ async def list_sessions(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     current_user: User = Depends(require_role(UserRole.ADMIN)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """List active sessions. Admin only."""
     query = select(ActiveSession)
@@ -314,7 +314,7 @@ async def list_sessions(
 async def revoke_session(
     session_id: str,
     current_user: User = Depends(require_role(UserRole.ADMIN)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Revoke a specific session. Admin only."""
     result = await db.execute(
@@ -340,7 +340,7 @@ async def revoke_session(
 async def revoke_all_user_sessions(
     user_id: uuid.UUID,
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Revoke all sessions for a user. Admin or station commander."""
     await _get_user_check_station(db, user_id, current_user)
@@ -373,7 +373,7 @@ async def revoke_all_user_sessions(
 async def unlock_user(
     user_id: uuid.UUID,
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.COMANDANTE, UserRole.ADJUNTO)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """Unlock a locked user account. Admin or station commander."""
     user = await _get_user_check_station(db, user_id, current_user)
@@ -396,7 +396,7 @@ async def unlock_user(
 async def onboard_station(
     data: StationOnboardRequest,
     current_user: User = Depends(require_role(UserRole.ADMIN)),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ):
     """
     Provision a new station with its first Comandante in one atomic operation.
