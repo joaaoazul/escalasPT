@@ -335,3 +335,20 @@ class TestHealthWithoutRedis:
         resp = await client.get("/api/health")
         assert resp.status_code == 200
         assert resp.json()["checks"] == {"database": "up"}
+
+
+class TestRequirementsInSync:
+    def test_vercel_copy_matches_backend(self):
+        """The root requirements.txt (Vercel) must pin what the Dockerfile does."""
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[2]
+
+        def pins(path: Path) -> list[str]:
+            return sorted(
+                line.strip()
+                for line in path.read_text().splitlines()
+                if line.strip() and not line.strip().startswith("#")
+            )
+
+        assert pins(root / "requirements.txt") == pins(root / "backend" / "requirements.txt")
