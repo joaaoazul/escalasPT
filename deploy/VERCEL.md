@@ -125,6 +125,7 @@ login continua protegido pelo bloqueio de conta, que está no Postgres.
    | `SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` |
    | `REALTIME_CHANNEL_SECRET` | `python -c "import secrets; print(secrets.token_hex(32))"` |
    | `CRON_SECRET` | `python -c "import secrets; print(secrets.token_hex(32))"` |
+   | `CADERNO_INTEGRATION_KEY` | opcional — a mesma chave que `ESCALAS_INTEGRATION_KEY` no Caderno de Serviço; vazia desliga a ponte |
    | `APP_ENV` | `production` |
    | `CORS_ORIGINS` | `[]` (o frontend e a API estão na mesma origem) |
 

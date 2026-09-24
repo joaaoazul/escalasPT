@@ -69,6 +69,11 @@ class Settings(BaseSettings):
     # Vercel Cron sends it as "Authorization: Bearer <CRON_SECRET>".
     CRON_SECRET: str = ""
 
+    # ── Caderno de Serviço ────────────────────────────────
+    # Chave partilhada com que o Caderno pergunta o turno do dia de um
+    # militar (app/routers/integracao.py). Vazia: a ponte está desligada.
+    CADERNO_INTEGRATION_KEY: str = ""
+
     @field_validator("DATABASE_URL")
     @classmethod
     def use_asyncpg_driver(cls, v: str) -> str:

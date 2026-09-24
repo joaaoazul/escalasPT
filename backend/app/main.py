@@ -19,7 +19,7 @@ from app.rate_limit import limiter
 from app.dependencies import close_redis
 from app.exceptions import register_exception_handlers
 from app.middleware import RLSMiddleware, SecurityHeadersMiddleware
-from app.routers import admin, auth, notifications, realtime, reports, shifts, shift_types, stations, swaps, users, websocket
+from app.routers import admin, auth, integracao, notifications, realtime, reports, shifts, shift_types, stations, swaps, users, websocket
 from app.utils.logging import get_logger, setup_logging
 
 settings = get_settings()
@@ -174,6 +174,7 @@ def create_app() -> FastAPI:
     application.include_router(swaps.router, prefix="/api")
     application.include_router(reports.router, prefix="/api")
     application.include_router(realtime.router, prefix="/api")
+    application.include_router(integracao.router, prefix="/api")
     application.include_router(websocket.router)
 
     # ── Health Check ──────────────────────────────────────
