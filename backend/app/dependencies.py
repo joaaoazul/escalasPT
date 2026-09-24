@@ -87,8 +87,8 @@ async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
                         text("SET LOCAL app.current_station_id = ''")
                     )
             yield session
-            await session.commit()
             await realtime.flush(session)
+            await session.commit()
             if settings.SERVERLESS:
                 await email_service.drain()
         except Exception:

@@ -48,14 +48,19 @@ class Settings(BaseSettings):
     DATABASE_SSL: bool = False
 
     # ── Redis ─────────────────────────────────────────────────
+    # Holds the rate-limit counters. "memory://" keeps them in the process
+    # instead: on serverless that means per instance, so the limits are
+    # looser than they read — a stopgap until a Redis (Upstash) is attached.
+    # Login stays protected by the account lockout, which lives in Postgres.
     REDIS_URL: str = "redis://:pass@localhost:6379/0"
 
     # ── Supabase Realtime ─────────────────────────────────────
     # Replaces the /ws endpoint where the API cannot hold a socket open. All
-    # four empty means realtime is off and the frontend uses /ws, as before.
+    # three empty means realtime is off and the frontend uses /ws, as before.
+    # The API sends through realtime.send() in the database, so there is no
+    # secret key here — see app/services/realtime.py.
     SUPABASE_URL: str = ""
     SUPABASE_PUBLISHABLE_KEY: str = ""  # handed to the browser; public by design
-    SUPABASE_SECRET_KEY: str = ""  # server only: lets the API broadcast
     # Channel names are derived from this, so knowing a user's id is not
     # enough to listen in on their channel.
     REALTIME_CHANNEL_SECRET: str = ""
@@ -85,7 +90,6 @@ class Settings(BaseSettings):
         return all((
             self.SUPABASE_URL,
             self.SUPABASE_PUBLISHABLE_KEY,
-            self.SUPABASE_SECRET_KEY,
             self.REALTIME_CHANNEL_SECRET,
         ))
 

@@ -190,7 +190,10 @@ def create_app() -> FastAPI:
         exactly that condition before it starts, so a broken stack looked
         like a working one.
         """
-        checks = {"database": await _check_database(), "redis": await _check_redis()}
+        checks = {"database": await _check_database()}
+        # memory:// keeps the rate-limit counters in-process: nothing to reach.
+        if not settings.REDIS_URL.startswith("memory://"):
+            checks["redis"] = await _check_redis()
         healthy = all(checks.values())
         if not healthy:
             response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE

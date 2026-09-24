@@ -12,11 +12,13 @@ from types import SimpleNamespace
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.dependencies as dependencies
 import app.main as main
 from app.config import Settings, get_settings
+from app.models import Station
 from app.models.shift import Shift, ShiftStatus
 from app.models.user import User
 from app.rate_limit import client_address
@@ -30,20 +32,36 @@ settings = get_settings()
 def realtime_on(monkeypatch):
     monkeypatch.setattr(settings, "SUPABASE_URL", "https://ref.supabase.co")
     monkeypatch.setattr(settings, "SUPABASE_PUBLISHABLE_KEY", "sb_publishable_x")
-    monkeypatch.setattr(settings, "SUPABASE_SECRET_KEY", "sb_secret_x")
     monkeypatch.setattr(settings, "REALTIME_CHANNEL_SECRET", "s" * 64)
 
 
 @pytest.fixture
-def sent(monkeypatch):
-    """Every batch _broadcast would have POSTed to Supabase."""
-    batches: list[set] = []
+async def fake_realtime(db_session: AsyncSession):
+    """
+    A stand-in for Supabase's realtime.send(), same signature, that records
+    its calls. Created inside the test's transaction, so it is gone after.
+    """
+    for statement in (
+        "CREATE SCHEMA realtime",
+        "CREATE TABLE realtime.sent (payload jsonb, event text, topic text, private boolean)",
+        """
+        CREATE FUNCTION realtime.send(payload jsonb, event text, topic text, private boolean)
+        RETURNS void LANGUAGE sql AS
+        $$ INSERT INTO realtime.sent VALUES (payload, event, topic, private) $$
+        """,
+    ):
+        await db_session.execute(text(statement))
+    # A savepoint release here (see db_session): a rollback in the code under
+    # test must not take the stand-in with it.
+    await db_session.commit()
 
-    async def fake_broadcast(signals):
-        batches.append(set(signals))
+    async def sent() -> list[tuple]:
+        result = await db_session.execute(
+            text("SELECT topic, event, payload, private FROM realtime.sent ORDER BY topic")
+        )
+        return [tuple(row) for row in result]
 
-    monkeypatch.setattr(realtime, "_broadcast", fake_broadcast)
-    return batches
+    return sent
 
 
 class TestRealtimeConfig:
@@ -64,8 +82,6 @@ class TestRealtimeConfig:
             realtime.user_channel(str(militar_user.id)),
             realtime.station_channel(str(militar_user.station_id)),
         ]
-        # The secret key never leaves the server.
-        assert "sb_secret_x" not in resp.text
 
     async def test_requires_auth(self, client: AsyncClient):
         resp = await client.get("/api/realtime/config")
@@ -92,19 +108,22 @@ class TestSignalsFollowTheTransaction:
     def _request():
         return SimpleNamespace(state=SimpleNamespace(rls_station_id=None))
 
-    async def test_sent_after_commit(self, use_session, realtime_on, sent):
+    async def test_written_in_the_committed_transaction(
+        self, use_session, realtime_on, fake_realtime,
+    ):
         gen = dependencies.get_db(self._request())
         session = await anext(gen)
         realtime.queue(session, "user-abc", "notification")
         realtime.queue(session, "user-abc", "notification")  # deduplicated
-        assert sent == []  # nothing before the commit
+        assert await fake_realtime() == []  # nothing until the handler is done
 
         with pytest.raises(StopAsyncIteration):
             await anext(gen)
 
-        assert sent == [{("user-abc", "notification")}]
+        # Empty payload, public channel: the browser refetches the data.
+        assert await fake_realtime() == [("user-abc", "notification", {}, False)]
 
-    async def test_dropped_on_rollback(self, use_session, realtime_on, sent):
+    async def test_dropped_on_rollback(self, use_session, realtime_on, fake_realtime):
         gen = dependencies.get_db(self._request())
         session = await anext(gen)
         realtime.queue(session, "user-abc", "notification")
@@ -112,8 +131,26 @@ class TestSignalsFollowTheTransaction:
         with pytest.raises(RuntimeError):
             await gen.athrow(RuntimeError("handler failed"))
 
-        assert sent == []
+        assert await fake_realtime() == []
         assert "realtime_signals" not in session.info
+
+    async def test_missing_realtime_schema_does_not_lose_the_change(
+        self, use_session, realtime_on, db_session: AsyncSession,
+    ):
+        """No realtime.send() here (a plain Postgres): the write still commits."""
+        gen = dependencies.get_db(self._request())
+        session = await anext(gen)
+        station = Station(
+            id=uuid.uuid4(), name="Posto Realtime", code="PT-RT",
+            comando_territorial="CT Teste", destacamento="DT Teste",
+        )
+        session.add(station)
+        realtime.queue(session, "station-x", "calendar_sync")
+
+        with pytest.raises(StopAsyncIteration):
+            await anext(gen)
+
+        assert await db_session.get(Station, station.id) is not None
 
     async def test_nothing_queued_when_disabled(self, db_session: AsyncSession):
         realtime.queue(db_session, "user-abc", "notification")
@@ -281,3 +318,20 @@ class TestDatabaseUrl:
         assert Settings(APP_ENV="development").SERVERLESS is True
         monkeypatch.delenv("VERCEL")
         assert Settings(APP_ENV="development").SERVERLESS is False
+
+
+class TestHealthWithoutRedis:
+    async def test_memory_storage_is_not_checked(self, client: AsyncClient, monkeypatch):
+        async def db_up():
+            return True
+
+        async def redis_must_not_be_called():
+            raise AssertionError("memory:// has no server to check")
+
+        monkeypatch.setattr(main, "_check_database", db_up)
+        monkeypatch.setattr(main, "_check_redis", redis_must_not_be_called)
+        monkeypatch.setattr(settings, "REDIS_URL", "memory://")
+
+        resp = await client.get("/api/health")
+        assert resp.status_code == 200
+        assert resp.json()["checks"] == {"database": "up"}
