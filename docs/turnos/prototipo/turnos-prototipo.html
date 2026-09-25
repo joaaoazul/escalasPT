@@ -1,0 +1,707 @@
+<title>Turnos — protótipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root {
+  --bg: #F6F5F2;
+  --surface: #FFFFFF;
+  --surface-2: #EFEDE8;
+  --border: #E2DFD8;
+  --fg: #1D1C24;
+  --fg-muted: #67646F;
+  --brand: #4447C9;
+  --brand-soft: #E7E7FA;
+  --holiday: #C8392B;
+  --warn: #B7791F;
+  --warn-soft: #FBF1DC;
+  --ring: #4447C9;
+  --shadow: 0 1px 2px rgba(29, 28, 36, .06), 0 4px 16px rgba(29, 28, 36, .06);
+  --font-sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #131218; --surface: #1C1B22; --surface-2: #25242C; --border: #33313B;
+    --fg: #EDEBF2; --fg-muted: #A29FAC; --brand: #8C8FF5; --brand-soft: #2A2A4A;
+    --holiday: #F07A6C; --warn: #E5B25A; --warn-soft: #3A3122; --ring: #8C8FF5;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131218; --surface: #1C1B22; --surface-2: #25242C; --border: #33313B;
+  --fg: #EDEBF2; --fg-muted: #A29FAC; --brand: #8C8FF5; --brand-soft: #2A2A4A;
+  --holiday: #F07A6C; --warn: #E5B25A; --warn-soft: #3A3122; --ring: #8C8FF5;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 15px/1.45 var(--font-sans);
+  padding-inline: 16px; padding-block: 16px 96px;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono); font-size: .86em; }
+
+.app { max-width: 1180px; margin: 0 auto; display: grid; gap: 16px; }
+
+/* Barra superior */
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand b { font: 700 22px/1 var(--font-display); letter-spacing: -.01em; }
+.proto-tag { font-size: 12px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .06em; }
+.cal-select { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); }
+.cal-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--brand); }
+.tabs { display: inline-flex; padding: 3px; background: var(--surface-2); border-radius: 10px; gap: 2px; }
+.tabs button { border: 0; background: transparent; padding: 6px 14px; border-radius: 8px; cursor: pointer; color: var(--fg-muted); font-weight: 500; }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow); }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
+.main-panel { padding: 16px; display: grid; gap: 12px; }
+
+/* Navegação do mês */
+.monthbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.monthbar h1 { font: 700 clamp(22px, 4vw, 30px)/1.1 var(--font-display); margin: 0; letter-spacing: -.015em; min-width: 9.5ch; text-wrap: balance; }
+.iconbtn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; display: inline-grid; place-items: center; }
+.iconbtn:hover { background: var(--surface-2); }
+.iconbtn:disabled { opacity: .4; cursor: default; }
+.btn { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 7px 14px; cursor: pointer; font-weight: 500; }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+:root[data-theme="dark"] .btn.primary { color: #121218; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #121218; } }
+.spacer { margin-left: auto; }
+.paint-toggle[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+/* Grelha do mês */
+.weekdays, .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.weekdays div { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-muted); padding: 0 6px; }
+.weekdays div:nth-child(n+6) { color: var(--fg); }
+.grid.painting { touch-action: none; user-select: none; }
+.cell {
+  position: relative; min-height: 84px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface); padding: 6px; text-align: left; cursor: pointer;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.cell:hover { border-color: var(--fg-muted); }
+.cell.out { background: transparent; border-style: dashed; opacity: .45; }
+.cell.selected { outline: 2px solid var(--ring); outline-offset: 1px; }
+.cell .d { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; }
+.cell.today .d span:first-child { background: var(--fg); color: var(--bg); border-radius: 999px; padding: 0 7px; }
+.cell.holiday .d { color: var(--holiday); }
+.cell .flag { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.cell .notedot { width: 6px; height: 6px; border-radius: 50%; background: var(--fg-muted); margin-left: auto; }
+.cell .editdot { flex: none; width: 7px; height: 7px; border: 1.5px solid var(--fg-muted); border-radius: 50%; }
+.cell .notedot + .editdot { margin-left: 3px; }
+.cell .d > .editdot:first-of-type { margin-left: auto; }
+.chip {
+  display: flex; align-items: baseline; gap: 6px; border-radius: 7px; padding: 3px 6px;
+  font-weight: 600; font-size: 13px; line-height: 1.25; overflow: hidden; white-space: nowrap;
+}
+.chip small { font: 500 11px/1 var(--font-mono); opacity: .85; overflow: hidden; text-overflow: ellipsis; }
+.chip.absence { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.18) 0 4px, transparent 4px 8px); }
+.chip.pending { box-shadow: 0 0 0 2px var(--warn); }
+.cell.flash { animation: flash .35s ease-out; }
+@keyframes flash { from { transform: scale(.94); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .cell.flash { animation: none; } }
+@media (max-width: 560px) {
+  .cell { min-height: 58px; padding: 4px; border-radius: 8px; }
+  .chip small { display: none; }
+  .chip { justify-content: center; padding: 3px 1px; font-size: 12px; letter-spacing: -.02em; }
+  .cell .flag { display: none; }
+}
+
+/* Pincel */
+.palette {
+  display: flex; gap: 8px; overflow-x: auto; padding: 10px; border-radius: 14px;
+  background: var(--surface-2); align-items: center;
+}
+.palette[hidden] { display: none !important; }
+.swatch {
+  flex: none; display: flex; align-items: center; gap: 8px; border: 2px solid transparent; border-radius: 10px;
+  padding: 6px 10px 6px 6px; background: var(--surface); cursor: pointer;
+}
+.swatch[aria-pressed="true"] { border-color: var(--ring); }
+.swatch .chip { min-width: 34px; justify-content: center; }
+.swatch span.lbl { font-size: 13px; }
+.palette .sep { width: 1px; align-self: stretch; background: var(--border); flex: none; }
+.hint { font-size: 13px; color: var(--fg-muted); }
+
+/* Lateral */
+.side { display: grid; gap: 16px; }
+.side .panel { padding: 16px; display: grid; gap: 12px; }
+.side h2 { font: 600 13px/1 var(--font-sans); text-transform: uppercase; letter-spacing: .07em; color: var(--fg-muted); margin: 0; }
+.big { font: 700 34px/1 var(--font-display); letter-spacing: -.02em; }
+.big small { font: 500 14px var(--font-sans); color: var(--fg-muted); letter-spacing: 0; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin: 0; }
+.stats div { display: grid; gap: 2px; }
+.stats dt { font-size: 12px; color: var(--fg-muted); }
+.stats dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.bar { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; display: flex; }
+.bar i { display: block; height: 100%; }
+.legend { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.legend li { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 10px; font-size: 14px; }
+.legend .chip { justify-content: center; }
+.legend .mono { color: var(--fg-muted); }
+.muted { color: var(--fg-muted); }
+.note { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; font-size: 14px; }
+.warnbox { background: var(--warn-soft); color: var(--fg); border-radius: 10px; padding: 8px 10px; font-size: 13px; border-left: 3px solid var(--warn); }
+.shiftcard { display: grid; gap: 6px; border: 1px solid var(--border); border-radius: 12px; padding: 10px; }
+.shiftcard .row { display: flex; align-items: center; gap: 10px; }
+.shiftcard .times { font: 500 15px var(--font-mono); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Roster */
+.roster-wrap { overflow-x: auto; border-radius: 12px; }
+table.roster { border-collapse: separate; border-spacing: 3px; min-width: 640px; width: 100%; }
+.roster th, .roster td { text-align: center; font-size: 13px; }
+.roster thead th { font-weight: 500; color: var(--fg-muted); padding: 2px 0 6px; }
+.roster thead th.we { color: var(--fg); }
+.roster thead th.hol { color: var(--holiday); }
+.roster tbody th { text-align: left; font-weight: 600; white-space: nowrap; padding-right: 10px; position: sticky; left: 0; background: var(--surface); z-index: 1; }
+.roster tbody th small { display: block; font-weight: 400; color: var(--fg-muted); font-size: 11px; }
+.roster td button { width: 100%; min-width: 36px; height: 34px; border: 0; border-radius: 7px; cursor: pointer; font-weight: 600; font-size: 12px; }
+.roster td button.empty { background: var(--surface-2); color: var(--fg-muted); cursor: default; }
+.roster td button.busy { background: var(--surface-2); color: var(--fg-muted); background-image: repeating-linear-gradient(135deg, var(--border) 0 3px, transparent 3px 7px); cursor: default; }
+.roster tr.me th { color: var(--brand); }
+.roster tfoot td, .roster tfoot th { font-size: 12px; color: var(--fg-muted); padding-top: 6px; font-variant-numeric: tabular-nums; }
+.roster tfoot th { text-align: left; position: sticky; left: 0; background: var(--surface); }
+.swapview { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+.swapview .side-l, .swapview .side-r { display: grid; gap: 4px; justify-items: start; font-size: 13px; }
+.swapview .chip { font-size: 14px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14px;
+  box-shadow: var(--shadow); max-width: calc(100% - 32px); z-index: 10;
+}
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><b>Turnos</b><span class="proto-tag">Protótipo · dados de exemplo</span></div>
+    <div class="cal-select" title="Calendário ativo"><span class="cal-dot"></span><span>Hospital São José</span></div>
+    <div class="tabs" role="tablist" aria-label="Vista">
+      <button role="tab" id="tab-cal" aria-selected="true" aria-controls="view-cal">Calendário</button>
+      <button role="tab" id="tab-grp" aria-selected="false" aria-controls="view-grp">Grupo · Urgência</button>
+    </div>
+  </header>
+
+  <!-- Vista calendário -->
+  <div class="layout" id="view-cal" role="tabpanel" aria-labelledby="tab-cal">
+    <section class="panel main-panel" aria-label="Calendário mensal">
+      <div class="monthbar">
+        <button class="iconbtn" id="prev" aria-label="Mês anterior">‹</button>
+        <h1 id="month-title">Outubro 2026</h1>
+        <button class="iconbtn" id="next" aria-label="Mês seguinte">›</button>
+        <button class="btn" id="today-btn">Hoje</button>
+        <span class="spacer"></span>
+        <button class="iconbtn" id="undo" aria-label="Desfazer" title="Desfazer">↶</button>
+        <button class="iconbtn" id="redo" aria-label="Refazer" title="Refazer">↷</button>
+        <button class="btn paint-toggle" id="paint-toggle" aria-pressed="false">Pintar dias</button>
+      </div>
+      <div class="palette" id="palette" hidden aria-label="Tipo de turno a pintar"></div>
+      <div class="weekdays" aria-hidden="true"><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div><div>Dom</div></div>
+      <div class="grid" id="grid" role="grid" aria-labelledby="month-title"></div>
+      <p class="hint" id="hint">Rotação de 10 dias <span class="mono">M M T T N N F F F F</span> aplicada de set/2026 a mar/2027. Toca num dia para ver o detalhe, ou em “Pintar dias” para editar vários de uma vez.</p>
+    </section>
+
+    <aside class="side">
+      <section class="panel" aria-labelledby="sum-h">
+        <h2 id="sum-h">Resumo do mês</h2>
+        <div class="big num" id="sum-hours">0 h</div>
+        <div class="bar" id="sum-bar" aria-hidden="true"></div>
+        <dl class="stats" id="sum-stats"></dl>
+      </section>
+      <section class="panel" aria-labelledby="day-h" id="day-panel">
+        <h2 id="day-h">Dia</h2>
+        <div id="day-body" class="muted">Seleciona um dia no calendário.</div>
+      </section>
+      <section class="panel" aria-labelledby="leg-h">
+        <h2 id="leg-h">Tipos de turno</h2>
+        <ul class="legend" id="legend"></ul>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Vista grupo -->
+  <div class="layout" id="view-grp" role="tabpanel" aria-labelledby="tab-grp" hidden>
+    <section class="panel main-panel" aria-label="Roster do grupo">
+      <div class="monthbar">
+        <button class="iconbtn" id="r-prev" aria-label="Semana anterior">‹</button>
+        <h1 id="r-title">12–25 out</h1>
+        <button class="iconbtn" id="r-next" aria-label="Semana seguinte">›</button>
+        <span class="spacer"></span>
+        <span class="hint">5 membros · trocas aprovadas entre colegas</span>
+      </div>
+      <div class="roster-wrap"><table class="roster" id="roster"></table></div>
+      <p class="hint">Toca num turno de um colega para propor uma troca com o teu turno desse dia. A Marta partilha só disponibilidade, por isso aparece como “ocupada”.</p>
+    </section>
+    <aside class="side">
+      <section class="panel" aria-labelledby="now-h">
+        <h2 id="now-h">Hoje no grupo</h2>
+        <div id="now-body"></div>
+      </section>
+      <section class="panel" aria-labelledby="swap-h">
+        <h2 id="swap-h">Proposta de troca</h2>
+        <div id="swap-body" class="muted">Escolhe um turno de um colega no roster.</div>
+      </section>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  // ───────── Domínio (espelha shift_types / rotations do doc 03) ─────────
+  const TYPES = {
+    M:   { name: 'Manhã',  abbr: 'M',   color: '#F2B53A', kind: 'WORK',    start: 7 * 60,  dur: 480 },
+    T:   { name: 'Tarde',  abbr: 'T',   color: '#1F9E89', kind: 'WORK',    start: 15 * 60, dur: 480 },
+    N:   { name: 'Noite',  abbr: 'N',   color: '#2E3A6E', kind: 'WORK',    start: 23 * 60, dur: 480 },
+    EX:  { name: 'Extra',  abbr: 'EX',  color: '#D9480F', kind: 'WORK',    start: 9 * 60,  dur: 240 },
+    F:   { name: 'Folga',  abbr: 'F',   color: '#CFDCD3', kind: 'OFF',     allDay: true },
+    FER: { name: 'Férias', abbr: 'FER', color: '#E0607E', kind: 'ABSENCE', allDay: true },
+    BX:  { name: 'Baixa',  abbr: 'BX',  color: '#8E6CC9', kind: 'ABSENCE', allDay: true },
+  };
+  const PAINT_ORDER = ['M', 'T', 'N', 'EX', 'F', 'FER', 'BX'];
+  const ROTATION = ['M', 'M', 'T', 'T', 'N', 'N', 'F', 'F', 'F', 'F'];
+  const ROT_START = '2026-09-01', ROT_END = '2027-03-31', ROT_ANCHOR = '2026-09-30';
+  const PAY = { rate: 9.5, night: 0.25, holiday: 1.0 };
+  const FER_ALLOWANCE = 22;
+
+  const HOLIDAYS = {
+    '2026-01-01': 'Ano Novo', '2026-04-03': 'Sexta-feira Santa', '2026-04-05': 'Páscoa',
+    '2026-04-25': 'Dia da Liberdade', '2026-05-01': 'Dia do Trabalhador', '2026-06-04': 'Corpo de Deus',
+    '2026-06-10': 'Dia de Portugal', '2026-06-13': 'Santo António (Lisboa)', '2026-08-15': 'Assunção de Nossa Senhora',
+    '2026-10-05': 'Implantação da República', '2026-11-01': 'Todos os Santos', '2026-12-01': 'Restauração da Independência',
+    '2026-12-08': 'Imaculada Conceição', '2026-12-25': 'Natal', '2027-01-01': 'Ano Novo',
+  };
+  // Europe/Lisbon: mudanças de hora (hora local em que acontecem)
+  const DST = { '2026-03-29': 'spring', '2026-10-25': 'fall', '2027-03-28': 'spring' };
+  const NOTES = { '2026-10-17': 'Formação SBV às 14:00, sala 2.' };
+
+  // ───────── Utilitários de datas (datas locais como strings ISO) ─────────
+  const MONTHS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const WD = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  const iso = (y, m, d) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+  const fmt = dt => iso(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate());
+  const addDays = (s, n) => { const d = parse(s); d.setUTCDate(d.getUTCDate() + n); return fmt(d); };
+  const diffDays = (a, b) => Math.round((parse(a) - parse(b)) / 86400000);
+  const weekday = s => parse(s).getUTCDay();
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const hm = min => `${String(Math.floor(min / 60) % 24).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+  const hours = min => (min / 60).toLocaleString('pt-PT', { maximumFractionDigits: 1 });
+  const eur = v => v.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+  const now = new Date();
+  const TODAY = iso(now.getFullYear(), now.getMonth() + 1, now.getDate());
+
+  function textOn(hex) {
+    const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+    const L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    return (1.05) / (L + 0.05) >= (L + 0.05) / 0.05 ? '#FFFFFF' : '#16151B';
+  }
+  function chipHTML(code, withTime, extraClass = '') {
+    const t = TYPES[code];
+    const time = withTime && !t.allDay ? `<small>${hm(t.start)}</small>` : '';
+    const cls = `chip${t.kind === 'ABSENCE' ? ' absence' : ''} ${extraClass}`;
+    return `<span class="${cls}" style="background:${t.color};color:${textOn(t.color)}">${t.abbr}${time}</span>`;
+  }
+
+  // ───────── Estado ─────────
+  const state = {
+    year: 2026, month: 10, paint: false, brush: 'M', selected: null,
+    overrides: new Map(), undo: [], redo: [], pendingSwaps: new Set(),
+    tab: 'cal', rosterStart: '2026-10-12', swap: null,
+  };
+  // Algumas edições manuais de exemplo (turnos "override")
+  [['2026-10-19', 'FER'], ['2026-10-20', 'FER'], ['2026-10-21', 'FER'], ['2026-10-10', 'EX']]
+    .forEach(([d, c]) => state.overrides.set(d, c));
+
+  function rotationCode(date) {
+    if (date < ROT_START || date > ROT_END) return null;
+    const i = ((diffDays(date, ROT_ANCHOR) % ROTATION.length) + ROTATION.length) % ROTATION.length;
+    return ROTATION[i];
+  }
+  const shiftOn = date => state.overrides.has(date) ? state.overrides.get(date) : rotationCode(date);
+
+  // Simula o servidor: percorre o turno minuto a minuto em tempo real, avançando o relógio local
+  // e aplicando a mudança de hora de Lisboa (01:00→02:00 em março, 02:00→01:00 em outubro).
+  function resolveShift(date, code) {
+    const t = TYPES[code];
+    if (!t || t.allDay) return null;
+    let d = date, wall = t.start, fellBack = false;
+    const r = { real: t.dur, night: 0, weekend: 0, holiday: 0, endDate: null, endWall: 0, dstNote: null };
+    for (let i = 0; i < t.dur; i++) {
+      if (DST[d] === 'spring' && wall === 60) { wall = 120; r.dstNote = 'Mudança para a hora de verão: o relógio salta das 01:00 para as 02:00.'; }
+      if (DST[d] === 'fall' && wall === 120 && !fellBack) { wall = 60; fellBack = true; r.dstNote = 'Mudança para a hora de inverno: a hora entre as 01:00 e as 02:00 repete-se.'; }
+      const h = Math.floor(wall / 60);
+      if (h >= 22 || h < 7) r.night++;
+      const wd = weekday(d);
+      if (wd === 0 || wd === 6) r.weekend++;
+      if (HOLIDAYS[d]) r.holiday++;
+      wall++;
+      if (wall >= 1440) { wall -= 1440; d = addDays(d, 1); }
+    }
+    r.endDate = d; r.endWall = wall;
+    return r;
+  }
+
+  // ───────── Render: calendário ─────────
+  const $ = id => document.getElementById(id);
+  const grid = $('grid');
+
+  function monthDays() {
+    const first = iso(state.year, state.month, 1);
+    const lead = (weekday(first) + 6) % 7; // semana começa à segunda
+    const start = addDays(first, -lead);
+    const daysInMonth = new Date(Date.UTC(state.year, state.month, 0)).getUTCDate();
+    const cells = Math.ceil((lead + daysInMonth) / 7) * 7;
+    return Array.from({ length: cells }, (_, i) => addDays(start, i));
+  }
+
+  function renderGrid() {
+    $('month-title').textContent = `${cap(MONTHS[state.month - 1])} ${state.year}`;
+    const prefix = iso(state.year, state.month, 1).slice(0, 7);
+    grid.innerHTML = monthDays().map(d => {
+      const inMonth = d.startsWith(prefix);
+      const code = shiftOn(d);
+      const hol = HOLIDAYS[d];
+      const cls = ['cell', inMonth ? '' : 'out', d === TODAY ? 'today' : '', hol ? 'holiday' : '', state.selected === d ? 'selected' : ''].join(' ');
+      const t = code ? TYPES[code] : null;
+      const label = `${cap(WD[weekday(d)])}, ${Number(d.slice(8))} de ${MONTHS[Number(d.slice(5, 7)) - 1]}` +
+        (t ? `, ${t.name}${t.allDay ? '' : ' às ' + hm(t.start)}` : ', sem turno') + (hol ? `, feriado: ${hol}` : '');
+      const flag = hol ? `<span class="flag">Feriado</span>` : DST[d] ? `<span class="flag muted">Muda a hora</span>` : '';
+      const pending = state.pendingSwaps.has(d) ? 'pending' : '';
+      return `<button class="${cls}" role="gridcell" data-date="${d}" aria-label="${label}" ${inMonth ? '' : 'tabindex="-1"'}>
+        <span class="d"><span class="num">${Number(d.slice(8))}</span>${NOTES[d] ? '<span class="notedot" title="Tem nota"></span>' : ''}${state.overrides.has(d) && rotationCode(d) !== null ? '<span class="editdot" title="Editado à mão (preservado ao reaplicar a rotação)"></span>' : ''}</span>
+        ${code ? chipHTML(code, true, pending) : ''}${flag}
+      </button>`;
+    }).join('');
+    $('prev').disabled = state.year === 2026 && state.month === 1;
+    $('undo').disabled = !state.undo.length;
+    $('redo').disabled = !state.redo.length;
+  }
+
+  function renderSummary() {
+    const prefix = iso(state.year, state.month, 1).slice(0, 7);
+    const days = monthDays().filter(d => d.startsWith(prefix));
+    let work = 0, night = 0, weekend = 0, holiday = 0, pay = 0, shifts = 0, off = 0, abs = 0;
+    const byType = {};
+    for (const d of days) {
+      const code = shiftOn(d);
+      if (!code) continue;
+      byType[code] = (byType[code] || 0) + 1;
+      const r = resolveShift(d, code);
+      if (!r) { TYPES[code].kind === 'OFF' ? off++ : abs++; continue; }
+      shifts++; work += r.real; night += r.night; weekend += r.weekend; holiday += r.holiday;
+      pay += PAY.rate * (r.real + PAY.night * r.night + PAY.holiday * r.holiday) / 60;
+    }
+    const year = String(state.year);
+    let ferUsed = 0;
+    for (let d = `${year}-01-01`; d <= `${year}-12-31`; d = addDays(d, 1)) if (shiftOn(d) === 'FER') ferUsed++;
+
+    $('sum-hours').innerHTML = `${hours(work)} h <small>em ${shifts} turnos</small>`;
+    const total = Object.values(byType).reduce((a, b) => a + b, 0) || 1;
+    $('sum-bar').innerHTML = PAINT_ORDER.filter(c => byType[c]).map(c => `<i style="width:${byType[c] / total * 100}%;background:${TYPES[c].color}" title="${TYPES[c].name}: ${byType[c]}"></i>`).join('');
+    $('sum-stats').innerHTML = [
+      ['Noturno', `${hours(night)} h`], ['Fim de semana', `${hours(weekend)} h`],
+      ['Em feriado', `${hours(holiday)} h`], ['Folgas', `${off} dias`],
+      ['Estimativa bruta', eur(pay)], [`Férias ${year}`, `${ferUsed} de ${FER_ALLOWANCE}`],
+    ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+
+    $('legend').innerHTML = PAINT_ORDER.map(c => {
+      const t = TYPES[c];
+      const time = t.allDay ? 'dia inteiro' : `${hm(t.start)}–${hm((t.start + t.dur) % 1440)}`;
+      return `<li>${chipHTML(c, false)}<span>${t.name}</span><span class="mono">${time}</span></li>`;
+    }).join('');
+  }
+
+  function renderDay() {
+    const d = state.selected, body = $('day-body');
+    if (!d) { body.className = 'muted'; body.textContent = 'Seleciona um dia no calendário.'; return; }
+    body.className = '';
+    const code = shiftOn(d), hol = HOLIDAYS[d];
+    const title = `${cap(WD[weekday(d)])}, ${Number(d.slice(8))} de ${MONTHS[Number(d.slice(5, 7)) - 1]}`;
+    let html = `<div style="display:grid;gap:10px"><div><strong>${title}</strong>${hol ? `<div style="color:var(--holiday);font-size:13px">Feriado · ${hol}</div>` : ''}</div>`;
+    if (code) {
+      const t = TYPES[code], r = resolveShift(d, code);
+      const src = state.overrides.has(d) ? (rotationCode(d) ? 'Editado à mão sobre a rotação' : 'Adicionado à mão') : 'Gerado pela rotação de 10 dias';
+      html += `<div class="shiftcard"><div class="row">${chipHTML(code, false)}<strong>${t.name}</strong></div>`;
+      if (r) {
+        const plus = r.endDate !== d ? ' <span class="muted">(+1)</span>' : '';
+        html += `<div class="times">${hm(t.start)} → ${hm(r.endWall)}${plus}</div>
+          <div class="muted" style="font-size:13px">${hours(r.real)} h reais · ${hours(r.night)} h noturnas${r.holiday ? ` · ${hours(r.holiday)} h em feriado` : ''}</div>`;
+        if (r.dstNote) html += `<div class="warnbox">${r.dstNote} O turno dura ${hours(r.real)} h reais e acaba às ${hm(r.endWall)}.</div>`;
+      } else {
+        html += `<div class="muted" style="font-size:13px">Dia inteiro · ${t.kind === 'ABSENCE' ? 'conta para o saldo de ausências' : 'não conta como trabalho'}</div>`;
+      }
+      html += `<div class="muted" style="font-size:12px">${src}</div></div>`;
+    } else {
+      html += `<div class="muted">Sem turno neste dia.</div>`;
+    }
+    if (NOTES[d]) html += `<div class="note">${NOTES[d]}</div>`;
+    html += `<div class="actions">${code && TYPES[code].kind === 'WORK' ? '<button class="btn" id="d-swap">Propor troca</button>' : ''}${code ? '<button class="btn" id="d-clear">Limpar dia</button>' : ''}</div></div>`;
+    body.innerHTML = html;
+    $('d-clear')?.addEventListener('click', () => { commit([[d, null]]); toast('Dia limpo. Podes desfazer com ↶.'); });
+    $('d-swap')?.addEventListener('click', () => { state.rosterStart = mondayOf(d); setTab('grp'); toast('Escolhe o turno do colega com quem queres trocar.'); });
+  }
+
+  function renderPalette() {
+    $('palette').innerHTML = PAINT_ORDER.map(c =>
+      `<button class="swatch" data-brush="${c}" aria-pressed="${state.brush === c}">${chipHTML(c, false)}<span class="lbl">${TYPES[c].name}</span></button>`
+    ).join('') + `<span class="sep"></span><button class="swatch" data-brush="" aria-pressed="${state.brush === ''}"><span class="chip" style="background:var(--surface-2)">⌫</span><span class="lbl">Limpar</span></button>`;
+  }
+
+  function renderAll() { renderGrid(); renderSummary(); renderDay(); if (state.tab === 'grp') renderRoster(); }
+
+  // ───────── Edição com desfazer/refazer ─────────
+  function commit(changes) {
+    const before = changes.map(([d]) => [d, state.overrides.has(d) ? state.overrides.get(d) : undefined]);
+    changes.forEach(([d, c]) => state.overrides.set(d, c));
+    state.undo.push({ before, after: changes }); state.redo = [];
+    if (state.undo.length > 20) state.undo.shift();
+    renderAll();
+  }
+  function applyEntries(entries) { entries.forEach(([d, c]) => c === undefined ? state.overrides.delete(d) : state.overrides.set(d, c)); }
+  $('undo').addEventListener('click', () => { const op = state.undo.pop(); if (!op) return; applyEntries(op.before); state.redo.push(op); renderAll(); });
+  $('redo').addEventListener('click', () => { const op = state.redo.pop(); if (!op) return; applyEntries(op.after); state.undo.push(op); renderAll(); });
+
+  // ───────── Modo pincel (toque/arrastar) ─────────
+  let stroke = null;
+  function paintCell(cell) {
+    const d = cell.dataset.date;
+    if (!d || stroke.has(d)) return;
+    const code = state.brush || null;
+    if (shiftOn(d) === code) return;
+    stroke.set(d, code);
+    state.overrides.set(d, code);
+    const t = code ? TYPES[code] : null;
+    const old = cell.querySelector('.chip'); if (old) old.remove();
+    if (t) cell.querySelector('.d').insertAdjacentHTML('afterend', chipHTML(code, true));
+    cell.classList.remove('flash'); void cell.offsetWidth; cell.classList.add('flash');
+  }
+  grid.addEventListener('pointerdown', e => {
+    const cell = e.target.closest('.cell');
+    if (!cell) return;
+    if (!state.paint) return;
+    e.preventDefault();
+    stroke = new Map();
+    // guarda o estado anterior para o desfazer antes de pintar
+    stroke.before = new Map();
+    stroke.snapshot = d => { if (!stroke.before.has(d)) stroke.before.set(d, state.overrides.has(d) ? state.overrides.get(d) : undefined); };
+    stroke.snapshot(cell.dataset.date);
+    paintCell(cell);
+  });
+  grid.addEventListener('pointermove', e => {
+    if (!stroke) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const cell = el && el.closest && el.closest('.cell');
+    if (cell && grid.contains(cell)) { stroke.snapshot(cell.dataset.date); paintCell(cell); }
+  });
+  const endStroke = () => {
+    if (!stroke) return;
+    if (stroke.size) {
+      state.undo.push({ before: [...stroke.before], after: [...stroke] }); state.redo = [];
+      if (state.undo.length > 20) state.undo.shift();
+    }
+    stroke = null; renderAll();
+  };
+  window.addEventListener('pointerup', endStroke);
+  window.addEventListener('pointercancel', endStroke);
+
+  grid.addEventListener('click', e => {
+    const cell = e.target.closest('.cell');
+    if (!cell || state.paint) return;
+    state.selected = cell.dataset.date;
+    const [y, m] = state.selected.split('-').map(Number);
+    if (y !== state.year || m !== state.month) { state.year = y; state.month = m; }
+    renderAll();
+  });
+  grid.addEventListener('keydown', e => {
+    const cell = e.target.closest('.cell');
+    if (!cell) return;
+    const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+    if (moves[e.key]) {
+      e.preventDefault();
+      const target = addDays(cell.dataset.date, moves[e.key]);
+      const next = grid.querySelector(`[data-date="${target}"]`);
+      if (next) next.focus();
+    } else if (state.paint && (e.key === ' ' || e.key === 'Enter')) {
+      e.preventDefault();
+      commit([[cell.dataset.date, state.brush || null]]);
+      grid.querySelector(`[data-date="${cell.dataset.date}"]`)?.focus();
+    }
+  });
+
+  $('paint-toggle').addEventListener('click', () => {
+    state.paint = !state.paint;
+    $('paint-toggle').setAttribute('aria-pressed', state.paint);
+    $('paint-toggle').textContent = state.paint ? 'Concluir' : 'Pintar dias';
+    $('palette').hidden = !state.paint;
+    grid.classList.toggle('painting', state.paint);
+    $('hint').textContent = state.paint
+      ? 'Escolhe um tipo e toca ou arrasta sobre os dias. As alterações ficam guardadas no fim de cada gesto; ↶ desfaz.'
+      : 'Rotação de 10 dias M M T T N N F F F F aplicada de set/2026 a mar/2027. Toca num dia para ver o detalhe.';
+    if (state.paint) renderPalette();
+  });
+  $('palette').addEventListener('click', e => {
+    const b = e.target.closest('[data-brush]');
+    if (!b) return;
+    state.brush = b.dataset.brush; renderPalette();
+  });
+
+  const shiftMonth = n => {
+    let m = state.month + n, y = state.year;
+    if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; }
+    state.year = y; state.month = m; state.selected = null; renderAll();
+  };
+  $('prev').addEventListener('click', () => shiftMonth(-1));
+  $('next').addEventListener('click', () => shiftMonth(1));
+  $('today-btn').addEventListener('click', () => {
+    state.year = Number(TODAY.slice(0, 4)); state.month = Number(TODAY.slice(5, 7)); state.selected = TODAY; renderAll();
+  });
+
+  // ───────── Grupo / roster ─────────
+  const PEOPLE = [
+    { id: 'me', name: 'Ana', note: 'eu', level: 'DETAILS', shift: d => shiftOn(d) },
+    { id: 'rui', name: 'Rui', note: 'enfermeiro', level: 'DETAILS', shift: d => ROTATION[((diffDays(d, ROT_ANCHOR) + 4) % 10 + 10) % 10] },
+    { id: 'marta', name: 'Marta', note: 'só disponibilidade', level: 'AVAILABILITY', shift: d => ROTATION[((diffDays(d, ROT_ANCHOR) + 7) % 10 + 10) % 10] },
+    { id: 'sofia', name: 'Sofia', note: 'admin do grupo', level: 'DETAILS', shift: d => (d >= '2026-10-12' && d <= '2026-10-18') ? 'FER' : ROTATION[((diffDays(d, ROT_ANCHOR) + 2) % 10 + 10) % 10] },
+    { id: 'tiago', name: 'Tiago', note: 'horário fixo', level: 'DETAILS', shift: d => [0, 6].includes(weekday(d)) ? 'F' : 'M' },
+  ];
+  const mondayOf = d => addDays(d, -((weekday(d) + 6) % 7));
+
+  function renderRoster() {
+    const days = Array.from({ length: 14 }, (_, i) => addDays(state.rosterStart, i));
+    const a = days[0], b = days[13];
+    const mon = s => MONTHS[Number(s.slice(5, 7)) - 1].slice(0, 3);
+    $('r-title').textContent = `${Number(a.slice(8))}${mon(a) !== mon(b) ? ' ' + mon(a) : ''}–${Number(b.slice(8))} ${mon(b)}`;
+    const head = days.map(d => {
+      const wd = weekday(d), cls = HOLIDAYS[d] ? 'hol' : (wd === 0 || wd === 6) ? 'we' : '';
+      return `<th class="${cls}" scope="col">${['D','S','T','Q','Q','S','S'][wd]}<br><span class="num">${Number(d.slice(8))}</span></th>`;
+    }).join('');
+    const rows = PEOPLE.map(p => `<tr class="${p.id === 'me' ? 'me' : ''}"><th scope="row">${p.name}<small>${p.note}</small></th>` + days.map(d => {
+      const c = p.shift(d);
+      if (!c) return `<td><button class="empty" tabindex="-1" aria-label="${p.name}, sem turno">·</button></td>`;
+      const t = TYPES[c];
+      if (p.level === 'AVAILABILITY') {
+        return t.kind === 'WORK'
+          ? `<td><button class="busy" tabindex="-1" aria-label="${p.name}, ocupada">●</button></td>`
+          : `<td><button class="empty" tabindex="-1" aria-label="${p.name}, livre">·</button></td>`;
+      }
+      const pend = state.pendingSwaps.has(`${p.id}:${d}`) || (p.id === 'me' && state.pendingSwaps.has(d));
+      const canSwap = p.id !== 'me' && t.kind === 'WORK';
+      return `<td><button data-person="${p.id}" data-date="${d}" ${canSwap ? '' : 'tabindex="-1"'} class="${pend ? 'chip pending' : ''}"
+        style="background:${t.color};color:${textOn(t.color)};${canSwap ? '' : 'cursor:default'}"
+        aria-label="${p.name}, ${t.name}${canSwap ? ', propor troca' : ''}">${t.abbr}</button></td>`;
+    }).join('') + '</tr>').join('');
+    const counts = days.map(d => PEOPLE.filter(p => { const c = p.shift(d); return c && TYPES[c].kind === 'WORK'; }).length);
+    $('roster').innerHTML = `<thead><tr><th></th>${head}</tr></thead><tbody>${rows}</tbody>
+      <tfoot><tr><th>A trabalhar</th>${counts.map(n => `<td>${n}</td>`).join('')}</tr></tfoot>`;
+
+    const ref = (TODAY >= days[0] && TODAY <= days[13]) ? TODAY : days[0];
+    const working = PEOPLE.map(p => ({ p, c: p.shift(ref) })).filter(x => x.c && TYPES[x.c].kind === 'WORK');
+    $('now-body').innerHTML = `<div class="muted" style="font-size:13px">${cap(WD[weekday(ref)])}, ${Number(ref.slice(8))} de ${MONTHS[Number(ref.slice(5, 7)) - 1]}</div>
+      <ul class="legend">${working.map(({ p, c }) => p.level === 'AVAILABILITY'
+        ? `<li><span class="chip" style="background:var(--surface-2);justify-content:center">●</span><span>${p.name}</span><span class="mono">ocupada</span></li>`
+        : `<li>${chipHTML(c, false)}<span>${p.name}</span><span class="mono">${hm(TYPES[c].start)}–${hm((TYPES[c].start + TYPES[c].dur) % 1440)}</span></li>`).join('')}</ul>`;
+    renderSwap();
+  }
+
+  function renderSwap() {
+    const body = $('swap-body'), s = state.swap;
+    if (!s) { body.className = 'muted'; body.textContent = 'Escolhe um turno de um colega no roster.'; return; }
+    body.className = '';
+    const p = PEOPLE.find(x => x.id === s.person);
+    const theirs = p.shift(s.date), mine = shiftOn(s.date);
+    const dLabel = `${WD[weekday(s.date)].split('-')[0]}, ${Number(s.date.slice(8))} ${MONTHS[Number(s.date.slice(5, 7)) - 1].slice(0, 3)}`;
+    if (!mine || TYPES[mine].kind !== 'WORK') {
+      body.innerHTML = `<div style="display:grid;gap:10px"><div>Não tens turno de trabalho em <strong>${dLabel}</strong>.</div>
+        <div class="muted" style="font-size:13px">Podes pedir o turno do ${p.name} como oferta (ficas com ele sem dar outro em troca).</div>
+        <div class="actions"><button class="btn primary" id="s-send">Pedir o turno ${TYPES[theirs].abbr} ao ${p.name}</button><button class="btn" id="s-cancel">Cancelar</button></div></div>`;
+    } else if (mine === theirs) {
+      body.innerHTML = `<div>Tu e o ${p.name} têm o mesmo turno (${TYPES[mine].name}) em ${dLabel}. Não há nada a trocar.</div>
+        <div class="actions" style="margin-top:10px"><button class="btn" id="s-cancel">Fechar</button></div>`;
+    } else {
+      body.innerHTML = `<div style="display:grid;gap:12px">
+        <div class="swapview">
+          <div class="side-l"><span class="muted">Dás</span>${chipHTML(mine, true)}<span>${dLabel}</span></div>
+          <span aria-hidden="true" style="font-size:20px">⇄</span>
+          <div class="side-r"><span class="muted">Recebes (de ${p.name})</span>${chipHTML(theirs, true)}<span>${dLabel}</span></div>
+        </div>
+        ${checkRest(s.date, theirs)}
+        <div class="muted" style="font-size:13px">Este grupo usa aprovação entre colegas: a troca fica feita quando o ${p.name} aceitar.</div>
+        <div class="actions"><button class="btn primary" id="s-send">Enviar pedido</button><button class="btn" id="s-cancel">Cancelar</button></div>
+      </div>`;
+    }
+    $('s-send')?.addEventListener('click', () => {
+      state.pendingSwaps.add(s.date); state.pendingSwaps.add(`${s.person}:${s.date}`);
+      state.swap = null; renderAll(); toast(`Pedido enviado ao ${p.name} (simulação). Os dois turnos ficam marcados como pendentes.`);
+    });
+    $('s-cancel')?.addEventListener('click', () => { state.swap = null; renderSwap(); });
+  }
+
+  // Aviso de descanso mínimo (11 h) usando os turnos vizinhos, como o módulo rules
+  function checkRest(date, newCode) {
+    const t = TYPES[newCode];
+    const start = t.start, end = t.start + t.dur;
+    const prev = shiftOn(addDays(date, -1)), next = shiftOn(addDays(date, 1));
+    const msgs = [];
+    if (prev && !TYPES[prev].allDay) {
+      const gap = start + 1440 - (TYPES[prev].start + TYPES[prev].dur);
+      if (gap < 660) msgs.push(`Só ${hours(Math.max(gap, 0))} h de descanso depois do turno ${TYPES[prev].abbr} da véspera (mínimo 11 h).`);
+    }
+    if (next && !TYPES[next].allDay) {
+      const gap = TYPES[next].start + 1440 - end;
+      if (gap < 660) msgs.push(`Só ${hours(Math.max(gap, 0))} h de descanso antes do turno ${TYPES[next].abbr} do dia seguinte (mínimo 11 h).`);
+    }
+    return msgs.map(m => `<div class="warnbox">Aviso: ${m} Podes enviar na mesma.</div>`).join('');
+  }
+
+  $('roster').addEventListener('click', e => {
+    const b = e.target.closest('button[data-person]');
+    if (!b || b.dataset.person === 'me') return;
+    const p = PEOPLE.find(x => x.id === b.dataset.person);
+    if (TYPES[p.shift(b.dataset.date)].kind !== 'WORK') return;
+    state.swap = { person: b.dataset.person, date: b.dataset.date };
+    renderSwap();
+    $('swap-body').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+  $('r-prev').addEventListener('click', () => { state.rosterStart = addDays(state.rosterStart, -7); renderRoster(); });
+  $('r-next').addEventListener('click', () => { state.rosterStart = addDays(state.rosterStart, 7); renderRoster(); });
+
+  // ───────── Separadores ─────────
+  function setTab(tab) {
+    state.tab = tab;
+    $('tab-cal').setAttribute('aria-selected', tab === 'cal');
+    $('tab-grp').setAttribute('aria-selected', tab === 'grp');
+    $('view-cal').hidden = tab !== 'cal';
+    $('view-grp').hidden = tab !== 'grp';
+    if (tab === 'grp') renderRoster();
+  }
+  $('tab-cal').addEventListener('click', () => setTab('cal'));
+  $('tab-grp').addEventListener('click', () => setTab('grp'));
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+  }
+
+  state.selected = '2026-10-24';
+  renderAll();
+})();
+</script>

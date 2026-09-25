@@ -216,6 +216,9 @@ A trabalhar    2     2     3     4     3     2     1     ← contagem por dia
 
 ## 5.6 Design system
 
+> Protótipo navegável destes princípios: [`prototipo/turnos-prototipo.html`](prototipo/turnos-prototipo.html)
+> (abrir no browser; dados de exemplo).
+
 ### Direção visual
 
 O EscalasPT tinha uma estética "institucional escura" (verde militar). O Turnos é **pessoal e calmo**:
@@ -245,8 +248,9 @@ neutros quentes, uma cor de marca (índigo), e **as cores dos turnos são as pro
 
   /* Raio, sombra, tipografia */
   --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
-  --font-sans: "Inter Variable", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;   /* horas tabulares */
+  --font-sans: "Instrument Sans", system-ui, sans-serif;               /* texto e UI */
+  --font-display: "Bricolage Grotesque", "Instrument Sans", sans-serif;  /* só títulos de mês e números grandes */
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;               /* horas tabulares */
 }
 @media (prefers-color-scheme: dark) { /* e [data-theme="dark"] */ … }
 ```
