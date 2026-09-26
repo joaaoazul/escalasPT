@@ -1,0 +1,74 @@
+# ============================================================
+# Turnos web (Next.js): cliente da API atualizado com o contrato,
+# typecheck, lint, build e teste ponta a ponta (Playwright) contra
+# a API Java real e PostgreSQL 18.
+# ============================================================
+
+name: Turnos web
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ["turnos/**", ".github/workflows/turnos-web.yml"]
+  pull_request:
+    paths: ["turnos/**", ".github/workflows/turnos-web.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: turnos
+          POSTGRES_USER: turnos
+          POSTGRES_PASSWORD: turnos
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U turnos -d turnos"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: turnos/apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21" }
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: turnos/apps/web/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+      - name: Cliente da API igual ao contrato
+        run: pnpm gen:api && git diff --exit-code src/lib/api/schema.d.ts
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm build
+
+      - name: Arrancar a API
+        working-directory: turnos
+        run: |
+          ./gradlew :apps:api:bootJar --no-daemon
+          COOKIE_SECURE=false BOOTSTRAP_ADMIN_EMAIL=admin@turnos.test \
+          JWT_SECRET=$(head -c 48 /dev/urandom | base64 -w0) \
+          nohup java -jar apps/api/build/libs/api-0.1.0-SNAPSHOT.jar > api.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf localhost:8080/actuator/health/readiness && exit 0; sleep 2; done
+          cat api.log; exit 1
+
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+
+      - name: Capturas e traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: turnos-e2e
+          path: turnos/apps/web/test-results

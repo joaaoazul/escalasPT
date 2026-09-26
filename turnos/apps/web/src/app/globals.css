@@ -307,3 +307,5 @@ button:disabled { opacity: .5; cursor: default; }
 @media (min-width: 640px) { .monthgrid, .wk { padding-left: 16px; padding-right: 16px; } }
 .tab[aria-current="page"] { color: var(--tint); }
 .tab[aria-current="page"] svg.i { fill: color-mix(in srgb, var(--tint) 18%, transparent); }
+.ico { display: grid; place-items: center; color: #fff; flex: none; }
+.section > .hd a { text-transform: none; font-size: 15px; letter-spacing: -.01em; }
