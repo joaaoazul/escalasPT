@@ -34,6 +34,41 @@ public abstract class IntegrationTest {
         return new Client(mvc, json);
     }
 
+    /** Posto com dois grupos de folgas, um comandante de grupo em cada, criado pelo administrador. */
+    protected record Posto(Client admin, String postoId, String grupo1, String grupo2, Client cmd1, Client cmd2) {
+    }
+
+    protected Posto posto() {
+        Client admin = militar("admin@turnos.test", "Administrador", null);
+        String postoId = admin.post("/api/v1/postos", Map.of("name", "Posto Territorial de Castro Marim", "location", "Castro Marim"))
+                .text("id");
+        String g1 = admin.post("/api/v1/postos/" + postoId + "/groups", Map.of("name", "Grupo 1")).text("id");
+        String g2 = admin.post("/api/v1/postos/" + postoId + "/groups", Map.of("name", "Grupo 2")).text("id");
+        Client cmd1 = militar("matos@gnr.test", "Sofia Matos", "Cabo-Chefe");
+        join(cmd1, admin.post("/api/v1/groups/" + g1 + "/invites", Map.of("role", "COMMANDER")).text("code"));
+        Client cmd2 = militar("sousa@gnr.test", "Paulo Sousa", "Cabo-Chefe");
+        join(cmd2, admin.post("/api/v1/groups/" + g2 + "/invites", Map.of("role", "COMMANDER")).text("code"));
+        return new Posto(admin, postoId, g1, g2, cmd1, cmd2);
+    }
+
+    /** Militar convidado pelo comandante de grupo e já dentro do grupo. */
+    protected Client membro(Client commander, String groupId, String email, String fullName, String rank) {
+        Client c = militar(email, fullName, rank);
+        join(c, commander.post("/api/v1/groups/" + groupId + "/invites", Map.of("email", email)).text("code"));
+        return c;
+    }
+
+    protected static void join(Client c, String code) {
+        var r = c.post("/api/v1/invites/" + code + "/accept", null);
+        if (r.status() != 200) {
+            throw new IllegalStateException("Aceitar convite falhou: " + r.body());
+        }
+    }
+
+    protected static String userId(Client c) {
+        return c.get("/api/v1/me").text("id");
+    }
+
     /** Regista um militar e devolve o cliente já autenticado. */
     protected Client militar(String email, String fullName, String rank) {
         Client c = client();

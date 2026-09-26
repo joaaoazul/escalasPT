@@ -93,8 +93,9 @@ CREATE TABLE shift_types (
     position          int NOT NULL DEFAULT 0,
     archived_at       timestamptz,
     created_at        timestamptz NOT NULL,
+    -- Dia inteiro: sem horas. Com horas: fixas (AT1 00–08) ou variáveis, definidas em cada serviço (GRAT, T, INST).
     CHECK ((all_day AND start_time IS NULL AND duration_minutes IS NULL)
-        OR (NOT all_day AND start_time IS NOT NULL AND duration_minutes IS NOT NULL))
+        OR (NOT all_day AND (start_time IS NULL) = (duration_minutes IS NULL)))
 );
 CREATE UNIQUE INDEX shift_types_code_uq ON shift_types (posto_id, upper(code)) WHERE archived_at IS NULL;
 
@@ -105,7 +106,9 @@ CREATE TABLE shifts (
     shift_type_id   uuid NOT NULL REFERENCES shift_types (id) ON DELETE RESTRICT,
     local_date      date NOT NULL,
     all_day         boolean NOT NULL,
-    starts_at       timestamptz NOT NULL,
+    local_start     time,                                   -- hora local de início, como definida
+    duration_minutes int CHECK (duration_minutes BETWEEN 1 AND 1440),
+    starts_at       timestamptz NOT NULL,                   -- resolvidos com o fuso do posto
     ends_at         timestamptz NOT NULL,
     time_range      tstzrange GENERATED ALWAYS AS (tstzrange(starts_at, ends_at, '[)')) STORED,
     notes           text CHECK (length(notes) <= 1000),
@@ -115,6 +118,7 @@ CREATE TABLE shifts (
     created_at      timestamptz NOT NULL,
     updated_at      timestamptz NOT NULL,
     CHECK (ends_at > starts_at),
+    CHECK (all_day = (local_start IS NULL) AND (local_start IS NULL) = (duration_minutes IS NULL)),
     -- Invariantes centrais. DEFERRABLE para a troca poder mudar os dois donos na mesma transação.
     CONSTRAINT shifts_no_overlap EXCLUDE USING gist (user_id WITH =, time_range WITH &&)
         WHERE (NOT all_day) DEFERRABLE INITIALLY IMMEDIATE,
