@@ -59,3 +59,7 @@ trace_ext.py
 htmlcov/
 .coverage
 .coverage.*
+
+# Turnos (Gradle)
+turnos/.gradle/
+turnos/**/build/

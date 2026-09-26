@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: turnos-api
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/turnos}
+    username: ${DATABASE_USER:turnos}
+    password: ${DATABASE_PASSWORD:turnos}
+  flyway:
+    locations: classpath:db/migration
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /api/v3/api-docs
+
+turnos:
+  security:
+    # Chave HMAC do JWT de acesso (base64, >= 32 bytes). Obrigatória fora de dev.
+    jwt-secret: ${JWT_SECRET:ZGV2LW9ubHktc2VjcmV0LWNoYW5nZS1tZS0zMi1ieXRlcy1taW5pbXVtLi4u}
+    access-token-ttl: 15m
+    refresh-token-ttl: 30d
+    # false só em desenvolvimento http://localhost (os cookies passam a não ter o prefixo __Host-)
+    cookie-secure: ${COOKIE_SECURE:true}
+    max-failed-logins: 5
+    lockout: 15m
+  # O primeiro registo com este email fica com o papel ADMIN (cria postos e grupos).
+  bootstrap-admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
