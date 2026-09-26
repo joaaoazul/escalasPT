@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -36,6 +37,11 @@ class AuthController {
     }
 
     record LoginRequest(@NotBlank String email, @NotBlank String password) {
+    }
+
+    /** Campos ausentes ficam como estão; string vazia apaga (posto e n.º de ordem). */
+    record ProfileRequest(@Size(min = 1, max = 120) String fullName, @Size(max = 40) String rank,
+                          @Pattern(regexp = "^([0-9]{1,5})?$") String serviceNumber) {
     }
 
     record MeResponse(UUID id, String email, String fullName, String rank, String serviceNumber, boolean admin) {
@@ -90,6 +96,11 @@ class AuthController {
     @GetMapping("/me")
     MeResponse me(CurrentUser user) {
         return MeResponse.of(auth.me(user.id()));
+    }
+
+    @PatchMapping("/me")
+    MeResponse updateProfile(CurrentUser user, @Valid @RequestBody ProfileRequest req) {
+        return MeResponse.of(auth.updateProfile(user.id(), req.fullName(), req.rank(), req.serviceNumber()));
     }
 
     private static String cookie(HttpServletRequest req, String name) {

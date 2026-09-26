@@ -15,8 +15,11 @@ turnos/
 │       ├── units/          posto, grupos de folgas, convites do comandante de grupo
 │       ├── scheduling/     tipos de serviço, serviços dos militares, regras de compatibilidade
 │       ├── swaps/          pedidos de troca, aceitação, documento PDF oficial, expiração na véspera
+│       ├── notifications/  notificações in-app e Web Push (RFC 8291/8292, só JDK)
+│       ├── importer/       migração de um posto do EscalasPT
 │       ├── audit/          registo de auditoria
 │       └── shared/         ids (UUIDv7), erros (RFC 9457), relógio
+├── apps/web/          Next.js 16 (App Router): a app, com o design iOS do protótipo
 ├── contracts/openapi.json  contrato da API (fonte para o cliente do frontend)
 └── infra/compose.yaml      PostgreSQL 18 para desenvolvimento
 ```
@@ -41,11 +44,46 @@ JWT_SECRET=$(head -c 48 /dev/urandom | base64) \
 - Todos os pedidos que alteram dados levam o cabeçalho `X-Requested-With: turnos`.
 - Contrato: `GET /api/v3/api-docs`.
 
+A app web (noutro terminal):
+
+```bash
+cd apps/web
+pnpm install
+pnpm dev            # http://localhost:3000 (o /api é encaminhado para a API em localhost:8080)
+```
+
+### Notificações no telemóvel (Web Push)
+
+Gerar as chaves VAPID uma vez (`npx web-push generate-vapid-keys`) e arrancar a API com
+`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_SUBJECT=mailto:…`. Sem chaves, só há notificações dentro da app.
+No iPhone, o push só funciona com a app adicionada ao ecrã principal.
+
+## Importar um posto do EscalasPT
+
+```bash
+java -jar apps/api/build/libs/api-0.1.0-SNAPSHOT.jar \
+  --turnos.import.escalaspt.url=jdbc:postgresql://HOST:5432/gnr_escalas \
+  --turnos.import.escalaspt.user=… --turnos.import.escalaspt.password=… \
+  --turnos.import.station-code=PT-CMR \
+  --turnos.import.group-name="Grupo 1" \
+  --turnos.import.commander-email=comandante.grupo@exemplo.pt \
+  --turnos.import.from=2026-09-01
+```
+
+Cria o posto, os tipos de serviço, os militares (entram com a mesma palavra-passe; o hash passa a Argon2 no primeiro
+login) e os serviços publicados desde `from`, todos no grupo de folgas indicado. Serviços incompatíveis (ex.: dois
+serviços normais no mesmo dia) não são importados e aparecem no relatório. Não migra hierarquia, papéis de comandante,
+rascunhos, trocas nem notificações. Como o EscalasPT não guarda o posto (patente), cada militar completa-o no perfil.
+
 ## Testes
 
 ```bash
-./gradlew :apps:api:test
+./gradlew :apps:api:test                       # API: unitários, integração (Testcontainers), módulos, contrato
+cd apps/web && pnpm typecheck && pnpm lint && pnpm build
+pnpm test:e2e                                  # ponta a ponta (precisa da API a correr, ver acima)
 ```
+
+Se a API mudar: `UPDATE_CONTRACT=1 ./gradlew :apps:api:test --tests '*OpenApiContract*'` e depois `pnpm gen:api` na web.
 
 Os testes de integração arrancam um PostgreSQL 18 real (Testcontainers): as regras que vivem na base de dados
 (sobreposição de serviços com `EXCLUDE`, um pedido ativo por serviço) são testadas a sério, incluindo trocas concorrentes.

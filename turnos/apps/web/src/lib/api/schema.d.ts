@@ -177,7 +177,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["updateProfile"];
         trace?: never;
     };
     "/api/v1/me/membership": {
@@ -679,6 +679,11 @@ export interface components {
             name: string;
             timeZone: string;
         };
+        ProfileRequest: {
+            fullName?: string;
+            rank?: string;
+            serviceNumber?: string;
+        };
         PushConfig: {
             enabled: boolean;
             publicKey: string;
@@ -1056,6 +1061,30 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MeResponse"];
+                };
+            };
+        };
+    };
+    updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {

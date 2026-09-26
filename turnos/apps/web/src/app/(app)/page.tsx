@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api/client";
+import { api, ApiError, unwrap } from "@/lib/api/client";
 import type { Shift } from "@/lib/api/models";
 import { useApp } from "@/lib/app-context";
 import { addDays, cap, hours, longDate, mondayOf, monthRange, relDate, today, WD_LETTER, weekday } from "@/lib/dates";
@@ -14,6 +14,7 @@ import { Bell, PushToggle } from "@/components/Notifications";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { useSheet } from "@/components/Sheet";
+import { useToast } from "@/components/Toast";
 import { DaySheet, dayTitle, hoursLabel, MemberSheet, ShiftPill, SwapDetailSheet, swapStatus } from "@/components/sheets";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -160,6 +161,43 @@ function Hero({ shift, now, onOpen }: { shift: Shift; now: number; onOpen: () =>
   );
 }
 
+const RANKS = ["", "Guarda", "Guarda Principal", "Cabo", "Cabo-Chefe", "Cabo-Mor", "Furriel", "2.º Sargento", "1.º Sargento", "Sargento-Ajudante", "Sargento-Chefe", "Sargento-Mor"];
+
+function ProfileForm() {
+  const { me } = useApp();
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [f, setF] = useState({ fullName: me.fullName, rank: me.rank ?? "", serviceNumber: me.serviceNumber ?? "" });
+  const [busy, setBusy] = useState(false);
+  return (
+    <form className="section" onSubmit={async (e) => {
+      e.preventDefault();
+      setBusy(true);
+      try {
+        await unwrap(api.PATCH("/api/v1/me", { body: f }) as never);
+        await qc.invalidateQueries();
+        toast("Perfil atualizado");
+      } catch (err) {
+        toast(err instanceof ApiError ? err.message : "Não foi possível guardar", "error");
+      } finally {
+        setBusy(false);
+      }
+    }}>
+      <div className="hd"><span>Perfil</span></div>
+      <div className="group">
+        <div className="row"><span className="grow t">Posto</span>
+          <select className="field" style={{ width: "auto" }} value={f.rank} onChange={(e) => setF({ ...f, rank: e.target.value })}>
+            {RANKS.map((r) => <option key={r} value={r}>{r || "—"}</option>)}
+          </select>
+        </div>
+        <div className="row"><input className="field" aria-label="Nome" value={f.fullName} onChange={(e) => setF({ ...f, fullName: e.target.value })} /></div>
+        <div className="row"><input className="field" aria-label="N.º de ordem" placeholder="N.º de ordem" inputMode="numeric" pattern="[0-9]{0,5}" value={f.serviceNumber} onChange={(e) => setF({ ...f, serviceNumber: e.target.value })} /></div>
+        <button className="row tint" type="submit" disabled={busy}><span className="grow t">Guardar</span></button>
+      </div>
+    </form>
+  );
+}
+
 function Profile({ onLogout }: { onLogout: () => void }) {
   const { me, membership } = useApp();
   return (
@@ -175,6 +213,7 @@ function Profile({ onLogout }: { onLogout: () => void }) {
           {me.serviceNumber && <div className="row"><span className="grow t">N.º de ordem</span><span className="v">{me.serviceNumber}</span></div>}
         </div>
       </div>
+      <ProfileForm />
       <PushToggle />
       <div className="section">
         <div className="group">

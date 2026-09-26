@@ -78,6 +78,9 @@ class AuthService {
         if (user.failedLogins() > 0) {
             users.resetFailedLogins(user.id());
         }
+        if (passwords.upgradeEncoding(user.passwordHash())) {
+            users.updatePassword(user.id(), passwords.encode(password), now);
+        }
         return openSession(user, userAgent);
     }
 
@@ -106,6 +109,14 @@ class AuthService {
     @Transactional
     void logout(UUID sessionId) {
         sessions.revoke(sessionId, clock.instant());
+    }
+
+    @Transactional
+    UserRow updateProfile(UUID id, String fullName, String rank, String number) {
+        UserRow u = users.byId(id).orElseThrow(this::unauthorized);
+        users.updateProfile(id, fullName == null || fullName.isBlank() ? u.fullName() : fullName.trim(),
+                rank == null ? u.rank() : blankToNull(rank), number == null ? u.serviceNumber() : blankToNull(number), clock.instant());
+        return users.byId(id).orElseThrow();
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)

@@ -56,6 +56,16 @@ class Users implements UserDirectory {
                 .param("id", id).param("max", max).param("until", Timestamp.from(lockUntil)).update();
     }
 
+    void updatePassword(UUID id, String hash, Instant now) {
+        jdbc.sql("UPDATE users SET password_hash = :h, updated_at = :now WHERE id = :id")
+                .param("id", id).param("h", hash).param("now", Timestamp.from(now)).update();
+    }
+
+    void updateProfile(UUID id, String fullName, String rank, String number, Instant now) {
+        jdbc.sql("UPDATE users SET full_name = :n, rank = :r, service_number = :s, updated_at = :now WHERE id = :id")
+                .param("id", id).param("n", fullName).param("r", rank).param("s", number).param("now", Timestamp.from(now)).update();
+    }
+
     void resetFailedLogins(UUID id) {
         jdbc.sql("UPDATE users SET failed_logins = 0, locked_until = NULL WHERE id = :id").param("id", id).update();
     }
