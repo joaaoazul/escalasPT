@@ -1,0 +1,43 @@
+# ============================================================
+# Turnos API (Java/Spring Boot): compila, testa contra PostgreSQL 18
+# real (Testcontainers) e confirma que o contrato OpenAPI não mudou
+# sem ser commitado.
+# ============================================================
+
+name: Turnos API
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ["turnos/**", ".github/workflows/turnos-api.yml"]
+  pull_request:
+    paths: ["turnos/**", ".github/workflows/turnos-api.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: turnos
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Testes (unitários, integração com Testcontainers, fronteiras dos módulos)
+        run: ./gradlew :apps:api:test --no-daemon
+
+      - name: Relatório dos testes
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: turnos-api-test-report
+          path: turnos/apps/api/build/reports/tests/test

@@ -183,7 +183,7 @@ sequenceDiagram
     participant PDF as SwapDocumentService
     participant EV as Eventos (outbox)
 
-    B->>API: POST /swaps/{id}:accept  (If-Match: version)
+    B->>API: POST /swaps/{id}/accept
     API->>S: accept(id, B)
     S->>DB: SELECT swap, turno A, turno B FOR UPDATE (ordem por id)
     S->>S: valida estado ∈ {PENDENTE, EM_ESPERA}, regras 1–9
@@ -219,7 +219,10 @@ O PDF é o formulário "Troca de Serviço" tal como o `swap_pdf_service.py` já 
 8. "NOTA:" com o Art. 34.º do RGSGNR (n.ºs 1, 2 e 5, alíneas c e d), com o mesmo texto
 9. Rodapé: "Processado por computador · Guarda Nacional Republicana · Ref. XXXXXXXX · Página 1 de 1"
 
-**A única diferença** é a linha "Autorização pelo Comandante", que sai do registo digital. Ficam "Pedido de troca" e
+**A única diferença** é a linha "Autorização pelo Comandante", que sai do registo digital.
+
+Tal como o gerado pelo EscalasPT, o formulário ocupa duas páginas (a NOTA passa para a segunda). O EscalasPT escrevia
+sempre "Página 1 de 1" no rodapé; aqui o rodapé indica a página real ("Página 2 de 2"). Ficam "Pedido de troca" e
 "Aceitação pelo militar". Não se acrescenta mais nada ao papel: nem mensagens, nem "aguardar", nem QR.
 A caixa "VISTO" fica como no modelo.
 
@@ -290,13 +293,13 @@ Art. 34.º fala de trocas entre dois militares identificados.
 
 | Método | Path | Quem | Descrição |
 |--------|------|------|-----------|
-| POST | `/groups/{gid}/swaps` | A | `{shiftId, targetShiftId, message?}` → `201` com `warnings[]` (descanso) |
+| POST | `/swaps` | A | `{shiftId, targetShiftId, message?}` → `201` com `warnings[]` (descanso) |
 | GET | `/me/swaps?box=received\|sent\|history` | A ou B | Caixas de entrada |
 | GET | `/swaps/{id}` | A, B | Detalhe com a pré-visualização do impacto nos dois calendários |
-| POST | `/swaps/{id}:accept` | B | `If-Match` → `200 {swap, document}` |
-| POST | `/swaps/{id}:hold` | B | `{message?}` → `EM_ESPERA` |
-| POST | `/swaps/{id}:decline` | B | `{reason?}` → `RECUSADA` |
-| POST | `/swaps/{id}:cancel` | A | → `CANCELADA` |
+| POST | `/swaps/{id}/accept` | B | `If-Match` → `200 {swap, document}` |
+| POST | `/swaps/{id}/hold` | B | `{message?}` → `EM_ESPERA` |
+| POST | `/swaps/{id}/decline` | B | `{reason?}` → `RECUSADA` |
+| POST | `/swaps/{id}/cancel` | A | → `CANCELADA` |
 | GET | `/swaps/{id}/document.pdf` | A, B | O PDF emitido (`Content-Disposition: attachment; filename="troca-7F3K9Q2M.pdf"`) |
 
 Deixam de existir: `POST /swaps/{id}/decide`, `:approve`, `:reject` e a notificação aos comandantes.
