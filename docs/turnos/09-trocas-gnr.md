@@ -107,7 +107,7 @@ ALTER TABLE group_invites ADD COLUMN invitee_name text, ADD COLUMN invitee_rank 
 |--------|------|------|-----------|
 | POST | `/groups/{gid}/invites` | Comandante de grupo | `{rank, name, email}` ou `{type: CODE}` → convite de uso único, 7 dias |
 | DELETE | `/groups/{gid}/invites/{id}` | Comandante de grupo | Revogar |
-| POST | `/invites/{token}:accept` | Militar convidado | `{calendarId}` |
+| POST | `/invites/{code}/accept` | Militar convidado | — (a partilha do calendário de serviço é automática no MVP) |
 | DELETE | `/groups/{gid}/members/{userId}` | Comandante de grupo (ou o próprio, para sair) | Cancela as trocas ativas desse militar |
 | POST | `/groups/{gid}/owner:transfer` | Comandante de grupo | Passa o comando de grupo |
 | GET | `/groups/{gid}/now` | Membros | Estado atual de cada militar (tabela acima) |
