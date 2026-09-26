@@ -77,6 +77,15 @@ class UnitsController {
         return view(p);
     }
 
+    /** O administrador vê todos os postos; um militar vê o seu. */
+    @GetMapping("/postos")
+    List<PostoView> postos(CurrentUser me) {
+        if (me.admin()) {
+            return repo.allPostos().stream().map(this::view).toList();
+        }
+        return repo.membershipOf(me.id()).flatMap(m -> repo.posto(m.postoId())).map(p -> List.of(view(p))).orElse(List.of());
+    }
+
     /** Escala do posto: grupos de folgas e os seus militares. */
     @GetMapping("/postos/{postoId}")
     PostoView posto(CurrentUser me, @PathVariable UUID postoId) {

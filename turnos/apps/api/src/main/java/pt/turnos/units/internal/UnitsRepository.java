@@ -60,6 +60,13 @@ class UnitsRepository implements Units {
                 .list();
     }
 
+    List<PostoInfo> allPostos() {
+        return jdbc.sql("SELECT id, name, location, time_zone FROM postos ORDER BY name")
+                .query((rs, n) -> new PostoInfo(rs.getObject("id", UUID.class), rs.getString("name"), rs.getString("location"),
+                        ZoneId.of(rs.getString("time_zone"))))
+                .list();
+    }
+
     @Override
     public Optional<PostoInfo> posto(UUID id) {
         return jdbc.sql("SELECT id, name, location, time_zone FROM postos WHERE id = :id").param("id", id)

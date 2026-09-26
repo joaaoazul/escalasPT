@@ -86,6 +86,15 @@ class UnitsIntegrationTest extends IntegrationTest {
     }
 
     @Test
+    void listaDePostos() {
+        Posto p = posto();
+        militar("x@gnr.test", "Xavier", "Guarda");
+        assertThat(p.admin().get("/api/v1/postos").body()).hasSize(1);
+        assertThat(p.cmd1().get("/api/v1/postos").body().get(0).path("groups")).hasSize(2);
+        assertThat(client().post("/api/v1/auth/login", Map.of("email", "x@gnr.test", "password", "palavra-passe-segura")).status()).isEqualTo(200);
+    }
+
+    @Test
     void postoSoEVisivelAosSeusMilitares() {
         Posto p = posto();
         Client estranho = militar("x@gnr.test", "Xavier", "Guarda");

@@ -1,1942 +1,1590 @@
 {
-  "components": {
-    "schemas": {
-      "AddRequest": {
-        "properties": {
-          "date": {
-            "format": "date",
-            "type": "string"
+  "components" : {
+    "schemas" : {
+      "AddRequest" : {
+        "properties" : {
+          "date" : {
+            "format" : "date",
+            "type" : "string"
           },
-          "durationMinutes": {
-            "format": "int32",
-            "type": "integer"
+          "durationMinutes" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "notes": {
-            "maxLength": 1000,
-            "minLength": 0,
-            "type": "string"
+          "notes" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "shiftTypeId": {
-            "format": "uuid",
-            "type": "string"
+          "shiftTypeId" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "start": {
-            "format": "time-local",
-            "type": "string"
+          "start" : {
+            "format" : "time-local",
+            "type" : "string"
           }
         },
-        "required": [
-          "date",
-          "shiftTypeId"
-        ],
-        "type": "object"
+        "required" : [ "date", "shiftTypeId" ],
+        "type" : "object"
       },
-      "CreateGroup": {
-        "properties": {
-          "name": {
-            "maxLength": 40,
-            "minLength": 0,
-            "type": "string"
+      "CreateGroup" : {
+        "properties" : {
+          "name" : {
+            "maxLength" : 40,
+            "minLength" : 0,
+            "type" : "string"
           }
         },
-        "required": [
-          "name"
-        ],
-        "type": "object"
+        "required" : [ "name" ],
+        "type" : "object"
       },
-      "CreateInvite": {
-        "properties": {
-          "email": {
-            "format": "email",
-            "type": "string"
+      "CreateInvite" : {
+        "properties" : {
+          "email" : {
+            "format" : "email",
+            "type" : "string"
           },
-          "name": {
-            "maxLength": 120,
-            "minLength": 0,
-            "type": "string"
+          "name" : {
+            "maxLength" : 120,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "rank": {
-            "maxLength": 40,
-            "minLength": 0,
-            "type": "string"
+          "rank" : {
+            "maxLength" : 40,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "role": {
-            "type": "string"
+          "role" : {
+            "type" : "string"
           }
         },
-        "type": "object"
+        "type" : "object"
       },
-      "CreatePosto": {
-        "properties": {
-          "location": {
-            "maxLength": 80,
-            "minLength": 0,
-            "type": "string"
+      "CreatePosto" : {
+        "properties" : {
+          "location" : {
+            "maxLength" : 80,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "name": {
-            "maxLength": 120,
-            "minLength": 0,
-            "type": "string"
+          "name" : {
+            "maxLength" : 120,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "timeZone": {
-            "type": "string"
+          "timeZone" : {
+            "type" : "string"
           }
         },
-        "required": [
-          "location",
-          "name"
-        ],
-        "type": "object"
+        "required" : [ "location", "name" ],
+        "type" : "object"
       },
-      "CreateSwap": {
-        "properties": {
-          "message": {
-            "maxLength": 280,
-            "minLength": 0,
-            "type": "string"
+      "CreateSwap" : {
+        "properties" : {
+          "message" : {
+            "maxLength" : 280,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "shiftId": {
-            "format": "uuid",
-            "type": "string"
+          "shiftId" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "targetShiftId": {
-            "format": "uuid",
-            "type": "string"
+          "targetShiftId" : {
+            "format" : "uuid",
+            "type" : "string"
           }
         },
-        "required": [
-          "shiftId",
-          "targetShiftId"
-        ],
-        "type": "object"
+        "required" : [ "shiftId", "targetShiftId" ],
+        "type" : "object"
       },
-      "CurrentUser": {
-        "properties": {
-          "admin": {
-            "type": "boolean"
+      "GroupView" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "id": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "GroupView": {
-        "properties": {
-          "id": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "members": {
-            "items": {
-              "$ref": "#/components/schemas/MemberView"
+          "members" : {
+            "items" : {
+              "$ref" : "#/components/schemas/MemberView"
             },
-            "type": "array"
+            "type" : "array"
           },
-          "name": {
-            "type": "string"
+          "name" : {
+            "type" : "string"
           }
         },
-        "type": "object"
+        "required" : [ "id", "members", "name" ],
+        "type" : "object"
       },
-      "InvitePreview": {
-        "properties": {
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string"
+      "InvitePreview" : {
+        "properties" : {
+          "expiresAt" : {
+            "format" : "date-time",
+            "type" : "string"
           },
-          "groupId": {
-            "format": "uuid",
-            "type": "string"
+          "groupId" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "groupName": {
-            "type": "string"
+          "groupName" : {
+            "type" : "string"
           },
-          "invitedBy": {
-            "type": "string"
+          "invitedBy" : {
+            "type" : "string"
           },
-          "postoName": {
-            "type": "string"
+          "postoName" : {
+            "type" : "string"
           },
-          "status": {
-            "type": "string"
+          "status" : {
+            "type" : "string"
           }
         },
-        "type": "object"
+        "required" : [ "expiresAt", "groupId", "groupName", "invitedBy", "postoName", "status" ],
+        "type" : "object"
       },
-      "InviteView": {
-        "properties": {
-          "acceptedAt": {
-            "format": "date-time",
-            "type": "string"
+      "InviteView" : {
+        "properties" : {
+          "acceptedAt" : {
+            "format" : "date-time",
+            "type" : "string"
           },
-          "email": {
-            "type": "string"
+          "email" : {
+            "type" : "string"
           },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string"
+          "expiresAt" : {
+            "format" : "date-time",
+            "type" : "string"
           },
-          "id": {
-            "format": "uuid",
-            "type": "string"
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "name": {
-            "type": "string"
+          "name" : {
+            "type" : "string"
           },
-          "rank": {
-            "type": "string"
+          "rank" : {
+            "type" : "string"
           },
-          "role": {
-            "type": "string"
+          "role" : {
+            "type" : "string"
           },
-          "status": {
-            "type": "string"
+          "status" : {
+            "type" : "string"
           }
         },
-        "type": "object"
+        "required" : [ "acceptedAt", "email", "expiresAt", "id", "name", "rank", "role", "status" ],
+        "type" : "object"
       },
-      "LoginRequest": {
-        "properties": {
-          "email": {
-            "minLength": 1,
-            "type": "string"
+      "LoginRequest" : {
+        "properties" : {
+          "email" : {
+            "minLength" : 1,
+            "type" : "string"
           },
-          "password": {
-            "minLength": 1,
-            "type": "string"
+          "password" : {
+            "minLength" : 1,
+            "type" : "string"
           }
         },
-        "required": [
-          "email",
-          "password"
-        ],
-        "type": "object"
+        "required" : [ "email", "password" ],
+        "type" : "object"
       },
-      "MeResponse": {
-        "properties": {
-          "admin": {
-            "type": "boolean"
+      "MeResponse" : {
+        "properties" : {
+          "admin" : {
+            "type" : "boolean"
           },
-          "email": {
-            "type": "string"
+          "email" : {
+            "type" : "string"
           },
-          "fullName": {
-            "type": "string"
+          "fullName" : {
+            "type" : "string"
           },
-          "id": {
-            "format": "uuid",
-            "type": "string"
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "rank": {
-            "type": "string"
+          "rank" : {
+            "type" : "string"
           },
-          "serviceNumber": {
-            "type": "string"
+          "serviceNumber" : {
+            "type" : "string"
           }
         },
-        "type": "object"
+        "required" : [ "admin", "email", "fullName", "id", "rank", "serviceNumber" ],
+        "type" : "object"
       },
-      "MemberView": {
-        "properties": {
-          "commander": {
-            "type": "boolean"
+      "MemberView" : {
+        "properties" : {
+          "commander" : {
+            "type" : "boolean"
           },
-          "displayName": {
-            "type": "string"
+          "displayName" : {
+            "type" : "string"
           },
-          "rank": {
-            "type": "string"
+          "rank" : {
+            "type" : "string"
           },
-          "serviceNumber": {
-            "type": "string"
+          "serviceNumber" : {
+            "type" : "string"
           },
-          "userId": {
-            "format": "uuid",
-            "type": "string"
+          "userId" : {
+            "format" : "uuid",
+            "type" : "string"
           }
         },
-        "type": "object"
+        "required" : [ "commander", "displayName", "rank", "serviceNumber", "userId" ],
+        "type" : "object"
       },
-      "MembershipView": {
-        "properties": {
-          "commander": {
-            "type": "boolean"
+      "MembershipView" : {
+        "properties" : {
+          "commander" : {
+            "type" : "boolean"
           },
-          "groupId": {
-            "format": "uuid",
-            "type": "string"
+          "groupId" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "groupName": {
-            "type": "string"
+          "groupName" : {
+            "type" : "string"
           },
-          "postoId": {
-            "format": "uuid",
-            "type": "string"
+          "postoId" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "postoName": {
-            "type": "string"
+          "postoName" : {
+            "type" : "string"
           }
         },
-        "type": "object"
+        "required" : [ "commander", "groupId", "groupName", "postoId", "postoName" ],
+        "type" : "object"
       },
-      "Note": {
-        "properties": {
-          "message": {
-            "maxLength": 280,
-            "minLength": 0,
-            "type": "string"
+      "Note" : {
+        "properties" : {
+          "message" : {
+            "maxLength" : 280,
+            "minLength" : 0,
+            "type" : "string"
           }
         },
-        "type": "object"
+        "type" : "object"
       },
-      "NotesRequest": {
-        "properties": {
-          "notes": {
-            "maxLength": 1000,
-            "minLength": 0,
-            "type": "string"
+      "NotesRequest" : {
+        "properties" : {
+          "notes" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "version": {
-            "format": "int32",
-            "type": "integer"
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
-        "type": "object"
+        "type" : "object"
       },
-      "PaintRequest": {
-        "properties": {
-          "dates": {
-            "items": {
-              "format": "date",
-              "type": "string"
+      "PaintRequest" : {
+        "properties" : {
+          "dates" : {
+            "items" : {
+              "format" : "date",
+              "type" : "string"
             },
-            "minItems": 1,
-            "type": "array"
+            "minItems" : 1,
+            "type" : "array"
           },
-          "durationMinutes": {
-            "format": "int32",
-            "type": "integer"
+          "durationMinutes" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "shiftTypeId": {
-            "format": "uuid",
-            "type": "string"
+          "shiftTypeId" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "start": {
-            "format": "time-local",
-            "type": "string"
+          "start" : {
+            "format" : "time-local",
+            "type" : "string"
           }
         },
-        "required": [
-          "dates"
-        ],
-        "type": "object"
+        "required" : [ "dates" ],
+        "type" : "object"
       },
-      "Person": {
-        "properties": {
-          "displayName": {
-            "type": "string"
+      "Person" : {
+        "properties" : {
+          "displayName" : {
+            "type" : "string"
           },
-          "userId": {
-            "format": "uuid",
-            "type": "string"
+          "userId" : {
+            "format" : "uuid",
+            "type" : "string"
           }
         },
-        "type": "object"
+        "required" : [ "displayName", "userId" ],
+        "type" : "object"
       },
-      "PostoView": {
-        "properties": {
-          "groups": {
-            "items": {
-              "$ref": "#/components/schemas/GroupView"
+      "PostoView" : {
+        "properties" : {
+          "groups" : {
+            "items" : {
+              "$ref" : "#/components/schemas/GroupView"
             },
-            "type": "array"
+            "type" : "array"
           },
-          "id": {
-            "format": "uuid",
-            "type": "string"
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "location": {
-            "type": "string"
+          "location" : {
+            "type" : "string"
           },
-          "name": {
-            "type": "string"
+          "name" : {
+            "type" : "string"
           },
-          "timeZone": {
-            "type": "string"
+          "timeZone" : {
+            "type" : "string"
           }
         },
-        "type": "object"
+        "required" : [ "groups", "id", "location", "name", "timeZone" ],
+        "type" : "object"
       },
-      "RegisterRequest": {
-        "properties": {
-          "email": {
-            "format": "email",
-            "maxLength": 200,
-            "minLength": 0,
-            "type": "string"
+      "RegisterRequest" : {
+        "properties" : {
+          "email" : {
+            "format" : "email",
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "fullName": {
-            "maxLength": 120,
-            "minLength": 0,
-            "type": "string"
+          "fullName" : {
+            "maxLength" : 120,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "password": {
-            "maxLength": 200,
-            "minLength": 10,
-            "type": "string"
+          "password" : {
+            "maxLength" : 200,
+            "minLength" : 10,
+            "type" : "string"
           },
-          "rank": {
-            "maxLength": 40,
-            "minLength": 0,
-            "type": "string"
+          "rank" : {
+            "maxLength" : 40,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "serviceNumber": {
-            "pattern": "^[0-9]{1,5}$",
-            "type": "string"
+          "serviceNumber" : {
+            "pattern" : "^[0-9]{1,5}$",
+            "type" : "string"
           }
         },
-        "required": [
-          "email",
-          "fullName",
-          "password"
-        ],
-        "type": "object"
+        "required" : [ "email", "fullName", "password" ],
+        "type" : "object"
       },
-      "ShiftDto": {
-        "properties": {
-          "allDay": {
-            "type": "boolean"
+      "ShiftDto" : {
+        "properties" : {
+          "allDay" : {
+            "type" : "boolean"
           },
-          "code": {
-            "type": "string"
+          "code" : {
+            "type" : "string"
           },
-          "color": {
-            "type": "string"
+          "color" : {
+            "type" : "string"
           },
-          "date": {
-            "format": "date",
-            "type": "string"
+          "date" : {
+            "format" : "date",
+            "type" : "string"
           },
-          "durationMinutes": {
-            "format": "int32",
-            "type": "integer"
+          "durationMinutes" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "endsAt": {
-            "format": "date-time",
-            "type": "string"
+          "endsAt" : {
+            "format" : "date-time",
+            "type" : "string"
           },
-          "id": {
-            "format": "uuid",
-            "type": "string"
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "kind": {
-            "type": "string"
+          "kind" : {
+            "type" : "string"
           },
-          "name": {
-            "type": "string"
+          "name" : {
+            "type" : "string"
           },
-          "notes": {
-            "type": "string"
+          "notes" : {
+            "type" : "string"
           },
-          "shiftTypeId": {
-            "format": "uuid",
-            "type": "string"
+          "shiftTypeId" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "source": {
-            "type": "string"
+          "source" : {
+            "type" : "string"
           },
-          "start": {
-            "format": "time-local",
-            "type": "string"
+          "start" : {
+            "format" : "time-local",
+            "type" : "string"
           },
-          "startsAt": {
-            "format": "date-time",
-            "type": "string"
+          "startsAt" : {
+            "format" : "date-time",
+            "type" : "string"
           },
-          "userId": {
-            "format": "uuid",
-            "type": "string"
+          "userId" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "version": {
-            "format": "int32",
-            "type": "integer"
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
-        "type": "object"
+        "required" : [ "allDay", "code", "color", "date", "durationMinutes", "endsAt", "id", "kind", "name", "notes", "shiftTypeId", "source", "start", "startsAt", "userId", "version" ],
+        "type" : "object"
       },
-      "ShiftRef": {
-        "properties": {
-          "code": {
-            "type": "string"
+      "ShiftRef" : {
+        "properties" : {
+          "code" : {
+            "type" : "string"
           },
-          "color": {
-            "type": "string"
+          "color" : {
+            "type" : "string"
           },
-          "date": {
-            "format": "date",
-            "type": "string"
+          "date" : {
+            "format" : "date",
+            "type" : "string"
           },
-          "durationMinutes": {
-            "format": "int32",
-            "type": "integer"
+          "durationMinutes" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "id": {
-            "format": "uuid",
-            "type": "string"
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "name": {
-            "type": "string"
+          "name" : {
+            "type" : "string"
           },
-          "start": {
-            "format": "time-local",
-            "type": "string"
+          "start" : {
+            "format" : "time-local",
+            "type" : "string"
           }
         },
-        "type": "object"
+        "required" : [ "code", "color", "date", "durationMinutes", "id", "name", "start" ],
+        "type" : "object"
       },
-      "ShiftTypeInfo": {
-        "properties": {
-          "accumulable": {
-            "type": "boolean"
+      "ShiftTypeInfo" : {
+        "properties" : {
+          "accumulable" : {
+            "type" : "boolean"
           },
-          "allDay": {
-            "type": "boolean"
+          "allDay" : {
+            "type" : "boolean"
           },
-          "code": {
-            "type": "string"
+          "code" : {
+            "type" : "string"
           },
-          "color": {
-            "type": "string"
+          "color" : {
+            "type" : "string"
           },
-          "durationMinutes": {
-            "format": "int32",
-            "type": "integer"
+          "durationMinutes" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "id": {
-            "format": "uuid",
-            "type": "string"
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "kind": {
-            "type": "string"
+          "kind" : {
+            "type" : "string"
           },
-          "name": {
-            "type": "string"
+          "name" : {
+            "type" : "string"
           },
-          "postoId": {
-            "format": "uuid",
-            "type": "string"
+          "postoId" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "startTime": {
-            "format": "time-local",
-            "type": "string"
+          "startTime" : {
+            "format" : "time-local",
+            "type" : "string"
           },
-          "swappable": {
-            "type": "boolean"
+          "swappable" : {
+            "type" : "boolean"
           }
         },
-        "type": "object"
+        "required" : [ "accumulable", "allDay", "code", "color", "durationMinutes", "id", "kind", "name", "postoId", "startTime", "swappable" ],
+        "type" : "object"
       },
-      "SwapDto": {
-        "properties": {
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
+      "SwapDto" : {
+        "properties" : {
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
           },
-          "declineReason": {
-            "type": "string"
+          "declineReason" : {
+            "type" : "string"
           },
-          "documentReference": {
-            "type": "string"
+          "documentReference" : {
+            "type" : "string"
           },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string"
+          "expiresAt" : {
+            "format" : "date-time",
+            "type" : "string"
           },
-          "heldAt": {
-            "format": "date-time",
-            "type": "string"
+          "heldAt" : {
+            "format" : "date-time",
+            "type" : "string"
           },
-          "holdMessage": {
-            "type": "string"
+          "holdMessage" : {
+            "type" : "string"
           },
-          "id": {
-            "format": "uuid",
-            "type": "string"
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "message": {
-            "type": "string"
+          "message" : {
+            "type" : "string"
           },
-          "requester": {
-            "$ref": "#/components/schemas/Person"
+          "requester" : {
+            "$ref" : "#/components/schemas/Person"
           },
-          "requesterShift": {
-            "$ref": "#/components/schemas/ShiftRef"
+          "requesterShift" : {
+            "$ref" : "#/components/schemas/ShiftRef"
           },
-          "respondedAt": {
-            "format": "date-time",
-            "type": "string"
+          "respondedAt" : {
+            "format" : "date-time",
+            "type" : "string"
           },
-          "status": {
-            "type": "string"
+          "status" : {
+            "type" : "string"
           },
-          "target": {
-            "$ref": "#/components/schemas/Person"
+          "target" : {
+            "$ref" : "#/components/schemas/Person"
           },
-          "targetShift": {
-            "$ref": "#/components/schemas/ShiftRef"
+          "targetShift" : {
+            "$ref" : "#/components/schemas/ShiftRef"
           },
-          "warnings": {
-            "items": {
-              "additionalProperties": {},
-              "type": "object"
+          "warnings" : {
+            "items" : {
+              "additionalProperties" : { },
+              "type" : "object"
             },
-            "type": "array"
+            "type" : "array"
           }
         },
-        "type": "object"
+        "required" : [ "createdAt", "declineReason", "documentReference", "expiresAt", "heldAt", "holdMessage", "id", "message", "requester", "requesterShift", "respondedAt", "status", "target", "targetShift", "warnings" ],
+        "type" : "object"
       },
-      "TransferCommand": {
-        "properties": {
-          "userId": {
-            "format": "uuid",
-            "type": "string"
+      "TransferCommand" : {
+        "properties" : {
+          "userId" : {
+            "format" : "uuid",
+            "type" : "string"
           }
         },
-        "required": [
-          "userId"
-        ],
-        "type": "object"
+        "required" : [ "userId" ],
+        "type" : "object"
       },
-      "WriteResponse": {
-        "properties": {
-          "shifts": {
-            "items": {
-              "$ref": "#/components/schemas/ShiftDto"
+      "WriteResponse" : {
+        "properties" : {
+          "shifts" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ShiftDto"
             },
-            "type": "array"
+            "type" : "array"
           },
-          "warnings": {
-            "items": {
-              "additionalProperties": {},
-              "type": "object"
+          "warnings" : {
+            "items" : {
+              "additionalProperties" : { },
+              "type" : "object"
             },
-            "type": "array"
+            "type" : "array"
           }
         },
-        "type": "object"
+        "required" : [ "shifts", "warnings" ],
+        "type" : "object"
       }
     }
   },
-  "info": {
-    "title": "OpenAPI definition",
-    "version": "v0"
+  "info" : {
+    "title" : "OpenAPI definition",
+    "version" : "v0"
   },
-  "openapi": "3.1.0",
-  "paths": {
-    "/api/v1/auth/login": {
-      "post": {
-        "operationId": "login",
-        "parameters": [
-          {
-            "in": "header",
-            "name": "User-Agent",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
+  "openapi" : "3.1.0",
+  "paths" : {
+    "/api/v1/auth/login" : {
+      "post" : {
+        "operationId" : "login",
+        "parameters" : [ {
+          "in" : "header",
+          "name" : "User-Agent",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LoginRequest"
               }
             }
           },
-          "required": true
+          "required" : true
         },
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/MeResponse"
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MeResponse"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "auth-controller"
-        ]
+        "tags" : [ "auth-controller" ]
       }
     },
-    "/api/v1/auth/logout": {
-      "post": {
-        "operationId": "logout",
-        "responses": {
-          "204": {
-            "description": "No Content"
+    "/api/v1/auth/logout" : {
+      "post" : {
+        "operationId" : "logout",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
           }
         },
-        "tags": [
-          "auth-controller"
-        ]
+        "tags" : [ "auth-controller" ]
       }
     },
-    "/api/v1/auth/refresh": {
-      "post": {
-        "operationId": "refresh",
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/MeResponse"
+    "/api/v1/auth/refresh" : {
+      "post" : {
+        "operationId" : "refresh",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MeResponse"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "auth-controller"
-        ]
+        "tags" : [ "auth-controller" ]
       }
     },
-    "/api/v1/auth/register": {
-      "post": {
-        "operationId": "register",
-        "parameters": [
-          {
-            "in": "header",
-            "name": "User-Agent",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
+    "/api/v1/auth/register" : {
+      "post" : {
+        "operationId" : "register",
+        "parameters" : [ {
+          "in" : "header",
+          "name" : "User-Agent",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RegisterRequest"
               }
             }
           },
-          "required": true
+          "required" : true
         },
-        "responses": {
-          "201": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/MeResponse"
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MeResponse"
                 }
               }
             },
-            "description": "Created"
+            "description" : "Created"
           }
         },
-        "tags": [
-          "auth-controller"
-        ]
+        "tags" : [ "auth-controller" ]
       }
     },
-    "/api/v1/groups/{groupId}/commander": {
-      "post": {
-        "operationId": "transfer",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "groupId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
+    "/api/v1/groups/{groupId}/commander" : {
+      "post" : {
+        "operationId" : "transfer",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "groupId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
           }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TransferCommand"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TransferCommand"
               }
             }
           },
-          "required": true
+          "required" : true
         },
-        "responses": {
-          "204": {
-            "description": "No Content"
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
           }
         },
-        "tags": [
-          "units-controller"
-        ]
+        "tags" : [ "units-controller" ]
       }
     },
-    "/api/v1/groups/{groupId}/invites": {
-      "get": {
-        "operationId": "invites",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "groupId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
+    "/api/v1/groups/{groupId}/invites" : {
+      "get" : {
+        "operationId" : "invites",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "groupId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/InviteView"
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/InviteView"
                   },
-                  "type": "array"
+                  "type" : "array"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "units-controller"
-        ]
+        "tags" : [ "units-controller" ]
       },
-      "post": {
-        "operationId": "invite",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "groupId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
+      "post" : {
+        "operationId" : "invite",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "groupId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
           }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateInvite"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateInvite"
               }
             }
           },
-          "required": true
+          "required" : true
         },
-        "responses": {
-          "201": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "additionalProperties": {},
-                  "type": "object"
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "additionalProperties" : { },
+                  "type" : "object"
                 }
               }
             },
-            "description": "Created"
+            "description" : "Created"
           }
         },
-        "tags": [
-          "units-controller"
-        ]
+        "tags" : [ "units-controller" ]
       }
     },
-    "/api/v1/groups/{groupId}/invites/{inviteId}": {
-      "delete": {
-        "operationId": "revoke",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "groupId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "inviteId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
+    "/api/v1/groups/{groupId}/invites/{inviteId}" : {
+      "delete" : {
+        "operationId" : "revoke",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "groupId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
+        }, {
+          "in" : "path",
+          "name" : "inviteId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
           }
         },
-        "tags": [
-          "units-controller"
-        ]
+        "tags" : [ "units-controller" ]
       }
     },
-    "/api/v1/groups/{groupId}/members/{userId}": {
-      "delete": {
-        "operationId": "removeMember",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "groupId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "userId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
+    "/api/v1/groups/{groupId}/members/{userId}" : {
+      "delete" : {
+        "operationId" : "removeMember",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "groupId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
+        }, {
+          "in" : "path",
+          "name" : "userId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
           }
         },
-        "tags": [
-          "units-controller"
-        ]
+        "tags" : [ "units-controller" ]
       }
     },
-    "/api/v1/invites/{code}": {
-      "get": {
-        "operationId": "preview",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "code",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+    "/api/v1/invites/{code}" : {
+      "get" : {
+        "operationId" : "preview",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "code",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/InvitePreview"
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InvitePreview"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "units-controller"
-        ]
+        "tags" : [ "units-controller" ]
       }
     },
-    "/api/v1/invites/{code}/accept": {
-      "post": {
-        "operationId": "accept_1",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "code",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+    "/api/v1/invites/{code}/accept" : {
+      "post" : {
+        "operationId" : "accept_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "code",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/MembershipView"
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MembershipView"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "units-controller"
-        ]
+        "tags" : [ "units-controller" ]
       }
     },
-    "/api/v1/me": {
-      "get": {
-        "operationId": "me",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "user",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/MeResponse"
+    "/api/v1/me" : {
+      "get" : {
+        "operationId" : "me",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MeResponse"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "auth-controller"
-        ]
+        "tags" : [ "auth-controller" ]
       }
     },
-    "/api/v1/me/membership": {
-      "get": {
-        "operationId": "membership",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/MembershipView"
+    "/api/v1/me/membership" : {
+      "get" : {
+        "operationId" : "membership",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MembershipView"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "units-controller"
-        ]
+        "tags" : [ "units-controller" ]
       }
     },
-    "/api/v1/me/shifts": {
-      "get": {
-        "operationId": "mine",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "query",
-            "name": "from",
-            "required": true,
-            "schema": {
-              "format": "date",
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "to",
-            "required": true,
-            "schema": {
-              "format": "date",
-              "type": "string"
-            }
+    "/api/v1/me/shifts" : {
+      "get" : {
+        "operationId" : "mine",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "from",
+          "required" : true,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ShiftDto"
+        }, {
+          "in" : "query",
+          "name" : "to",
+          "required" : true,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ShiftDto"
                   },
-                  "type": "array"
+                  "type" : "array"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "scheduling-controller"
-        ]
+        "tags" : [ "scheduling-controller" ]
       },
-      "post": {
-        "operationId": "add",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddRequest"
+      "post" : {
+        "operationId" : "add",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AddRequest"
               }
             }
           },
-          "required": true
+          "required" : true
         },
-        "responses": {
-          "201": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/WriteResponse"
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WriteResponse"
                 }
               }
             },
-            "description": "Created"
+            "description" : "Created"
           }
         },
-        "tags": [
-          "scheduling-controller"
-        ]
+        "tags" : [ "scheduling-controller" ]
       }
     },
-    "/api/v1/me/shifts/paint": {
-      "put": {
-        "operationId": "paint",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PaintRequest"
+    "/api/v1/me/shifts/paint" : {
+      "put" : {
+        "operationId" : "paint",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PaintRequest"
               }
             }
           },
-          "required": true
+          "required" : true
         },
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/WriteResponse"
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WriteResponse"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "scheduling-controller"
-        ]
+        "tags" : [ "scheduling-controller" ]
       }
     },
-    "/api/v1/me/swaps": {
-      "get": {
-        "operationId": "list",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "query",
-            "name": "box",
-            "required": false,
-            "schema": {
-              "default": "received",
-              "pattern": "received|sent|history",
-              "type": "string"
-            }
+    "/api/v1/me/swaps" : {
+      "get" : {
+        "operationId" : "list",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "box",
+          "required" : false,
+          "schema" : {
+            "default" : "received",
+            "pattern" : "received|sent|history",
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/SwapDto"
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/SwapDto"
                   },
-                  "type": "array"
+                  "type" : "array"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "swap-controller"
-        ]
+        "tags" : [ "swap-controller" ]
       }
     },
-    "/api/v1/postos": {
-      "post": {
-        "operationId": "createPosto",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePosto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/PostoView"
-                }
-              }
-            },
-            "description": "Created"
-          }
-        },
-        "tags": [
-          "units-controller"
-        ]
-      }
-    },
-    "/api/v1/postos/{postoId}": {
-      "get": {
-        "operationId": "posto",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "postoId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/PostoView"
-                }
-              }
-            },
-            "description": "OK"
-          }
-        },
-        "tags": [
-          "units-controller"
-        ]
-      }
-    },
-    "/api/v1/postos/{postoId}/groups": {
-      "post": {
-        "operationId": "createGroup",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "postoId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateGroup"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupView"
-                }
-              }
-            },
-            "description": "Created"
-          }
-        },
-        "tags": [
-          "units-controller"
-        ]
-      }
-    },
-    "/api/v1/postos/{postoId}/shift-types": {
-      "get": {
-        "operationId": "types",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "postoId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ShiftTypeInfo"
+    "/api/v1/postos" : {
+      "get" : {
+        "operationId" : "postos",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/PostoView"
                   },
-                  "type": "array"
+                  "type" : "array"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "scheduling-controller"
-        ]
-      }
-    },
-    "/api/v1/postos/{postoId}/shifts": {
-      "get": {
-        "operationId": "ofPosto",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "postoId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "groupId",
-            "required": false,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "from",
-            "required": true,
-            "schema": {
-              "format": "date",
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "to",
-            "required": true,
-            "schema": {
-              "format": "date",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ShiftDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": "OK"
-          }
-        },
-        "tags": [
-          "scheduling-controller"
-        ]
-      }
-    },
-    "/api/v1/shifts/{id}": {
-      "delete": {
-        "operationId": "delete",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
-          }
-        },
-        "tags": [
-          "scheduling-controller"
-        ]
+        "tags" : [ "units-controller" ]
       },
-      "patch": {
-        "operationId": "notes",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotesRequest"
+      "post" : {
+        "operationId" : "createPosto",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreatePosto"
               }
             }
           },
-          "required": true
+          "required" : true
         },
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShiftDto"
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PostoView"
                 }
               }
             },
-            "description": "OK"
+            "description" : "Created"
           }
         },
-        "tags": [
-          "scheduling-controller"
-        ]
+        "tags" : [ "units-controller" ]
       }
     },
-    "/api/v1/swaps": {
-      "post": {
-        "operationId": "create",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
+    "/api/v1/postos/{postoId}" : {
+      "get" : {
+        "operationId" : "posto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "postoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
           }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateSwap"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/SwapDto"
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PostoView"
                 }
               }
             },
-            "description": "Created"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "swap-controller"
-        ]
+        "tags" : [ "units-controller" ]
       }
     },
-    "/api/v1/swaps/{id}": {
-      "get": {
-        "operationId": "get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
+    "/api/v1/postos/{postoId}/groups" : {
+      "post" : {
+        "operationId" : "createGroup",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "postoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateGroup"
+              }
             }
           },
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/SwapDto"
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GroupView"
                 }
               }
             },
-            "description": "OK"
+            "description" : "Created"
           }
         },
-        "tags": [
-          "swap-controller"
-        ]
+        "tags" : [ "units-controller" ]
       }
     },
-    "/api/v1/swaps/{id}/accept": {
-      "post": {
-        "operationId": "accept",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
+    "/api/v1/postos/{postoId}/shift-types" : {
+      "get" : {
+        "operationId" : "types",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "postoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/SwapDto"
-                }
-              }
-            },
-            "description": "OK"
-          }
-        },
-        "tags": [
-          "swap-controller"
-        ]
-      }
-    },
-    "/api/v1/swaps/{id}/cancel": {
-      "post": {
-        "operationId": "cancel",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/SwapDto"
-                }
-              }
-            },
-            "description": "OK"
-          }
-        },
-        "tags": [
-          "swap-controller"
-        ]
-      }
-    },
-    "/api/v1/swaps/{id}/decline": {
-      "post": {
-        "operationId": "decline",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Note"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/SwapDto"
-                }
-              }
-            },
-            "description": "OK"
-          }
-        },
-        "tags": [
-          "swap-controller"
-        ]
-      }
-    },
-    "/api/v1/swaps/{id}/document.pdf": {
-      "get": {
-        "operationId": "document",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "format": "byte",
-                  "type": "string"
-                }
-              }
-            },
-            "description": "OK"
-          }
-        },
-        "tags": [
-          "swap-controller"
-        ]
-      }
-    },
-    "/api/v1/swaps/{id}/hold": {
-      "post": {
-        "operationId": "hold",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Note"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/SwapDto"
-                }
-              }
-            },
-            "description": "OK"
-          }
-        },
-        "tags": [
-          "swap-controller"
-        ]
-      }
-    },
-    "/api/v1/users/{userId}/shifts": {
-      "get": {
-        "operationId": "ofUser",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "me",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CurrentUser"
-            }
-          },
-          {
-            "in": "path",
-            "name": "userId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "from",
-            "required": true,
-            "schema": {
-              "format": "date",
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "to",
-            "required": true,
-            "schema": {
-              "format": "date",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ShiftDto"
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ShiftTypeInfo"
                   },
-                  "type": "array"
+                  "type" : "array"
                 }
               }
             },
-            "description": "OK"
+            "description" : "OK"
           }
         },
-        "tags": [
-          "scheduling-controller"
-        ]
+        "tags" : [ "scheduling-controller" ]
+      }
+    },
+    "/api/v1/postos/{postoId}/shifts" : {
+      "get" : {
+        "operationId" : "ofPosto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "postoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "groupId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "from",
+          "required" : true,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "to",
+          "required" : true,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ShiftDto"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "scheduling-controller" ]
+      }
+    },
+    "/api/v1/shifts/{id}" : {
+      "delete" : {
+        "operationId" : "delete",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "scheduling-controller" ]
+      },
+      "patch" : {
+        "operationId" : "notes",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NotesRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ShiftDto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "scheduling-controller" ]
+      }
+    },
+    "/api/v1/swaps" : {
+      "post" : {
+        "operationId" : "create",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateSwap"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SwapDto"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "tags" : [ "swap-controller" ]
+      }
+    },
+    "/api/v1/swaps/{id}" : {
+      "get" : {
+        "operationId" : "get",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SwapDto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "swap-controller" ]
+      }
+    },
+    "/api/v1/swaps/{id}/accept" : {
+      "post" : {
+        "operationId" : "accept",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SwapDto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "swap-controller" ]
+      }
+    },
+    "/api/v1/swaps/{id}/cancel" : {
+      "post" : {
+        "operationId" : "cancel",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SwapDto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "swap-controller" ]
+      }
+    },
+    "/api/v1/swaps/{id}/decline" : {
+      "post" : {
+        "operationId" : "decline",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Note"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SwapDto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "swap-controller" ]
+      }
+    },
+    "/api/v1/swaps/{id}/document.pdf" : {
+      "get" : {
+        "operationId" : "document",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "format" : "byte",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "swap-controller" ]
+      }
+    },
+    "/api/v1/swaps/{id}/hold" : {
+      "post" : {
+        "operationId" : "hold",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Note"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SwapDto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "swap-controller" ]
+      }
+    },
+    "/api/v1/users/{userId}/shifts" : {
+      "get" : {
+        "operationId" : "ofUser",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "userId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "from",
+          "required" : true,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "to",
+          "required" : true,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ShiftDto"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "scheduling-controller" ]
       }
     }
   },
-  "servers": [
-    {
-      "url": "/"
-    }
-  ]
+  "servers" : [ {
+    "url" : "/"
+  } ]
 }
