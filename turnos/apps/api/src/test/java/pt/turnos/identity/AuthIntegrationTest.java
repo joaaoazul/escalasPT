@@ -86,6 +86,15 @@ class AuthIntegrationTest extends IntegrationTest {
     }
 
     @Test
+    void tokenDeAcessoExpiradoRenovaComRefresh() {
+        Client c = militar("ana.silva@gnr.test", "Ana Silva", "Guarda");
+        clock.advance(java.time.Duration.ofMinutes(16));
+        assertThat(c.get("/api/v1/me").status()).isEqualTo(401);
+        assertThat(c.post("/api/v1/auth/refresh", null).status()).isEqualTo(200);
+        assertThat(c.get("/api/v1/me").status()).isEqualTo(200);
+    }
+
+    @Test
     void logoutInvalidaOTokenDeAcessoDeImediato() {
         Client c = militar("ana.silva@gnr.test", "Ana Silva", "Guarda");
         Cookie access = c.cookies().get(AT);

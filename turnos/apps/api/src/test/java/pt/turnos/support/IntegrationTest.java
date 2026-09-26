@@ -24,9 +24,12 @@ public abstract class IntegrationTest {
     protected JsonMapper json;
     @Autowired
     protected JdbcClient jdbc;
+    @Autowired
+    protected TestClock clock;
 
     @BeforeEach
     void cleanDatabase() {
+        clock.set(TestClock.DEFAULT);
         jdbc.sql("TRUNCATE users, postos, audit_events CASCADE").update();
     }
 
@@ -62,6 +65,13 @@ public abstract class IntegrationTest {
         var r = c.post("/api/v1/invites/" + code + "/accept", null);
         if (r.status() != 200) {
             throw new IllegalStateException("Aceitar convite falhou: " + r.body());
+        }
+    }
+
+    /** Depois de avançar o relógio, o token de acesso expira: renova com o refresh token (como faz a app). */
+    protected static void refresh(Client... clients) {
+        for (Client c : clients) {
+            c.post("/api/v1/auth/refresh", null);
         }
     }
 

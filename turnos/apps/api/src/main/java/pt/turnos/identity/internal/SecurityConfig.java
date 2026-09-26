@@ -2,6 +2,7 @@ package pt.turnos.identity.internal;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
@@ -26,10 +27,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
@@ -60,6 +64,7 @@ class SecurityConfig implements WebMvcConfigurer {
     static final String CLIENT_HEADER = "X-Requested-With";
     static final String CLIENT_VALUE = "turnos";
     private static final Set<String> UNSAFE = Set.of("POST", "PUT", "PATCH", "DELETE");
+    private static final Set<String> PUBLIC_AUTH = Set.of("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh");
 
     @Bean
     SecurityFilterChain api(HttpSecurity http, SecurityProperties props, Sessions sessions, Clock clock) throws Exception {
@@ -67,7 +72,7 @@ class SecurityConfig implements WebMvcConfigurer {
             .csrf(c -> c.disable())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(a -> a
-                .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
+                .requestMatchers(HttpMethod.POST, PUBLIC_AUTH.toArray(String[]::new)).permitAll()
                 .requestMatchers("/actuator/health/**", "/api/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o
@@ -106,6 +111,11 @@ class SecurityConfig implements WebMvcConfigurer {
             if (fromHeader != null) {
                 return fromHeader;
             }
+            // Registo, login e refresh são públicos: um cookie de acesso expirado não os pode bloquear
+            // (é precisamente quando ele expira que a app chama o refresh).
+            if (PUBLIC_AUTH.contains(req.getRequestURI())) {
+                return null;
+            }
             if (req.getCookies() != null) {
                 for (var c : req.getCookies()) {
                     if (c.getName().equals(props.accessCookie()) && !c.getValue().isBlank()) {
@@ -143,9 +153,14 @@ class SecurityConfig implements WebMvcConfigurer {
         return new NimbusJwtEncoder(new ImmutableSecret<>(key));
     }
 
+    /** Valida emissor e validade com o mesmo {@link Clock} da aplicação (e não com o relógio do sistema). */
     @Bean
-    JwtDecoder jwtDecoder(SecretKey key) {
-        return NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();
+    JwtDecoder jwtDecoder(SecretKey key, Clock clock) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();
+        JwtTimestampValidator timestamps = new JwtTimestampValidator(Duration.ofSeconds(30));
+        timestamps.setClock(clock);
+        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(timestamps, new JwtIssuerValidator("turnos")));
+        return decoder;
     }
 
     @Bean
