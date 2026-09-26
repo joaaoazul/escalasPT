@@ -185,6 +185,9 @@ Catálogo de `type`s: `validation`, `not-found`, `forbidden`, `version-conflict`
 
 ### Trocas (`swaps`)
 
+> **Escalas GNR:** usam a API de [9.9](09-trocas-gnr.md#99-api-substitui-a-secção-trocas-do-doc-04)
+> (`:accept`, `:hold`, `:decline`, `:cancel`, `document.pdf`, `/verify/{code}`), sem `:approve`/`:reject`.
+
 | Método | Path | Descrição |
 |--------|------|-----------|
 | POST | `/groups/{gid}/swaps` | `{kind: SWAP\|GIVEAWAY, shiftId, targetUserId?, targetShiftId?, message?}` — sem `targetUserId` ⇒ oferta aberta |

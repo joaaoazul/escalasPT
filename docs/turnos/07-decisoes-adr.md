@@ -85,3 +85,16 @@ Formato curto: **Contexto → Decisão → Consequências → Alternativas rejei
 ## ADR-014 — Dinheiro e horas como valores exatos
 - **Decisão**: `BigDecimal` + `HALF_EVEN` no backend, `numeric` na BD, strings decimais no JSON; minutos inteiros para durações.
 - **Rejeitadas**: `double`/`float` (erros de arredondamento acumulados em somas mensais).
+
+## ADR-015 — Trocas GNR entre camaradas, sem autorização do comandante
+- **Contexto**: o público é a GNR. No EscalasPT, uma troca aceite pelo camarada ficava presa à espera do comandante
+  (`PENDING_APPROVAL`), e o documento só existia depois disso.
+- **Decisão**: a troca é um acordo entre os dois militares da mesma escala. O camarada **aceita**, **pede para aguardar** ou **recusa**.
+  Na aceitação, os serviços trocam de dono e o formulário oficial "Troca de Serviço" é emitido na mesma transação.
+  O prazo do Art. 34.º, n.º 2 ("até à véspera da execução") passa a ser uma regra do sistema: expiração automática na véspera.
+- **Consequências**: o `decide_swap`, o estado `PENDING_APPROVAL` e as notificações aos comandantes desaparecem.
+  A prova da troca passa a ser o registo digital (cronologia, SHA-256 e código de verificação público). A caixa "VISTO"
+  fica no modelo oficial, em branco, sem bloquear nada.
+- **Rejeitadas**: manter um aprovador opcional por escala (reintroduz o comandante por outra porta); emitir o PDF de forma
+  assíncrona depois da aceitação (poderia haver trocas aceites sem documento).
+- Especificação: [doc 09](09-trocas-gnr.md). Substitui, para as escalas GNR, a política `ADMIN_APPROVAL` do ADR-011.

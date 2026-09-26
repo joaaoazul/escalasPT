@@ -323,6 +323,7 @@ CREATE TABLE group_invites (
 );
 
 -- ─────────────────────────── swaps ───────────────────────────
+-- Escalas GNR: ver a migração do doc 09 (§9.8): estados PENDENTE/EM_ESPERA/ACEITE/…, sem decided_by, + swap_documents.
 CREATE TABLE swap_requests (
     id                 uuid PRIMARY KEY DEFAULT uuidv7(),
     group_id           uuid NOT NULL REFERENCES groups(id) ON DELETE CASCADE,

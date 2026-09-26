@@ -259,6 +259,9 @@ sequenceDiagram
 
 ### 2.7.2 Troca de turno (máquina de estados)
 
+> **Escalas GNR:** substituído pelo fluxo sem comandante em [9. Trocas GNR](09-trocas-gnr.md#93-máquina-de-estados)
+> (`PENDENTE → EM_ESPERA → ACEITE`, PDF emitido na aceitação). O diagrama abaixo é o modelo genérico para grupos que não são GNR.
+
 ```mermaid
 stateDiagram-v2
     [*] --> OPEN: oferta aberta ao grupo

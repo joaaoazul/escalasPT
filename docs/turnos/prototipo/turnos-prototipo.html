@@ -312,6 +312,25 @@ table.roster { border-collapse: separate; border-spacing: 0; }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
 .toast svg.i { color: var(--green); width: 20px; height: 20px; }
 @media (min-width: 720px) and (min-height: 640px) { .phone .toast { top: 60px; } }
+
+/* ───────── Documento oficial (papel, sempre claro) ───────── */
+.paper { background: #fff; color: #111; border-radius: 6px; padding: 18px 16px; font: 10.5px/1.55 Helvetica, Arial, sans-serif; letter-spacing: 0; box-shadow: 0 1px 3px rgba(0,0,0,.15); display: grid; gap: 8px; }
+.paper p { margin: 0; }
+.paper .pc { text-align: center; }
+.paper .b { font-weight: 700; }
+.paper .phead { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; margin-top: 4px; }
+.paper .visto { display: grid; justify-items: center; gap: 14px; min-width: 90px; }
+.paper .visto span { width: 90px; border-bottom: 1px solid #111; }
+.paper .ptitle { text-align: center; font-weight: 700; font-size: 13px; text-decoration: underline; margin: 6px 0 2px; }
+.paper .u { text-decoration: underline; font-weight: 600; }
+.paper .psig { display: grid; justify-items: center; gap: 3px; margin-top: 6px; }
+.paper .psig span { width: 60%; border-bottom: 1px solid #111; height: 4px; }
+.paper .psig small { font-size: 9px; color: #555; }
+.paper .preg { display: grid; gap: 1px; font-size: 9.5px; color: #333; margin-top: 4px; }
+.paper .preg span { display: inline-block; font-weight: 700; min-width: 132px; }
+.paper .pnote { font-size: 8.5px; line-height: 1.4; color: #333; border-top: .5px solid #999; padding-top: 6px; }
+.paper .pfoot { display: flex; gap: 10px; align-items: center; font-size: 8.5px; color: #555; }
+.paper .pfoot svg { flex: none; fill: #111; }
 .empty { padding: 28px 16px; text-align: center; color: var(--label-2); font-size: 15px; }
 </style>
 
@@ -360,7 +379,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
         <div id="h-hero"></div>
         <div class="section"><div class="hd"><span>Esta semana</span><button data-go="cal">Calendário</button></div><div class="weekstrip" id="h-week"></div></div>
         <div class="section" id="h-swaps"></div>
-        <div class="section"><div class="hd"><span>Urgência · agora</span></div><div class="group" id="h-group"></div></div>
+        <div class="section"><div class="hd"><span>Escala · de serviço hoje</span></div><div class="group" id="h-group"></div></div>
         <div class="section"><div class="hd"><span>Este mês</span><button data-go="horas">Ver horas</button></div></div>
         <div class="chips" id="h-chips"></div>
       </div>
@@ -369,7 +388,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     <!-- CALENDÁRIO -->
     <section class="screen" id="scr-cal" aria-label="Calendário" hidden>
       <header class="nav" id="cal-nav"><div class="nav-row">
-        <div class="nav-l"><button class="tbtn" id="cal-switch">Hospital</button></div>
+        <div class="nav-l"><button class="tbtn" id="cal-switch">Serviço</button></div>
         <div class="nav-title" id="cal-small">Outubro 2026</div>
         <div class="nav-r" id="cal-actions">
           <button class="tbtn" id="cal-today">Hoje</button>
@@ -406,10 +425,10 @@ table.roster { border-collapse: separate; border-spacing: 0; }
 
     <!-- GRUPO -->
     <section class="screen" id="scr-grp" aria-label="Grupo" hidden>
-      <header class="nav"><div class="nav-row"><div class="nav-l"></div><div class="nav-title">Urgência</div><div class="nav-r"><button class="tbtn" id="g-members">5 membros</button></div></div></header>
+      <header class="nav"><div class="nav-row"><div class="nav-l"></div><div class="nav-title">Escala</div><div class="nav-r"><button class="tbtn" id="g-members">5 militares</button></div></div></header>
       <div class="scroll">
         <div class="spacer-top"></div>
-        <div class="large"><h1>Urgência</h1></div>
+        <div class="eyebrow">PT Castro Marim</div><div class="large"><h1>Escala</h1></div>
         <div class="seg" role="tablist" aria-label="Secção do grupo">
           <button role="tab" id="seg-escala" aria-selected="true">Escala</button>
           <button role="tab" id="seg-trocas" aria-selected="false">Trocas <span id="seg-badge"></span></button>
@@ -418,7 +437,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
           <div class="section" style="margin-top:18px"><div class="hd"><span id="r-range"></span>
             <span style="display:flex;gap:14px"><button id="r-prev" aria-label="Semana anterior"><svg class="i" style="width:18px;height:18px"><use href="#i-chevl"/></svg></button><button id="r-next" aria-label="Semana seguinte"><svg class="i" style="width:18px;height:18px"><use href="#i-chev"/></svg></button></span></div></div>
           <div class="roster-wrap"><table class="roster" id="roster"></table></div>
-          <div class="section" style="margin-top:8px"><div class="ft" style="padding-top:0">Toca no turno de um colega para propor uma troca. A Marta partilha só a disponibilidade.</div></div>
+          <div class="section" style="margin-top:8px"><div class="ft" style="padding-top:0">Toca no serviço de um camarada para pedir uma troca (até à véspera). A Guarda Principal Neves partilha só quando está de serviço.</div></div>
         </div>
         <div id="g-trocas" hidden></div>
       </div>
@@ -440,7 +459,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
         <div class="section" style="margin-top:8px"><div id="hs-ring"></div></div>
         <div class="section"><div class="hd"><span>Por semana</span><span><i class="legend-dot" style="background:var(--tint)"></i>dia <i class="legend-dot" style="background:#2E2C7A;margin-left:8px"></i>noturno</span></div><div class="bars" id="hs-bars"></div></div>
         <div class="section"><div class="hd"><span>Detalhe</span></div><div class="group" id="hs-detail" style="--inset:58px"></div>
-          <div class="ft">Estimativa bruta com 9,50 €/h, +25% noturno e +100% em feriado. Configurável em Definições › Remuneração.</div></div>
+          <div class="ft">Gratificados estimados a 12 €/h (valor de exemplo, configurável em Definições).</div></div>
         <div class="section"><div class="hd"><span>Ausências</span></div><div class="group" id="hs-abs"></div></div>
         <div class="section"><div class="hd"><span>Por tipo</span></div><div class="group" id="hs-types"></div></div>
       </div>
@@ -467,38 +486,43 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     <h2>Turnos</h2>
     <p>Protótipo navegável, com dados de exemplo. Abre no telemóvel para ver em ecrã inteiro.</p>
     <ol>
-      <li><b>Hoje</b>: o próximo turno com contagem decrescente e um pedido de troca do Rui para responderes.</li>
+      <li><b>Hoje</b>: o próximo serviço com contagem decrescente e um pedido de troca do Cabo Rocha. Experimenta <b>Aceitar</b> (sai logo o documento), <b>Aguardar</b> ou <b>Recusar</b>.</li>
       <li><b>Calendário</b>: desliza o mês para os lados, toca num dia para abrir o detalhe.</li>
       <li>Toca no <b>pincel</b>, escolhe um tipo e arrasta o dedo sobre vários dias. O ↶ desfaz.</li>
-      <li>Vai a <b>outubro</b> e abre o dia 24: o turno da noite atravessa a mudança de hora.</li>
-      <li><b>Grupo</b>: toca no turno de um colega para propor uma troca.</li>
+      <li>Vai a <b>outubro</b> e abre o dia 25: o serviço das 00–08 apanha a mudança de hora.</li>
+      <li><b>Escala</b>: toca no serviço de um camarada e envia o pedido. No protótipo, ele pede para aguardar e aceita sozinho uns segundos depois.</li>
     </ol>
   </aside>
 </div>
 
 <script>
 (() => {
-  // ───────── Domínio (espelha shift_types / rotations do doc 03) ─────────
+  // ───────── Domínio GNR (tipos de serviço do seed do EscalasPT) ─────────
   const TYPES = {
-    M:   { name: 'Manhã',  abbr: 'M',   color: '#FF9F0A', kind: 'WORK',    start: 420,  dur: 480 },
-    T:   { name: 'Tarde',  abbr: 'T',   color: '#1FA2B8', kind: 'WORK',    start: 900,  dur: 480 },
-    N:   { name: 'Noite',  abbr: 'N',   color: '#3B3A98', kind: 'WORK',    start: 1380, dur: 480 },
-    EX:  { name: 'Extra',  abbr: 'EX',  color: '#FF375F', kind: 'WORK',    start: 540,  dur: 240 },
-    F:   { name: 'Folga',  abbr: 'F',   color: null,      kind: 'OFF',     allDay: true },
-    FER: { name: 'Férias', abbr: 'FER', color: '#30B35A', kind: 'ABSENCE', allDay: true },
-    BX:  { name: 'Baixa',  abbr: 'BX',  color: '#AF52DE', kind: 'ABSENCE', allDay: true },
+    AT1:  { name: 'Atendimento 00–08', abbr: 'AT1', color: '#3B3A98', kind: 'WORK', start: 0,    dur: 480 },
+    AT2:  { name: 'Atendimento 08–16', abbr: 'AT2', color: '#1FA2B8', kind: 'WORK', start: 480,  dur: 480 },
+    AT3:  { name: 'Atendimento 16–24', abbr: 'AT3', color: '#2F6FDB', kind: 'WORK', start: 960,  dur: 480 },
+    OC1:  { name: 'Patrulha 00–08',    abbr: 'OC1', color: '#5B2E8C', kind: 'WORK', start: 0,    dur: 480 },
+    OC2:  { name: 'Patrulha 08–16',    abbr: 'OC2', color: '#FF9F0A', kind: 'WORK', start: 480,  dur: 480 },
+    OC3:  { name: 'Patrulha 16–24',    abbr: 'OC3', color: '#E8590C', kind: 'WORK', start: 960,  dur: 480 },
+    GRAT: { name: 'Gratificado',       abbr: 'GRAT', color: '#FF375F', kind: 'WORK', start: 840, dur: 360 },
+    INQ:  { name: 'Inquéritos',        abbr: 'INQ', color: '#A2845E', kind: 'WORK', start: 540,  dur: 480 },
+    F:    { name: 'Folga',             abbr: 'F',   color: null,      kind: 'OFF',  allDay: true },
+    FER:  { name: 'Férias',            abbr: 'FER', color: '#30B35A', kind: 'ABSENCE', allDay: true },
+    CONV: { name: 'Convalescença',     abbr: 'CONV', color: '#AF52DE', kind: 'ABSENCE', allDay: true },
   };
-  const ORDER = ['M', 'T', 'N', 'EX', 'F', 'FER', 'BX'];
-  const ROTATION = ['M', 'M', 'T', 'T', 'N', 'N', 'F', 'F', 'F', 'F'];
+  const ORDER = ['AT1', 'AT2', 'AT3', 'OC1', 'OC2', 'OC3', 'GRAT', 'INQ', 'F', 'FER', 'CONV'];
+  const ROTATION = ['AT2', 'OC2', 'AT3', 'OC3', 'F', 'OC1', 'AT1', 'F', 'F', 'F'];
   const ROT_START = '2026-09-01', ROT_END = '2027-03-31', ROT_ANCHOR = '2026-09-30';
-  const PAY = { rate: 9.5, night: .25, holiday: 1 }, TARGET_H = 150, FER_ALLOW = 22;
+  const PAY = { rate: 12, night: 0, holiday: 0 }, TARGET_H = 150, FER_ALLOW = 25;
+  const UNIT = { name: 'Posto Territorial de Castro Marim', location: 'Castro Marim' };
   const HOLIDAYS = {
-    '2026-06-10': 'Dia de Portugal', '2026-06-13': 'Santo António', '2026-08-15': 'Assunção de Nossa Senhora',
+    '2026-06-10': 'Dia de Portugal', '2026-08-15': 'Assunção de Nossa Senhora',
     '2026-10-05': 'Implantação da República', '2026-11-01': 'Todos os Santos', '2026-12-01': 'Restauração da Independência',
     '2026-12-08': 'Imaculada Conceição', '2026-12-25': 'Natal', '2027-01-01': 'Ano Novo',
   };
   const DST = { '2026-10-25': 'fall', '2027-03-28': 'spring' };
-  const NOTES = { '2026-10-17': 'Formação SBV às 14:00, sala 2.' };
+  const NOTES = { '2026-10-17': 'Instrução de tiro às 14:00.' };
 
   // ───────── Datas ─────────
   const MONTHS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -538,35 +562,52 @@ table.roster { border-collapse: separate; border-spacing: 0; }
 
   // ───────── Estado ─────────
   const S = {
-    tab: 'hoje', year: +TODAY.slice(0, 4), month: +TODAY.slice(5, 7), paint: false, brush: 'M',
+    tab: 'hoje', year: +TODAY.slice(0, 4), month: +TODAY.slice(5, 7), paint: false, brush: 'AT2',
     over: new Map(), src: new Map(), undo: [], redo: [], sel: null,
-    rosterStart: mondayOf(TODAY), grpSeg: 'escala', swaps: [], hsY: +TODAY.slice(0, 4), hsM: +TODAY.slice(5, 7),
+    rosterStart: mondayOf(TODAY), grpSeg: 'escala', swaps: [], seq: 10, hsY: +TODAY.slice(0, 4), hsM: +TODAY.slice(5, 7),
     peopleOver: {},
   };
-  [['2026-10-19', 'FER'], ['2026-10-20', 'FER'], ['2026-10-21', 'FER'], ['2026-10-10', 'EX']].forEach(([d, c]) => S.over.set(d, c));
+  [['2026-10-19', 'FER'], ['2026-10-20', 'FER'], ['2026-10-21', 'FER'], ['2026-10-10', 'GRAT']].forEach(([d, c]) => S.over.set(d, c));
 
   const rot = (d, off = 0) => (d < ROT_START || d > ROT_END) ? null : ROTATION[(((diff(d, ROT_ANCHOR) + off) % 10) + 10) % 10];
   const mine = d => S.over.has(d) ? S.over.get(d) : rot(d);
 
+  const ME = { full: 'Guarda Ana Silva', num: '1102' };
   const PEOPLE = [
-    { id: 'me', name: 'Ana', sub: 'eu', level: 'D', base: d => mine(d) },
-    { id: 'rui', name: 'Rui', sub: 'enfermeiro', level: 'D', base: d => rot(d, 4) },
-    { id: 'marta', name: 'Marta', sub: 'disponibilidade', level: 'A', base: d => rot(d, 7) },
-    { id: 'sofia', name: 'Sofia', sub: 'admin', level: 'D', base: d => (d >= add(S.rosterStart0, 0) && d <= add(S.rosterStart0, 4)) ? 'FER' : rot(d, 2) },
-    { id: 'tiago', name: 'Tiago', sub: 'horário fixo', level: 'D', base: d => [0, 6].includes(wday(d)) ? 'F' : 'M' },
+    { id: 'me', name: 'Silva', sub: 'Guarda · eu', call: 'Guarda Silva', full: ME.full, level: 'D', color: '#5856D6', base: d => mine(d) },
+    { id: 'rocha', name: 'Rocha', sub: 'Cabo · 512', call: 'Cabo Rocha', full: 'Cabo Rui Rocha', level: 'D', color: '#1FA2B8', base: d => rot(d, 4) },
+    { id: 'neves', name: 'Neves', sub: 'G. Principal', call: 'Guarda Principal Neves', full: 'Guarda Principal Marta Neves', level: 'A', color: '#FF9F0A', base: d => rot(d, 7) },
+    { id: 'matos', name: 'Matos', sub: 'Cabo-Chefe', call: 'Cabo-Chefe Matos', full: 'Cabo-Chefe Sofia Matos', level: 'D', color: '#30B35A', base: d => (d >= S.rosterStart0 && d <= add(S.rosterStart0, 4)) ? 'FER' : rot(d, 2) },
+    { id: 'lopes', name: 'Lopes', sub: 'Guarda · 877', call: 'Guarda Lopes', full: 'Guarda Tiago Lopes', level: 'D', color: '#FF375F', base: d => [0, 6].includes(wday(d)) ? 'F' : 'INQ' },
   ];
   S.rosterStart0 = add(mondayOf(TODAY), 7);
   const shiftOf = (p, d) => p.id === 'me' ? mine(d) : (S.peopleOver[p.id]?.has(d) ? S.peopleOver[p.id].get(d) : p.base(d));
   const person = id => PEOPLE.find(p => p.id === id);
   const isWork = c => c && TYPES[c].kind === 'WORK';
+  const ACTIVE = ['PENDENTE', 'EM_ESPERA'];
+  const isActive = s => ACTIVE.includes(s.status);
+  const clockAt = (min = 0) => { const d = new Date(Date.now() - min * 6e4); return d; };
+  const fmtTs = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  const code8 = () => Array.from({ length: 8 }, () => B32[Math.floor(Math.random() * 32)]).join('');
+  function issueDoc(s) { s.accAt = new Date(); s.doc = { ref: code8(), code: code8() }; }
+  function applySwap(s) {
+    const p = person(s.person);
+    S.over.set(s.date, s.get); S.src.set(s.date, `Troca com ${p.call}`);
+    (S.peopleOver[p.id] ||= new Map()).set(s.date, s.give);
+  }
 
-  // Hoje tem sempre um turno (vindo de uma troca antiga), para o ecrã "Hoje" ter vida
-  if (!isWork(mine(TODAY))) { S.over.set(TODAY, 'T'); S.src.set(TODAY, 'Troca com o Tiago'); }
-  // Pedido de troca recebido do Rui: primeiro dia nos próximos 3–14 em que ambos trabalham em turnos diferentes
+  // Serviço de hoje veio de uma troca já aceite (tem documento no histórico)
+  if (!isWork(mine(TODAY))) {
+    const prev = mine(TODAY) || 'F';
+    const s = { id: 1, dir: 'out', person: 'rocha', date: TODAY, give: prev, get: 'AT2', status: 'ACEITE', reqAt: clockAt(60 * 30), heldAt: null, doc: null };
+    issueDoc(s); s.accAt = clockAt(60 * 26); S.swaps.push(s); applySwap(s);
+  }
+  // Pedido recebido do Cabo Rocha: primeiro dia entre amanhã+2 e +14 em que ambos têm serviços diferentes
   for (let i = 3; i <= 14; i++) {
-    const d = add(TODAY, i), a = mine(d), b = shiftOf(person('rui'), d);
+    const d = add(TODAY, i), a = mine(d), b = shiftOf(person('rocha'), d);
     if (isWork(a) && isWork(b) && a !== b && !restWarnings(d, b)) {
-      S.swaps.push({ id: 1, dir: 'in', person: 'rui', date: d, give: a, get: b, status: 'PENDING', msg: 'Tenho consulta nesse dia, dás-me uma mão?' });
+      S.swaps.push({ id: 2, dir: 'in', person: 'rocha', date: d, give: a, get: b, status: 'PENDENTE', msg: 'Tenho de ir ao tribunal nesse dia, consegues trocar comigo?', reqAt: clockAt(95) });
       break;
     }
   }
@@ -601,7 +642,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
       const r = resolve(d, c);
       if (!r) { TYPES[c].kind === 'OFF' ? o.off++ : o.abs++; continue; }
       o.shifts++; o.work += r.real; o.night += r.night; o.weekend += r.weekend; o.holiday += r.holiday;
-      o.pay += PAY.rate * (r.real + PAY.night * r.night + PAY.holiday * r.holiday) / 60;
+      if (c === 'GRAT') o.pay += PAY.rate * r.real / 60;
       wk.work += r.real; wk.night += r.night;
     }
     return o;
@@ -685,10 +726,10 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     }).join('');
     $('h-week').querySelectorAll('button').forEach(b => b.addEventListener('click', () => openDay(b.dataset.d)));
 
-    const inc = S.swaps.filter(s => s.dir === 'in' && s.status === 'PENDING');
-    $('h-swaps').innerHTML = inc.length ? `<div class="hd"><span>Precisa da tua resposta</span></div><div class="group">${inc.map(s => `
+    const inc = S.swaps.filter(s => s.dir === 'in' && isActive(s));
+    $('h-swaps').innerHTML = inc.length ? `<div class="hd"><span>Pedidos de troca</span></div><div class="group">${inc.map(s => `
       <button class="row" data-swap="${s.id}"><span class="ico" style="background:var(--orange)">${icon('swap')}</span>
-      <span class="grow"><div class="t">${person(s.person).name} quer trocar</div><div class="s">${shortDate(s.date)} · dás ${TYPES[s.give].name}, recebes ${TYPES[s.get].name}</div></span>${icon('chev', '', 'chev').replace('class="i"', 'class="i chev"')}</button>`).join('')}</div>` : '';
+      <span class="grow"><div class="t">${person(s.person).call} pede troca</div><div class="s">${shortDate(s.date)} · dás ${TYPES[s.give].abbr}, recebes ${TYPES[s.get].abbr}${s.status === 'EM_ESPERA' ? ' · a aguardar' : ''}</div></span>${icon('chev', '', 'chev').replace('class="i"', 'class="i chev"')}</button>`).join('')}</div>` : '';
     $('h-swaps').querySelectorAll('[data-swap]').forEach(b => b.addEventListener('click', () => openSwapIn(+b.dataset.swap)));
 
     const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
@@ -699,7 +740,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     }).join('') || '<div class="empty">Ninguém do grupo trabalha hoje.</div>';
 
     const st = monthStats(+TODAY.slice(0, 4), +TODAY.slice(5, 7));
-    $('h-chips').innerHTML = [[`${hrs(st.work)} h`, 'trabalhadas'], [`${st.shifts}`, 'turnos'], [`${hrs(st.night)} h`, 'noturnas'], [eur(st.pay).replace(/,\d\d/, ''), 'estimativa']]
+    $('h-chips').innerHTML = [[`${hrs(st.work)} h`, 'trabalhadas'], [`${st.shifts}`, 'turnos'], [`${hrs(st.night)} h`, 'noturnas'], [eur(st.pay).replace(/,\d\d/, ''), 'gratificados']]
       .map(([b, s]) => `<div class="stat-chip"><b>${b}</b><span>${s}</span></div>`).join('');
   }
 
@@ -718,7 +759,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     return `<button class="${cls}" role="gridcell" data-date="${d}" aria-label="${lbl}" ${inM ? '' : 'tabindex="-1"'}>
       <span class="dn">${dnum(d)}</span>${c ? pill(c, '', pendingOn(d) ? 'pending' : '') : '<span class="pill" style="visibility:hidden">·</span>'}<span class="dots">${dots}</span></button>`;
   }
-  const pendingOn = d => S.swaps.some(s => s.status === 'PENDING' && s.date === d);
+  const pendingOn = d => S.swaps.some(s => isActive(s) && s.date === d);
   function renderCal(anim) {
     $('cal-month').textContent = cap(MONTHS[S.month - 1]);
     $('cal-year').textContent = S.year;
@@ -729,7 +770,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     $('undo').disabled = !S.undo.length; $('redo').disabled = !S.redo.length;
 
     const st = monthStats(S.year, S.month);
-    $('c-chips').innerHTML = [[`${hrs(st.work)} h`, `${st.shifts} turnos`], [`${hrs(st.night)} h`, 'noturnas'], [`${st.off}`, 'folgas'], [eur(st.pay).replace(/,\d\d/, ''), 'estimativa']]
+    $('c-chips').innerHTML = [[`${hrs(st.work)} h`, `${st.shifts} turnos`], [`${hrs(st.night)} h`, 'noturnas'], [`${st.off}`, 'folgas'], [eur(st.pay).replace(/,\d\d/, ''), 'gratificados']]
       .map(([b, s]) => `<div class="stat-chip"><b>${b}</b><span>${s}</span></div>`).join('');
 
     const from = pre === TODAY.slice(0, 7) ? TODAY : iso(S.year, S.month, 1);
@@ -751,10 +792,10 @@ table.roster { border-collapse: separate; border-spacing: 0; }
   $('cal-today').addEventListener('click', () => { S.year = +TODAY.slice(0, 4); S.month = +TODAY.slice(5, 7); renderCal('anim-r'); $('cal-scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
   $('cal-switch').addEventListener('click', () => openSheet('Calendários', body => {
     body.innerHTML = `<div class="section"><div class="group">
-      <div class="row"><span class="ico" style="background:var(--tint)">${icon('cal')}</span><span class="grow"><div class="t">Hospital São José</div><div class="s">Europe/Lisbon · 7 tipos</div></span><svg class="i check"><use href="#i-tick"/></svg></div>
-      <div class="row"><span class="ico" style="background:var(--green)">${icon('cal')}</span><span class="grow"><div class="t">Clínica Belém</div><div class="s">Europe/Lisbon · 3 tipos</div></span></div>
+      <div class="row"><span class="ico" style="background:var(--tint)">${icon('cal')}</span><span class="grow"><div class="t">Serviço GNR</div><div class="s">Partilhado na escala PT Castro Marim</div></span><svg class="i check"><use href="#i-tick"/></svg></div>
+      <div class="row"><span class="ico" style="background:var(--green)">${icon('cal')}</span><span class="grow"><div class="t">Pessoal</div><div class="s">Só para ti</div></span></div>
       <div class="row tint"><span class="grow"><div class="t">Novo calendário</div></div></div></div>
-      <div class="ft">Cada calendário tem os seus tipos de turno, rotações, remuneração e partilhas.</div></div>`;
+      <div class="ft">O calendário de serviço é o que partilhas na escala e o que entra nas trocas.</div></div>`;
   }));
 
   // Gestos na grelha: deslizar muda o mês; no modo pincel, arrastar pinta
@@ -841,7 +882,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
           ${r ? `<div class="row"><span class="grow t">Duração</span><span class="v">${hrs(r.real)} h</span></div>
           <div class="row"><span class="grow t">Horas noturnas</span><span class="v">${hrs(r.night)} h</span></div>
           ${r.holiday ? `<div class="row"><span class="grow t">Em feriado</span><span class="v">${hrs(r.holiday)} h</span></div>` : ''}
-          <div class="row"><span class="grow t">Estimativa</span><span class="v">${eur(PAY.rate * (r.real + PAY.night * r.night + PAY.holiday * r.holiday) / 60)}</span></div>` :
+          ${c === 'GRAT' ? `<div class="row"><span class="grow t">Gratificado (estimativa)</span><span class="v">${eur(PAY.rate * r.real / 60)}</span></div>` : ''}` :
           `<div class="row"><span class="grow t">Tipo</span><span class="v">${t.kind === 'ABSENCE' ? 'Ausência' : 'Folga'}</span></div>`}
           <div class="row"><span class="grow t">Origem</span><span class="v">${src}</span></div>
         </div></div>`;
@@ -873,22 +914,26 @@ table.roster { border-collapse: separate; border-spacing: 0; }
   }
   sheet.addEventListener('transitionend', () => { if (!sheet.classList.contains('open') && S.sel) { S.sel = null; if (S.tab === 'cal') renderCal(); } });
 
-  // ───────── GRUPO ─────────
-  function setSeg(s) {
-    S.grpSeg = s;
-    $('seg-escala').setAttribute('aria-selected', s === 'escala'); $('seg-trocas').setAttribute('aria-selected', s === 'trocas');
-    $('g-escala').hidden = s !== 'escala'; $('g-trocas').hidden = s !== 'trocas';
-    renderGrp();
-  }
+  // ───────── ESCALA / TROCAS (sem comandante: o camarada aceita, pede para aguardar ou recusa) ─────────
+  function setSeg(s) { S.grpSeg = s; setSegRender(); }
   $('seg-escala').addEventListener('click', () => setSeg('escala'));
   $('seg-trocas').addEventListener('click', () => setSeg('trocas'));
   $('r-prev').addEventListener('click', () => { S.rosterStart = add(S.rosterStart, -7); renderGrp(); });
   $('r-next').addEventListener('click', () => { S.rosterStart = add(S.rosterStart, 7); renderGrp(); });
-  $('g-members').addEventListener('click', () => openSheet('Membros', body => {
-    body.innerHTML = `<div class="section"><div class="group" style="--inset:62px">${PEOPLE.map(p => `<div class="row"><span class="ico" style="background:${['#5856D6','#1FA2B8','#FF9F0A','#30B35A','#FF375F'][PEOPLE.indexOf(p)]};border-radius:50%;font-weight:600;font-size:14px">${p.name[0]}</span><span class="grow"><div class="t">${p.name}${p.id === 'me' ? ' (eu)' : ''}</div><div class="s">${p.id === 'sofia' ? 'Admin' : p.id === 'me' ? 'Dona do grupo' : 'Membro'} · ${p.level === 'A' ? 'partilha disponibilidade' : 'partilha detalhes'}</div></span></div>`).join('')}
-      <div class="row tint"><span class="grow t">Convidar colegas…</span></div></div>
-      <div class="ft">Trocas: aprovação entre colegas. Quem convidas entra com um link e escolhe o calendário que partilha.</div></div>`;
+  $('g-members').addEventListener('click', () => openSheet('Militares da escala', body => {
+    body.innerHTML = `<div class="section"><div class="group" style="--inset:62px">${PEOPLE.map(p => `<div class="row"><span class="ico" style="background:${p.color};border-radius:50%;font-weight:600;font-size:14px">${p.name[0]}</span><span class="grow"><div class="t">${p.full}${p.id === 'me' ? ' (eu)' : ''}</div><div class="s">${p.id === 'matos' ? 'Gere a escala' : 'Militar'} · ${p.level === 'A' ? 'partilha só disponibilidade' : 'partilha serviços'}</div></span></div>`).join('')}
+      <div class="row tint"><span class="grow t">Convidar camaradas…</span></div></div>
+      <div class="ft">Ninguém aprova trocas: basta o camarada aceitar e o documento oficial é emitido para os dois. Quem gere a escala só convida e remove militares.</div></div>`;
   }));
+
+  const STATUS_TXT = {
+    PENDENTE: s => s.dir === 'in' ? 'Aguarda a tua resposta' : 'Aguarda resposta',
+    EM_ESPERA: s => s.dir === 'in' ? 'Pediste para aguardar' : 'Pediu para aguardar',
+    ACEITE: () => 'Aceite · documento emitido', RECUSADA: () => 'Recusada', CANCELADA: () => 'Cancelada', EXPIRADA: () => 'Expirou na véspera',
+  };
+  const STATUS_COLOR = { PENDENTE: 'var(--orange)', EM_ESPERA: 'var(--tint)', ACEITE: 'var(--green)', RECUSADA: 'var(--red)', CANCELADA: 'var(--label-3)', EXPIRADA: 'var(--label-3)' };
+  const expiresTxt = d => `Expira ${shortDate(add(d, -1)).toLowerCase()} às 23:59`;
+  const pendingOnDay = (d, pid) => S.swaps.some(s => isActive(s) && s.date === d && (!pid || pid === 'me' || s.person === pid));
 
   function renderGrp() {
     const days = Array.from({ length: 14 }, (_, i) => add(S.rosterStart, i));
@@ -898,79 +943,165 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     const rows = PEOPLE.map(p => `<tr class="${p.id === 'me' ? 'me' : ''}"><th>${p.name}<small>${p.sub}</small></th>${days.map(d => {
       const c = shiftOf(p, d);
       if (!c) return '<td><span class="free">·</span></td>';
-      if (p.level === 'A') return isWork(c) ? '<td><span class="busy" aria-label="ocupada"></span></td>' : '<td><span class="free">·</span></td>';
-      const pend = S.swaps.some(s => s.status === 'PENDING' && s.date === d && (s.person === p.id || p.id === 'me'));
-      const can = p.id !== 'me' && isWork(c) && d >= TODAY;
-      return `<td>${can ? `<button data-p="${p.id}" data-d="${d}" aria-label="${p.name}, ${TYPES[c].name}, ${shortDate(d)}: propor troca">${pill(c, '', pend ? 'pending' : '')}</button>` : pill(c, '', pend ? 'pending' : '')}</td>`;
+      if (p.level === 'A') return isWork(c) ? '<td><span class="busy" aria-label="de serviço"></span></td>' : '<td><span class="free">·</span></td>';
+      const pend = pendingOnDay(d, p.id) && S.swaps.some(s => isActive(s) && s.date === d && (p.id === 'me' || s.person === p.id));
+      const can = p.id !== 'me' && isWork(c) && d > TODAY;
+      return `<td>${can ? `<button data-p="${p.id}" data-d="${d}" aria-label="${p.call}, ${TYPES[c].name}, ${shortDate(d)}: pedir troca">${pill(c, '', pend ? 'pending' : '')}</button>` : pill(c, '', pend ? 'pending' : '')}</td>`;
     }).join('')}</tr>`).join('');
     const counts = days.map(d => PEOPLE.filter(p => isWork(shiftOf(p, d))).length);
-    $('roster').innerHTML = `<thead><tr><th style="position:sticky;left:0;background:var(--card);z-index:2"></th>${head}</tr></thead><tbody>${rows}</tbody><tfoot><tr><th>A trabalhar</th>${counts.map(n => `<td>${n}</td>`).join('')}</tr></tfoot>`;
+    $('roster').innerHTML = `<thead><tr><th style="position:sticky;left:0;background:var(--card);z-index:2"></th>${head}</tr></thead><tbody>${rows}</tbody><tfoot><tr><th>De serviço</th>${counts.map(n => `<td>${n}</td>`).join('')}</tr></tfoot>`;
     $('roster').querySelectorAll('button[data-p]').forEach(bt => bt.addEventListener('click', () => openSwapOut(bt.dataset.p, bt.dataset.d)));
 
-    const pend = S.swaps.filter(s => s.status === 'PENDING');
-    const inc = pend.filter(s => s.dir === 'in'), out = pend.filter(s => s.dir === 'out'), done = S.swaps.filter(s => s.status !== 'PENDING');
-    const card = s => `<button class="row" data-sw="${s.id}"><span class="grow"><div class="t">${s.dir === 'in' ? `${person(s.person).name} pede-te` : `Pedido ao ${person(s.person).name}`}</div><div class="s">${shortDate(s.date)}</div></span>
+    const inc = S.swaps.filter(s => s.dir === 'in' && isActive(s)), out = S.swaps.filter(s => s.dir === 'out' && isActive(s));
+    const done = S.swaps.filter(s => !isActive(s)).sort((x, y) => (y.accAt || y.reqAt) - (x.accAt || x.reqAt));
+    const card = s => `<button class="row" data-sw="${s.id}"><span class="grow"><div class="t">${s.dir === 'in' ? person(s.person).call : `Para ${person(s.person).call}`}</div>
+      <div class="s">${shortDate(s.date)} · <span style="color:${STATUS_COLOR[s.status]}">${STATUS_TXT[s.status](s)}</span></div></span>
       <span style="display:flex;align-items:center;gap:6px">${pill(s.give, 'md')}${icon('swap', 'width:16px;height:16px;color:var(--label-2)')}${pill(s.get, 'md')}</span><svg class="i chev"><use href="#i-chev"/></svg></button>`;
+    const empty = t => `<div class="empty" style="background:var(--card);border-radius:12px">${t}</div>`;
     $('g-trocas').innerHTML = `
-      <div class="section" style="margin-top:18px"><div class="hd"><span>Para ti</span></div>${inc.length ? `<div class="group">${inc.map(card).join('')}</div>` : '<div class="empty" style="background:var(--card);border-radius:12px">Nada à espera da tua resposta.</div>'}</div>
-      <div class="section"><div class="hd"><span>Enviadas</span></div>${out.length ? `<div class="group">${out.map(card).join('')}</div>` : '<div class="empty" style="background:var(--card);border-radius:12px">Ainda não pediste trocas. Toca num turno de um colega na Escala.</div>'}</div>
-      ${done.length ? `<div class="section"><div class="hd"><span>Histórico</span></div><div class="group">${done.map(s => `<div class="row"><span class="grow"><div class="t">${person(s.person).name} · ${shortDate(s.date)}</div><div class="s">${s.status === 'COMPLETED' ? 'Troca concluída' : s.status === 'DECLINED' ? 'Recusada' : 'Cancelada'}</div></span><span style="display:flex;gap:6px;align-items:center">${pill(s.give, 'md')}${icon('swap', 'width:16px;height:16px;color:var(--label-2)')}${pill(s.get, 'md')}</span></div>`).join('')}</div></div>` : ''}`;
-    $('g-trocas').querySelectorAll('[data-sw]').forEach(bt => bt.addEventListener('click', () => {
-      const s = S.swaps.find(x => x.id === +bt.dataset.sw); s.dir === 'in' ? openSwapIn(s.id) : openSwapOutView(s.id);
-    }));
-    $('seg-badge').textContent = inc.length ? `(${inc.length})` : '';
+      <div class="section" style="margin-top:18px"><div class="hd"><span>Recebidas</span></div>${inc.length ? `<div class="group">${inc.map(card).join('')}</div>` : empty('Nada à espera da tua resposta.')}</div>
+      <div class="section"><div class="hd"><span>Enviadas</span></div>${out.length ? `<div class="group">${out.map(card).join('')}</div>` : empty('Toca no serviço de um camarada na Escala para pedir uma troca.')}</div>
+      ${done.length ? `<div class="section"><div class="hd"><span>Histórico</span></div><div class="group">${done.map(card).join('')}</div>
+        <div class="ft">As trocas aceites têm o documento "Troca de Serviço" (Art. 34.º RGSGNR) anexado.</div></div>` : ''}`;
+    $('g-trocas').querySelectorAll('[data-sw]').forEach(bt => bt.addEventListener('click', () => openSwap(+bt.dataset.sw)));
+    const n = inc.filter(s => s.status === 'PENDENTE').length;
+    $('seg-badge').textContent = n ? `(${n})` : '';
+  }
+  function openSwap(id) {
+    const s = S.swaps.find(x => x.id === id);
+    if (s.status === 'ACEITE') return openDoc(id);
+    s.dir === 'in' ? openSwapIn(id) : openSwapOutView(id);
   }
 
   function restWarnings(date, code) {
-    const t = TYPES[code], out = [];
+    const t = TYPES[code], out = [], MIN = 480;
     const p = mine(add(date, -1)), n = mine(add(date, 1));
-    if (isWork(p)) { const g = t.start + 1440 - (TYPES[p].start + TYPES[p].dur); if (g < 660) out.push(`Só ${hrs(Math.max(g, 0))} h de descanso depois do turno ${TYPES[p].abbr} da véspera (mínimo 11 h).`); }
-    if (isWork(n)) { const g = TYPES[n].start + 1440 - (t.start + t.dur); if (g < 660) out.push(`Só ${hrs(Math.max(g, 0))} h de descanso antes do turno ${TYPES[n].abbr} do dia seguinte (mínimo 11 h).`); }
-    return out.map(m => `<div class="section" style="margin-top:12px"><div class="warn">${icon('warn')}<div>${m} Podes enviar na mesma.</div></div></div>`).join('');
+    if (isWork(p)) { const g = t.start + 1440 - (TYPES[p].start + TYPES[p].dur); if (g < MIN) out.push(`Só ${hrs(Math.max(g, 0))} h de descanso depois do ${TYPES[p].abbr} da véspera (mínimo 8 h).`); }
+    if (isWork(n)) { const g = TYPES[n].start + 1440 - (t.start + t.dur); if (g < MIN) out.push(`Só ${hrs(Math.max(g, 0))} h de descanso antes do ${TYPES[n].abbr} do dia seguinte (mínimo 8 h).`); }
+    return out.map(m => `<div class="section" style="margin-top:12px"><div class="warn">${icon('warn')}<div>${m} É só um aviso: a troca pode ser feita.</div></div></div>`).join('');
   }
   function swapLine(give, get, other, d) {
+    const side = (lbl, c) => `<div class="sd"><span>${lbl}</span>${pill(c, 'lg')}<b>${TYPES[c].abbr === 'F' ? 'Folga' : TYPES[c].name}</b><span class="num">${TYPES[c].allDay ? 'dia inteiro' : `${hm(TYPES[c].start)}–${hm((TYPES[c].start + TYPES[c].dur) % 1440)}`}</span></div>`;
     return `<div class="section"><div class="group" style="padding:18px 12px"><div class="swapline">
-      <div class="sd"><span>Dás</span>${give ? pill(give, 'lg') : '<span class="pill lg off">–</span>'}<b>${give ? TYPES[give].name : 'Nada'}</b><span>${give && !TYPES[give].allDay ? hm(TYPES[give].start) : ''}</span></div>
-      ${icon('swap', 'width:26px;height:26px;color:var(--tint)')}
-      <div class="sd"><span>Recebes de ${other}</span>${pill(get, 'lg')}<b>${TYPES[get].name}</b><span>${hm(TYPES[get].start)}</span></div>
+      ${side('Dás', give)}${icon('swap', 'width:26px;height:26px;color:var(--tint)')}${side(`Recebes de ${other}`, get)}
     </div></div><div class="ft">${cap(longDate(d))}</div></div>`;
   }
+  function timeline(s) {
+    const p = person(s.person), a = s.dir === 'in' ? p.call : 'Tu', b = s.dir === 'in' ? 'Tu' : p.call;
+    const ev = [[s.reqAt, `${a} ${s.dir === 'in' ? 'pediu' : 'pediste'} a troca`]];
+    if (s.heldAt) ev.push([s.heldAt, `${b} ${s.dir === 'in' ? 'pediste' : 'pediu'} para aguardar${s.holdMsg ? `: “${s.holdMsg}”` : ''}`]);
+    if (s.status === 'ACEITE') ev.push([s.accAt, `${b} ${s.dir === 'in' ? 'aceitaste' : 'aceitou'} · documento emitido`]);
+    if (s.status === 'RECUSADA') ev.push([s.decAt, `${b} ${s.dir === 'in' ? 'recusaste' : 'recusou'}${s.reason ? `: “${s.reason}”` : ''}`]);
+    if (s.status === 'CANCELADA') ev.push([s.decAt, 'Pedido cancelado']);
+    return `<div class="section"><div class="hd"><span>Registo</span></div><div class="group">${ev.map(([t, x]) =>
+      `<div class="row"><span class="grow" style="font-size:15px">${x}</span><span class="v num" style="font-size:13px">${fmtTs(t).slice(0, 5)} ${fmtTs(t).slice(11)}</span></div>`).join('')}</div>
+      ${isActive(s) ? `<div class="ft">${expiresTxt(s.date)} (Art. 34.º, n.º 2: até à véspera da execução).</div>` : ''}</div>`;
+  }
+
   function openSwapOut(pid, d) {
     const p = person(pid), theirs = shiftOf(p, d), my = mine(d);
-    openSheet('Propor troca', body => {
-      if (my === theirs) { body.innerHTML = `<div class="section"><div class="empty" style="background:var(--card);border-radius:12px">Tu e o ${p.name} têm o mesmo turno neste dia.</div></div>`; return; }
-      const give = isWork(my) ? my : null;
-      body.innerHTML = swapLine(give, theirs, p.name, d) + restWarnings(d, theirs) +
-        `<div class="section"><div class="ft" style="padding:0 16px 12px">${give ? `O ${p.name} fica com o teu turno ${TYPES[give].name} e tu com o dele.` : `Não tens turno neste dia: é um pedido para ficares com o turno do ${p.name}.`} O grupo aprova trocas entre colegas: fica feito quando ele aceitar.</div>
-        <button class="btn primary" id="sw-send" style="width:100%">Enviar pedido</button></div>`;
+    openSheet('Pedir troca', body => {
+      let err = null;
+      if (my === theirs) err = `Não pode trocar com um militar que está no mesmo serviço, no mesmo dia.`;
+      else if (my && TYPES[my].kind === 'ABSENCE') err = `Não é possível trocar ${TYPES[my].name} (ausência).`;
+      else if (S.swaps.some(s => isActive(s) && s.date === d)) err = 'Já existe um pedido de troca ativo para este dia.';
+      if (err) { body.innerHTML = `<div class="section"><div class="warn">${icon('warn')}<div>${err}</div></div></div>`; return; }
+      const give = my || 'F';
+      body.innerHTML = swapLine(give, theirs, p.call, d) + restWarnings(d, theirs) +
+        `<div class="section"><div class="hd"><span>Mensagem (opcional)</span></div><div class="group"><div class="row"><input id="sw-msg" placeholder="Ex.: tenho uma consulta nesse dia" style="width:100%;border:0;background:transparent;font:inherit;color:var(--label);outline:none"></div></div>
+        <div class="ft">O pedido vai diretamente para ${p.call}. Se aceitar, os serviços trocam logo e o documento “Troca de Serviço” é emitido para os dois. ${expiresTxt(d)}.</div></div>
+        <div class="section" style="margin-top:14px"><button class="btn primary" id="sw-send" style="width:100%">Enviar pedido</button></div>`;
       body.querySelector('#sw-send').addEventListener('click', () => {
-        S.swaps.push({ id: Date.now(), dir: 'out', person: pid, date: d, give: give || 'F', get: theirs, status: 'PENDING' });
-        closeSheet(); render(); toast(`Pedido enviado ao ${p.name}`);
+        const s = { id: ++S.seq, dir: 'out', person: pid, date: d, give, get: theirs, status: 'PENDENTE', msg: body.querySelector('#sw-msg').value.trim(), reqAt: new Date() };
+        S.swaps.push(s); closeSheet(); render(); toast(`Pedido enviado a ${p.call}`);
+        simulateReply(s);
       });
     });
   }
+  // Protótipo: o camarada responde sozinho (primeiro pede para aguardar, depois aceita)
+  function simulateReply(s) {
+    const p = person(s.person);
+    setTimeout(() => { if (s.status !== 'PENDENTE') return; s.status = 'EM_ESPERA'; s.heldAt = new Date(); s.holdMsg = 'Deixa-me ver em casa, já te digo.'; render(); refreshSheet(); toast(`${p.call} pediu para aguardar`); }, 4000);
+    setTimeout(() => { if (s.status !== 'EM_ESPERA') return; s.status = 'ACEITE'; issueDoc(s); applySwap(s); render(); refreshSheet(); toast(`${p.call} aceitou · documento emitido`); }, 11000);
+  }
   function openSwapOutView(id) {
     const s = S.swaps.find(x => x.id === id), p = person(s.person);
-    openSheet('Pedido enviado', body => {
-      body.innerHTML = swapLine(s.give, s.get, p.name, s.date) + `<div class="section"><div class="ft" style="padding:0 16px 12px">À espera da resposta do ${p.name}. Expira automaticamente quando o turno começar.</div>
-        <div class="group"><button class="row danger center" id="sw-cancel"><span class="t">Cancelar pedido</span></button></div></div>`;
-      body.querySelector('#sw-cancel').addEventListener('click', () => { s.status = 'CANCELLED'; closeSheet(); render(); toast('Pedido cancelado'); });
+    openSheet(`Troca com ${p.call}`, body => {
+      if (s.status === 'ACEITE') { body.innerHTML = swapLine(s.give, s.get, p.call, s.date) + timeline(s) + `<div class="section"><button class="btn primary" id="sw-doc" style="width:100%">Ver documento</button></div>`; body.querySelector('#sw-doc').addEventListener('click', () => openDoc(id)); return; }
+      body.innerHTML = swapLine(s.give, s.get, p.call, s.date) + timeline(s) +
+        (isActive(s) ? `<div class="section"><div class="group"><button class="row danger center" id="sw-cancel"><span class="t">Cancelar pedido</span></button></div></div>` : '');
+      body.querySelector('#sw-cancel')?.addEventListener('click', () => { s.status = 'CANCELADA'; s.decAt = new Date(); closeSheet(); render(); toast('Pedido cancelado'); });
     });
   }
   function openSwapIn(id) {
     const s = S.swaps.find(x => x.id === id), p = person(s.person);
-    openSheet(`Pedido do ${p.name}`, body => {
-      body.innerHTML = (s.msg ? `<div class="section"><div class="group"><div class="row"><span class="ico" style="background:#1FA2B8;border-radius:50%;font-weight:600;font-size:14px">${p.name[0]}</span><span class="grow" style="font-size:15px">“${s.msg}”</span></div></div></div>` : '')
-        + swapLine(s.give, s.get, p.name, s.date) + restWarnings(s.date, s.get)
-        + `<div class="section"><div class="btnrow"><button class="btn red" id="sw-no">Recusar</button><button class="btn primary" id="sw-yes">Aceitar</button></div>
-          <div class="ft">Ao aceitar, os dois calendários são atualizados de imediato.</div></div>`;
-      body.querySelector('#sw-no').addEventListener('click', () => { s.status = 'DECLINED'; closeSheet(); render(); toast('Pedido recusado'); });
-      body.querySelector('#sw-yes').addEventListener('click', () => {
-        s.status = 'COMPLETED';
-        S.over.set(s.date, s.get); S.src.set(s.date, `Troca com o ${p.name}`);
-        (S.peopleOver[p.id] ||= new Map()).set(s.date, s.give);
-        closeSheet(); render(); toast('Troca concluída');
-      });
+    let mode = null; // null | 'hold' | 'decline'
+    openSheet(`Pedido de ${p.call}`, body => {
+      const quick = mode === 'hold' ? ['Deixa-me ver em casa, já te digo.', 'Respondo-te amanhã de manhã.', 'Estou de serviço, vejo quando sair.']
+                                   : ['Já tenho compromisso nesse dia.', 'Fico com poucas horas de descanso.', 'Não me dá jeito, desculpa.'];
+      let h = (s.msg ? `<div class="section"><div class="group"><div class="row"><span class="ico" style="background:${p.color};border-radius:50%;font-weight:600;font-size:14px">${p.name[0]}</span><span class="grow" style="font-size:15px">“${s.msg}”</span></div></div></div>` : '')
+        + swapLine(s.give, s.get, p.call, s.date) + restWarnings(s.date, s.get);
+      if (s.status === 'EM_ESPERA') h += `<div class="section" style="margin-top:12px"><div class="group"><div class="row"><span class="ico" style="background:var(--tint)">${icon('today')}</span><span class="grow"><div class="t">Pediste para aguardar</div><div class="s">${s.holdMsg ? `“${s.holdMsg}” · ` : ''}${expiresTxt(s.date)}</div></span></div></div></div>`;
+      if (!mode) {
+        h += `<div class="section"><button class="btn primary" id="sw-yes" style="width:100%">Aceitar e emitir documento</button>
+          <div class="btnrow" style="margin-top:10px">${s.status === 'PENDENTE' ? '<button class="btn" id="sw-hold">Aguardar</button>' : '<span></span>'}<button class="btn red" id="sw-no" ${s.status !== 'PENDENTE' ? 'style="grid-column:1/-1"' : ''}>Recusar</button></div>
+          <div class="ft">Ao aceitar, os dois calendários mudam de imediato e o PDF oficial fica disponível para ti e para ${p.call}. Não é preciso autorização do comandante.</div></div>`;
+      } else {
+        h += `<div class="section"><div class="hd"><span>${mode === 'hold' ? `Mensagem para ${p.call}` : 'Motivo (opcional)'}</span></div><div class="group">${quick.map((q, i) => `<button class="row" data-q="${i}"><span class="grow t" style="font-size:16px">${q}</span></button>`).join('')}</div>
+          <div class="btnrow" style="margin-top:12px"><button class="btn" id="sw-back">Voltar</button><button class="btn ${mode === 'hold' ? 'primary' : 'red'}" id="sw-go">${mode === 'hold' ? 'Pedir para aguardar' : 'Recusar sem motivo'}</button></div></div>`;
+      }
+      h += timeline(s);
+      body.innerHTML = h;
+      const finishHold = msg => { s.status = 'EM_ESPERA'; s.heldAt = new Date(); s.holdMsg = msg; closeSheet(); render(); toast(`${p.call} foi avisado para aguardar`); };
+      const finishDecline = msg => { s.status = 'RECUSADA'; s.decAt = new Date(); s.reason = msg; closeSheet(); render(); toast('Pedido recusado'); };
+      body.querySelector('#sw-yes')?.addEventListener('click', () => { s.status = 'ACEITE'; issueDoc(s); applySwap(s); render(); haptic(); toast('Troca aceite · documento emitido'); openDoc(id); });
+      body.querySelector('#sw-hold')?.addEventListener('click', () => { mode = 'hold'; refreshSheet(); });
+      body.querySelector('#sw-no')?.addEventListener('click', () => { mode = 'decline'; refreshSheet(); });
+      body.querySelector('#sw-back')?.addEventListener('click', () => { mode = null; refreshSheet(); });
+      body.querySelector('#sw-go')?.addEventListener('click', () => mode === 'hold' ? finishHold('') : finishDecline(''));
+      body.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => (mode === 'hold' ? finishHold : finishDecline)(quick[+b.dataset.q])));
+    });
+  }
+
+  // Documento oficial "Troca de Serviço" (layout do swap_pdf_service.py, sem autorização do comandante)
+  function openDoc(id) {
+    const s = S.swaps.find(x => x.id === id), p = person(s.person);
+    const reqP = s.dir === 'in' ? p : person('me'), tgtP = s.dir === 'in' ? person('me') : p;
+    const reqC = s.dir === 'in' ? s.get : s.give, tgtC = s.dir === 'in' ? s.give : s.get;
+    const span = c => TYPES[c].allDay ? ['—', '—'] : [hm(TYPES[c].start), hm((TYPES[c].start + TYPES[c].dur) % 1440).replace('00:00', '24:00')];
+    const [rs, re] = span(reqC), [ts, te] = span(tgtC);
+    const dd = `${String(dnum(s.date)).padStart(2, '0')}/${s.date.slice(5, 7)}/${s.date.slice(0, 4)}`;
+    const acc = s.accAt;
+    let seed = [...s.doc.code].reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) >>> 0;
+    const rnd = () => (seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296;
+    const qr = Array.from({ length: 121 }, (_, i) => { const x = i % 11, y = Math.floor(i / 11); const f = (x < 3 && y < 3) || (x > 7 && y < 3) || (x < 3 && y > 7); return (f ? !(x % 2 === 1 && y % 2 === 1 && (x === 1 || x === 9) && (y === 1 || y === 9)) : rnd() > .5) ? `<rect x="${x}" y="${y}" width="1" height="1"/>` : ''; }).join('');
+    const u = t => `<span class="u">&nbsp;${t}&nbsp;</span>`;
+    openSheet('Troca de Serviço', body => {
+      body.innerHTML = `<div class="section"><div class="paper">
+        <div class="pc b">Ministério da Administração Interna<br>GUARDA NACIONAL REPUBLICANA</div>
+        <div class="phead"><div>${UNIT.name}</div><div class="visto"><b>VISTO</b><span></span></div></div>
+        <div class="ptitle">TROCA DE SERVIÇO</div>
+        <p>Declaro que desejo efectuar uma troca de serviço de ${u(TYPES[reqC].name)} no dia ${u(dd)}, no horário compreendido entre as ${u(rs)} e as ${u(re)}, com o/a</p>
+        <p>${u(tgtP.full)}, que se encontra de serviço de ${u(TYPES[tgtC].name)}, no horário compreendido entre as ${u(ts)} e as ${u(te)}.</p>
+        <p>Quartel em ${UNIT.location}, ${u(acc.getDate())} de ${u(MONTHS[acc.getMonth()])} de ${u(acc.getFullYear())}</p>
+        <div class="psig"><b>O DECLARANTE</b><i>${reqP.full}</i><span></span><small>Pedido digital em ${fmtTs(s.reqAt)}</small></div>
+        <div class="psig"><b>CONFIRMO A TROCA</b><i>${tgtP.full}</i><span></span><small>Aceite digitalmente em ${fmtTs(acc)}</small></div>
+        <div class="preg"><b>REGISTO DIGITAL</b>
+          <div><span>Pedido de troca:</span>${fmtTs(s.reqAt)}</div>
+          ${s.heldAt ? `<div><span>Pedido para aguardar:</span>${fmtTs(s.heldAt)}</div>` : ''}
+          <div><span>Aceitação e emissão:</span>${fmtTs(acc)}</div>
+        </div>
+        <div class="pnote"><b>NOTA:</b> Regulamento Geral do Serviço da Guarda Nacional Republicana, Artigo 34.º (Trocas de serviço).
+          1. São permitidas trocas de serviço entre militares da mesma escala, quando não acarretem prejuízo para o serviço, para a disciplina ou para terceiros.
+          2. Os pedidos de troca são concedidos por motivos atendíveis e solicitados até à véspera da execução e sempre devidamente informado. […]</div>
+        <div class="pfoot"><svg viewBox="-1 -1 13 13" width="46" height="46" aria-label="Código QR de verificação (ilustrativo)">${qr}</svg>
+          <div>Processado por computador · Ref. ${s.doc.ref}<br>Verificação: <b>${s.doc.code}</b> em turnos.pt/verificar</div></div>
+      </div></div>
+      <div class="section"><div class="group">
+        <button class="row tint" id="doc-share"><span class="grow t">Partilhar PDF…</span></button>
+        <div class="row"><span class="grow t">Código de verificação</span><span class="v num">${s.doc.code}</span></div>
+      </div><div class="ft">O documento é imutável e fica guardado para os dois militares. A caixa “VISTO” mantém-se por fazer parte do modelo oficial, mas a troca não depende dela.</div></div>`;
+      body.querySelector('#doc-share').addEventListener('click', () => toast('Na app abre a folha de partilha do iOS'));
     });
   }
 
@@ -991,7 +1122,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
       <div class="col" style="height:${Math.max(w.work / max * 100, 3)}%"><i style="height:${w.work ? w.night / w.work * 100 : 0}%"></i></div><small>${w.label}</small></div>`).join('');
     const rows = [
       ['moon', '#3B3A98', 'Noturno', `${hrs(st.night)} h`], ['sun2', '#FF9F0A', 'Fim de semana', `${hrs(st.weekend)} h`],
-      ['flag', 'var(--red)', 'Em feriado', `${hrs(st.holiday)} h`], ['euro', 'var(--green)', 'Estimativa bruta', eur(st.pay)],
+      ['flag', 'var(--red)', 'Em feriado', `${hrs(st.holiday)} h`], ['euro', 'var(--green)', 'Gratificados', eur(st.pay)],
     ];
     $('hs-detail').innerHTML = rows.map(([i, c, t, v]) => `<div class="row"><span class="ico" style="background:${c}">${icon(i)}</span><span class="grow t">${t}</span><span class="v">${v}</span></div>`).join('');
     const fer = yearCount(y, 'FER'), bx = yearCount(y, 'BX');
@@ -1005,7 +1136,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
 
   // ───────── Render global ─────────
   function refreshOthers() {
-    const n = S.swaps.filter(s => s.dir === 'in' && s.status === 'PENDING').length;
+    const n = S.swaps.filter(s => s.dir === 'in' && s.status === 'PENDENTE').length;
     $('tab-badge').hidden = !n; $('tab-badge').textContent = n;
   }
   function render() {
