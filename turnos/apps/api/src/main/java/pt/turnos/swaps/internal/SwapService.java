@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ import pt.turnos.scheduling.ShiftRules;
 import pt.turnos.scheduling.Violation;
 import pt.turnos.shared.ApiException;
 import pt.turnos.shared.Ids;
+import pt.turnos.swaps.SwapEvent;
 import pt.turnos.units.MemberLeft;
 import pt.turnos.units.Membership;
 import pt.turnos.units.PostoInfo;
@@ -61,9 +63,11 @@ class SwapService {
     private final AuditLog audit;
     private final JsonMapper json;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
     SwapService(SwapRepository swaps, Scheduling scheduling, Units units, UserDirectory users, AuditLog audit, JsonMapper json,
-                Clock clock) {
+                Clock clock, ApplicationEventPublisher events) {
+        this.events = events;
         this.swaps = swaps;
         this.scheduling = scheduling;
         this.units = units;
@@ -103,6 +107,7 @@ class SwapService {
         swaps.insert(row, now);
         audit.record(me.id(), "swap.requested", "swap_request", row.id(),
                 Map.of("requesterShift", a.id().toString(), "targetShift", b.id().toString()));
+        publish(SwapEvent.Type.REQUESTED, row, row.message());
         return new Created(swaps.find(row.id()).orElseThrow(), violations.stream().filter(v -> !v.error()).toList());
     }
 
@@ -128,6 +133,7 @@ class SwapService {
         swaps.cancelOthersInvolving(s.id(), a.id(), b.id(), now);
         issueDocument(s, a, b, posto, now);
         audit.record(me.id(), "swap.accepted", "swap_request", s.id(), null);
+        publish(SwapEvent.Type.ACCEPTED, s, null);
         return swaps.find(id).orElseThrow();
     }
 
@@ -137,6 +143,7 @@ class SwapService {
         SwapRow s = lockActiveAsTarget(me, id, now);
         swaps.hold(s.id(), blank(message), now);
         audit.record(me.id(), "swap.held", "swap_request", s.id(), null);
+        publish(SwapEvent.Type.HELD, s, blank(message));
         return swaps.find(id).orElseThrow();
     }
 
@@ -146,6 +153,7 @@ class SwapService {
         SwapRow s = lockActiveAsTarget(me, id, now);
         swaps.close(s.id(), "RECUSADA", blank(reason), now);
         audit.record(me.id(), "swap.declined", "swap_request", s.id(), null);
+        publish(SwapEvent.Type.DECLINED, s, blank(reason));
         return swaps.find(id).orElseThrow();
     }
 
@@ -160,6 +168,7 @@ class SwapService {
         requireActive(s);
         swaps.close(s.id(), "CANCELADA", null, clock.instant());
         audit.record(me.id(), "swap.cancelled", "swap_request", s.id(), null);
+        publish(SwapEvent.Type.CANCELLED, s, null);
         return swaps.find(id).orElseThrow();
     }
 
@@ -183,7 +192,10 @@ class SwapService {
     @Transactional
     int expire() {
         List<UUID> expired = swaps.expire(clock.instant());
-        expired.forEach(id -> audit.record(null, "swap.expired", "swap_request", id, null));
+        expired.forEach(id -> {
+            audit.record(null, "swap.expired", "swap_request", id, null);
+            swaps.find(id).ifPresent(s -> publish(SwapEvent.Type.EXPIRED, s, null));
+        });
         if (!expired.isEmpty()) {
             log.info("{} pedidos de troca expiraram", expired.size());
         }
@@ -194,6 +206,14 @@ class SwapService {
     @EventListener
     void on(MemberLeft event) {
         swaps.cancelActiveOf(event.userId(), clock.instant());
+    }
+
+    private void publish(SwapEvent.Type type, SwapRow s, String note) {
+        String reqCode = scheduling.find(s.requesterShiftId()).map(x -> x.type().code()).orElse("?");
+        ShiftInfo target = scheduling.find(s.targetShiftId()).orElse(null);
+        LocalDate date = target == null ? null : target.date();
+        String tgtCode = target == null ? "?" : target.type().code();
+        events.publishEvent(new SwapEvent(type, s.id(), s.requesterId(), s.targetId(), date, reqCode, tgtCode, note));
     }
 
     // ── regras ──

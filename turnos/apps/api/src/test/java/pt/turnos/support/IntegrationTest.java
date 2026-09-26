@@ -30,7 +30,7 @@ public abstract class IntegrationTest {
     @BeforeEach
     void cleanDatabase() {
         clock.set(TestClock.DEFAULT);
-        jdbc.sql("TRUNCATE users, postos, audit_events CASCADE").update();
+        jdbc.sql("TRUNCATE users, postos, audit_events, notifications, push_subscriptions CASCADE").update();
     }
 
     protected Client client() {

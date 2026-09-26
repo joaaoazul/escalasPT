@@ -118,6 +118,22 @@
         "required" : [ "id", "members", "name" ],
         "type" : "object"
       },
+      "Inbox" : {
+        "properties" : {
+          "items" : {
+            "items" : {
+              "$ref" : "#/components/schemas/NotificationDto"
+            },
+            "type" : "array"
+          },
+          "unread" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "items", "unread" ],
+        "type" : "object"
+      },
       "InvitePreview" : {
         "properties" : {
           "expiresAt" : {
@@ -175,6 +191,22 @@
           }
         },
         "required" : [ "acceptedAt", "email", "expiresAt", "id", "name", "rank", "role", "status" ],
+        "type" : "object"
+      },
+      "Keys" : {
+        "properties" : {
+          "auth" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "p256dh" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "auth", "p256dh" ],
         "type" : "object"
       },
       "LoginRequest" : {
@@ -285,6 +317,36 @@
         },
         "type" : "object"
       },
+      "NotificationDto" : {
+        "properties" : {
+          "body" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "readAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "body", "createdAt", "id", "readAt", "title", "type", "url" ],
+        "type" : "object"
+      },
       "PaintRequest" : {
         "properties" : {
           "dates" : {
@@ -347,6 +409,18 @@
           }
         },
         "required" : [ "groups", "id", "location", "name", "timeZone" ],
+        "type" : "object"
+      },
+      "PushConfig" : {
+        "properties" : {
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "publicKey" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "enabled", "publicKey" ],
         "type" : "object"
       },
       "RegisterRequest" : {
@@ -517,6 +591,20 @@
         "required" : [ "accumulable", "allDay", "code", "color", "durationMinutes", "id", "kind", "name", "postoId", "startTime", "swappable" ],
         "type" : "object"
       },
+      "Subscribe" : {
+        "properties" : {
+          "endpoint" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "keys" : {
+            "$ref" : "#/components/schemas/Keys"
+          }
+        },
+        "required" : [ "endpoint", "keys" ],
+        "type" : "object"
+      },
       "SwapDto" : {
         "properties" : {
           "createdAt" : {
@@ -585,6 +673,16 @@
           }
         },
         "required" : [ "userId" ],
+        "type" : "object"
+      },
+      "Unsubscribe" : {
+        "properties" : {
+          "endpoint" : {
+            "minLength" : 1,
+            "type" : "string"
+          }
+        },
+        "required" : [ "endpoint" ],
         "type" : "object"
       },
       "WriteResponse" : {
@@ -1078,6 +1176,46 @@
         "tags" : [ "swap-controller" ]
       }
     },
+    "/api/v1/notifications" : {
+      "get" : {
+        "operationId" : "inbox",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Inbox"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "notification-controller" ]
+      }
+    },
+    "/api/v1/notifications/read" : {
+      "post" : {
+        "operationId" : "readAll",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "additionalProperties" : {
+                    "format" : "int32",
+                    "type" : "integer"
+                  },
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "notification-controller" ]
+      }
+    },
     "/api/v1/postos" : {
       "get" : {
         "operationId" : "postos",
@@ -1271,6 +1409,64 @@
           }
         },
         "tags" : [ "scheduling-controller" ]
+      }
+    },
+    "/api/v1/push/config" : {
+      "get" : {
+        "operationId" : "config",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PushConfig"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "notification-controller" ]
+      }
+    },
+    "/api/v1/push/subscriptions" : {
+      "delete" : {
+        "operationId" : "unsubscribe",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Unsubscribe"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "notification-controller" ]
+      },
+      "post" : {
+        "operationId" : "subscribe",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Subscribe"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "notification-controller" ]
       }
     },
     "/api/v1/shifts/{id}" : {

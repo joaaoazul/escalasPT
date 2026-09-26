@@ -96,6 +96,7 @@ test("militar entra por convite, pinta a escala e troca com um camarada de outro
   await ruiPage.locator("#password").fill(PASS);
   await ruiPage.getByRole("button", { name: "Entrar" }).click();
   await expect(ruiPage.getByText("Pedidos de troca")).toBeVisible();
+  await expect(ruiPage.getByRole("button", { name: "Notificações, 1 por ler" })).toBeVisible();
   await shot(ruiPage, "06-hoje-rui");
   await ruiPage.getByRole("button", { name: /Guarda Ana Silva/ }).first().click();
   await expect(ruiPage.getByText("“Tenho tribunal nesse dia”")).toBeVisible();
@@ -115,4 +116,8 @@ test("militar entra por convite, pinta a escala e troca com um camarada de outro
   await page.goto(`/grupo?s=trocas`);
   await expect(page.getByText("Aceite · documento emitido")).toBeVisible();
   await shot(page, "09-trocas-ana");
+  await page.goto("/");
+  await page.getByRole("button", { name: /Notificações/ }).click();
+  await expect(page.getByText("Troca aceite")).toBeVisible();
+  await shot(page, "10-notificacoes");
 });

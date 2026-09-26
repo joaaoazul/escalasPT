@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Turnos",
   description: "Escala de serviço, grupo de folgas e trocas entre camaradas",
   appleWebApp: { capable: true, title: "Turnos", statusBarStyle: "default" },
+  icons: { icon: "/icon-192.png", apple: "/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {

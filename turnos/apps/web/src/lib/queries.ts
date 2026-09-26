@@ -210,3 +210,23 @@ export function useAcceptInvite() {
     onSuccess: () => qc.invalidateQueries(),
   });
 }
+
+// ── notificações ──
+
+export type Notification = { id: string; type: string; title: string; body: string; url: string | null; readAt: string | null; createdAt: string };
+
+export function useNotifications() {
+  return useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => unwrap<{ unread: number; items: Notification[] }>(api.GET("/api/v1/notifications") as never),
+    refetchInterval: 30_000,
+  });
+}
+
+export function useMarkAllRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => unwrap(api.POST("/api/v1/notifications/read") as never),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+}

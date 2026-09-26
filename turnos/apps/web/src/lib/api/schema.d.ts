@@ -244,6 +244,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inbox"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["readAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/postos": {
         parameters: {
             query?: never;
@@ -319,6 +351,38 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/push/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["config"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/push/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["subscribe"];
+        delete: operations["unsubscribe"];
         options?: never;
         head?: never;
         patch?: never;
@@ -511,6 +575,11 @@ export interface components {
             members: components["schemas"]["MemberView"][];
             name: string;
         };
+        Inbox: {
+            items: components["schemas"]["NotificationDto"][];
+            /** Format: int64 */
+            unread: number;
+        };
         InvitePreview: {
             /** Format: date-time */
             expiresAt: string;
@@ -533,6 +602,10 @@ export interface components {
             rank: string;
             role: string;
             status: string;
+        };
+        Keys: {
+            auth: string;
+            p256dh: string;
         };
         LoginRequest: {
             email: string;
@@ -572,6 +645,18 @@ export interface components {
             /** Format: int32 */
             version?: number;
         };
+        NotificationDto: {
+            body: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            readAt: string;
+            title: string;
+            type: string;
+            url: string;
+        };
         PaintRequest: {
             dates: string[];
             /** Format: int32 */
@@ -593,6 +678,10 @@ export interface components {
             location: string;
             name: string;
             timeZone: string;
+        };
+        PushConfig: {
+            enabled: boolean;
+            publicKey: string;
         };
         RegisterRequest: {
             /** Format: email */
@@ -659,6 +748,10 @@ export interface components {
             startTime: string;
             swappable: boolean;
         };
+        Subscribe: {
+            endpoint: string;
+            keys: components["schemas"]["Keys"];
+        };
         SwapDto: {
             /** Format: date-time */
             createdAt: string;
@@ -686,6 +779,9 @@ export interface components {
         TransferCommand: {
             /** Format: uuid */
             userId: string;
+        };
+        Unsubscribe: {
+            endpoint: string;
         };
         WriteResponse: {
             shifts: components["schemas"]["ShiftDto"][];
@@ -1085,6 +1181,48 @@ export interface operations {
             };
         };
     };
+    inbox: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Inbox"];
+                };
+            };
+        };
+    };
+    readAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": {
+                        [key: string]: number;
+                    };
+                };
+            };
+        };
+    };
     postos: {
         parameters: {
             query?: never;
@@ -1222,6 +1360,70 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["ShiftDto"][];
                 };
+            };
+        };
+    };
+    config: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PushConfig"];
+                };
+            };
+        };
+    };
+    subscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Subscribe"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    unsubscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Unsubscribe"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

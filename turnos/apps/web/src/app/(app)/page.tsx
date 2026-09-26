@@ -10,6 +10,7 @@ import { addDays, cap, hours, longDate, mondayOf, monthRange, relDate, today, WD
 import { onColor } from "@/lib/color";
 import { useMyShifts, usePostoShifts, useSwaps } from "@/lib/queries";
 import { NavBar, LargeTitle } from "@/components/NavBar";
+import { Bell, PushToggle } from "@/components/Notifications";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { useSheet } from "@/components/Sheet";
@@ -55,6 +56,7 @@ export default function Hoje() {
     <>
       <NavBar
         title="Hoje"
+        left={<Bell />}
         right={
           <button className="tbtn" aria-label="Perfil" onClick={() => sheet.open("Perfil", () => <Profile onLogout={async () => {
             await api.POST("/api/v1/auth/logout");
@@ -173,6 +175,7 @@ function Profile({ onLogout }: { onLogout: () => void }) {
           {me.serviceNumber && <div className="row"><span className="grow t">N.º de ordem</span><span className="v">{me.serviceNumber}</span></div>}
         </div>
       </div>
+      <PushToggle />
       <div className="section">
         <div className="group">
           {me.admin && <Link className="row tint" href="/admin"><span className="grow t">Administração</span></Link>}

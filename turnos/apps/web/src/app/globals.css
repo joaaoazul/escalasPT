@@ -309,3 +309,7 @@ button:disabled { opacity: .5; cursor: default; }
 .tab[aria-current="page"] svg.i { fill: color-mix(in srgb, var(--tint) 18%, transparent); }
 .ico { display: grid; place-items: center; color: #fff; flex: none; }
 .section > .hd a { text-transform: none; font-size: 15px; letter-spacing: -.01em; }
+.switch { width: 51px; height: 31px; border-radius: 16px; background: var(--fill-2); position: relative; transition: background .2s; flex: none; }
+.switch span { position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.15); transition: transform .2s; }
+.switch.on { background: var(--green); }
+.switch.on span { transform: translateX(20px); }

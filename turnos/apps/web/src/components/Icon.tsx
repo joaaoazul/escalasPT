@@ -17,6 +17,7 @@ const PATHS: Record<string, string> = {
   doc: "M7 3h7l5 5v13H7zM14 3v5h5M9.5 13h7M9.5 16.5h7",
   plus: "M12 5v14M5 12h14",
   undo: "M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 010 11H11",
+  bell: "M6 17V11a6 6 0 1112 0v6l1.5 2h-15zM10 21h4",
 };
 
 export function Icon({ name, size = 22, className, style }: { name: keyof typeof PATHS; size?: number; className?: string; style?: React.CSSProperties }) {

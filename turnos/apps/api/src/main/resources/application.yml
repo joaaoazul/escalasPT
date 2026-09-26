@@ -41,5 +41,11 @@ turnos:
     cookie-secure: ${COOKIE_SECURE:true}
     max-failed-logins: 5
     lockout: 15m
+  push:
+    vapid-public-key: ${VAPID_PUBLIC_KEY:}
+    vapid-private-key: ${VAPID_PRIVATE_KEY:}
+    subject: ${VAPID_SUBJECT:mailto:suporte@turnos.pt}
+    # Serviços de push dos browsers (Chrome/Android, Firefox, Safari/iOS, Edge/Windows)
+    allowed-hosts: fcm.googleapis.com, push.services.mozilla.com, push.apple.com, notify.windows.com
   # O primeiro registo com este email fica com o papel ADMIN (cria postos e grupos).
   bootstrap-admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
