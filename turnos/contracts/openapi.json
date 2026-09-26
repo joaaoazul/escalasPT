@@ -28,6 +28,21 @@
         "required" : [ "date", "shiftTypeId" ],
         "type" : "object"
       },
+      "ChangePasswordRequest" : {
+        "properties" : {
+          "currentPassword" : {
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "newPassword" : {
+            "maxLength" : 200,
+            "minLength" : 10,
+            "type" : "string"
+          }
+        },
+        "required" : [ "currentPassword", "newPassword" ],
+        "type" : "object"
+      },
       "CreateGroup" : {
         "properties" : {
           "name" : {
@@ -44,6 +59,12 @@
           "email" : {
             "format" : "email",
             "type" : "string"
+          },
+          "maxUses" : {
+            "format" : "int32",
+            "maximum" : 100,
+            "minimum" : 1,
+            "type" : "integer"
           },
           "name" : {
             "maxLength" : 120,
@@ -136,6 +157,12 @@
       },
       "InvitePreview" : {
         "properties" : {
+          "commander" : {
+            "type" : "boolean"
+          },
+          "email" : {
+            "type" : "string"
+          },
           "expiresAt" : {
             "format" : "date-time",
             "type" : "string"
@@ -150,14 +177,23 @@
           "invitedBy" : {
             "type" : "string"
           },
+          "link" : {
+            "type" : "boolean"
+          },
+          "name" : {
+            "type" : "string"
+          },
           "postoName" : {
+            "type" : "string"
+          },
+          "rank" : {
             "type" : "string"
           },
           "status" : {
             "type" : "string"
           }
         },
-        "required" : [ "expiresAt", "groupId", "groupName", "invitedBy", "postoName", "status" ],
+        "required" : [ "commander", "email", "expiresAt", "groupId", "groupName", "invitedBy", "link", "name", "postoName", "rank", "status" ],
         "type" : "object"
       },
       "InviteView" : {
@@ -177,6 +213,13 @@
             "format" : "uuid",
             "type" : "string"
           },
+          "link" : {
+            "type" : "boolean"
+          },
+          "maxUses" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
           "name" : {
             "type" : "string"
           },
@@ -188,9 +231,13 @@
           },
           "status" : {
             "type" : "string"
+          },
+          "uses" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
-        "required" : [ "acceptedAt", "email", "expiresAt", "id", "name", "rank", "role", "status" ],
+        "required" : [ "acceptedAt", "email", "expiresAt", "id", "link", "maxUses", "name", "rank", "role", "status", "uses" ],
         "type" : "object"
       },
       "Keys" : {
@@ -373,6 +420,19 @@
         "required" : [ "dates" ],
         "type" : "object"
       },
+      "PasswordResetView" : {
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "expiresAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "required" : [ "code", "expiresAt" ],
+        "type" : "object"
+      },
       "Person" : {
         "properties" : {
           "displayName" : {
@@ -455,6 +515,11 @@
             "minLength" : 0,
             "type" : "string"
           },
+          "inviteCode" : {
+            "maxLength" : 40,
+            "minLength" : 0,
+            "type" : "string"
+          },
           "password" : {
             "maxLength" : 200,
             "minLength" : 10,
@@ -471,6 +536,22 @@
           }
         },
         "required" : [ "email", "fullName", "password" ],
+        "type" : "object"
+      },
+      "ResetRequest" : {
+        "properties" : {
+          "code" : {
+            "maxLength" : 40,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "password" : {
+            "maxLength" : 200,
+            "minLength" : 10,
+            "type" : "string"
+          }
+        },
+        "required" : [ "code", "password" ],
         "type" : "object"
       },
       "ShiftDto" : {
@@ -778,6 +859,42 @@
         "tags" : [ "auth-controller" ]
       }
     },
+    "/api/v1/auth/password-reset" : {
+      "post" : {
+        "operationId" : "resetPassword",
+        "parameters" : [ {
+          "in" : "header",
+          "name" : "User-Agent",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ResetRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MeResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "auth-controller" ]
+      }
+    },
     "/api/v1/auth/refresh" : {
       "post" : {
         "operationId" : "refresh",
@@ -984,6 +1101,41 @@
         "tags" : [ "units-controller" ]
       }
     },
+    "/api/v1/groups/{groupId}/members/{userId}/password-reset" : {
+      "post" : {
+        "operationId" : "passwordReset",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "groupId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "userId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PasswordResetView"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "tags" : [ "units-controller" ]
+      }
+    },
     "/api/v1/invites/{code}" : {
       "get" : {
         "operationId" : "preview",
@@ -1096,6 +1248,27 @@
           }
         },
         "tags" : [ "units-controller" ]
+      }
+    },
+    "/api/v1/me/password" : {
+      "post" : {
+        "operationId" : "changePassword",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "auth-controller" ]
       }
     },
     "/api/v1/me/shifts" : {

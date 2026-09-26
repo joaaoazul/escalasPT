@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import pt.turnos.audit.AuditLog;
 import pt.turnos.identity.CurrentUser;
+import pt.turnos.identity.PasswordResets;
 import pt.turnos.identity.UserDirectory;
 import pt.turnos.identity.UserSummary;
 import pt.turnos.shared.ApiException;
@@ -32,6 +33,7 @@ import pt.turnos.units.PostoInfo;
 class UnitsService {
 
     static final Duration INVITE_TTL = Duration.ofDays(7);
+    static final int MAX_LINK_USES = 100;
     private static final String CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -40,13 +42,16 @@ class UnitsService {
 
     private final UnitsRepository repo;
     private final UserDirectory users;
+    private final PasswordResets resets;
     private final ApplicationEventPublisher events;
     private final AuditLog audit;
     private final Clock clock;
 
-    UnitsService(UnitsRepository repo, UserDirectory users, ApplicationEventPublisher events, AuditLog audit, Clock clock) {
+    UnitsService(UnitsRepository repo, UserDirectory users, PasswordResets resets, ApplicationEventPublisher events,
+                 AuditLog audit, Clock clock) {
         this.repo = repo;
         this.users = users;
+        this.resets = resets;
         this.events = events;
         this.audit = audit;
         this.clock = clock;
@@ -91,8 +96,12 @@ class UnitsService {
 
     // ── convites (comandante de grupo) ──
 
+    /**
+     * Convite individual ({@code maxUses} 1, pode indicar o email, o nome e o posto do militar) ou link do grupo
+     * ({@code maxUses} &gt; 1, sem destinatário; criar um novo desativa o anterior).
+     */
     @Transactional
-    CreatedInvite invite(CurrentUser me, UUID groupId, String email, String name, String rank, String role) {
+    CreatedInvite invite(CurrentUser me, UUID groupId, String email, String name, String rank, String role, Integer maxUses) {
         UnitsRepository.Group g = repo.group(groupId).orElseThrow(() -> ApiException.notFound("Grupo"));
         requireCommanderOrAdmin(me, g);
         String r = role == null ? "MEMBER" : role;
@@ -102,12 +111,26 @@ class UnitsService {
         if (r.equals("COMMANDER") && !me.admin()) {
             throw ApiException.forbidden("Só o administrador nomeia o comandante de grupo");
         }
+        int uses = maxUses == null ? 1 : maxUses;
+        if (uses < 1 || uses > MAX_LINK_USES) {
+            throw ApiException.invalid("invalid-max-uses", "O link do grupo serve entre 2 e " + MAX_LINK_USES + " militares");
+        }
+        boolean link = uses > 1;
+        if (link && (r.equals("COMMANDER") || normalizeEmail(email) != null)) {
+            throw ApiException.invalid("invalid-link", "O link do grupo é só para militares e não leva email");
+        }
         String token = newToken();
         UUID id = Ids.newId();
         Instant now = clock.instant();
         Instant expires = now.plus(INVITE_TTL);
-        repo.insertInvite(id, groupId, hash(token), normalizeEmail(email), blank(name), blank(rank), r, expires, me.id(), now);
-        audit.record(me.id(), "invite.created", "group_invite", id, Map.of("groupId", groupId.toString(), "role", r));
+        if (link) {
+            repo.revokeActiveLinks(groupId, now);
+            name = null;
+            rank = null;
+        }
+        repo.insertInvite(id, groupId, hash(token), normalizeEmail(email), blank(name), blank(rank), r, uses, expires, me.id(), now);
+        audit.record(me.id(), link ? "invite-link.created" : "invite.created", "group_invite", id,
+                Map.of("groupId", groupId.toString(), "role", r, "maxUses", uses));
         return new CreatedInvite(id, token, expires);
     }
 
@@ -127,7 +150,9 @@ class UnitsService {
         audit.record(me.id(), "invite.revoked", "group_invite", inviteId, null);
     }
 
-    record InvitePreview(UUID groupId, String groupName, String postoName, String invitedBy, Instant expiresAt, String status) {
+    /** O que o convite mostra antes de se criar conta: o grupo e os dados que o comandante já preencheu. */
+    record InvitePreview(UUID groupId, String groupName, String postoName, String invitedBy, Instant expiresAt, String status,
+                         boolean link, boolean commander, String email, String name, String rank) {
     }
 
     InvitePreview preview(String token) {
@@ -135,37 +160,73 @@ class UnitsService {
         UnitsRepository.Group g = repo.group(inv.groupId()).orElseThrow();
         PostoInfo p = repo.posto(g.postoId()).orElseThrow();
         String by = inv.createdBy() == null ? null : users.find(inv.createdBy()).map(UserSummary::displayName).orElse(null);
-        return new InvitePreview(g.id(), g.name(), p.name(), by, inv.expiresAt(), status(inv));
+        return new InvitePreview(g.id(), g.name(), p.name(), by, inv.expiresAt(), status(inv), inv.link(),
+                inv.role().equals("COMMANDER"), inv.email(), inv.inviteeName(), inv.inviteeRank());
+    }
+
+    /** Validação do registo: o convite está válido e é para este email. */
+    void checkForRegistration(String token, String email) {
+        usable(token, email);
     }
 
     @Transactional
     Membership accept(CurrentUser me, String token) {
+        return acceptFor(me.id(), token);
+    }
+
+    /**
+     * Entra no grupo do convite. Quem já está noutro grupo do mesmo posto muda de grupo (as trocas e a escala
+     * continuam, porque são do posto); o comandante tem de passar o comando antes.
+     */
+    @Transactional
+    Membership acceptFor(UUID userId, String token) {
         Instant now = clock.instant();
-        UnitsRepository.Invite inv = repo.inviteByHash(hash(token)).orElseThrow(() -> ApiException.notFound("Convite"));
-        String status = status(inv);
-        if (!status.equals("PENDING")) {
-            throw ApiException.invalid("invite-" + status.toLowerCase(Locale.ROOT), switch (status) {
-                case "ACCEPTED" -> "Este convite já foi usado";
-                case "REVOKED" -> "Este convite foi revogado";
-                default -> "Este convite expirou";
-            });
+        UserSummary user = users.find(userId).orElseThrow();
+        UnitsRepository.Invite inv = usable(token, user.email());
+        UnitsRepository.Group g = repo.group(inv.groupId()).orElseThrow();
+        Membership current = repo.membershipOf(userId).orElse(null);
+        if (current != null) {
+            if (current.groupId().equals(g.id())) {
+                throw ApiException.conflict("already-in-group", "Já pertences ao " + g.name());
+            }
+            if (!current.postoId().equals(g.postoId())) {
+                throw ApiException.conflict("already-member", "Pertences a um grupo de outro posto. Sai primeiro desse grupo.");
+            }
+            if (current.commander()) {
+                throw ApiException.invalid("commander-must-transfer", "Passa o comando do " + current.groupName() + " antes de mudar de grupo");
+            }
         }
-        UserSummary user = users.find(me.id()).orElseThrow();
-        if (inv.email() != null && !inv.email().equalsIgnoreCase(user.email())) {
-            throw ApiException.forbidden("Este convite é para outro email");
-        }
-        if (repo.membershipOf(me.id()).isPresent()) {
-            throw ApiException.conflict("already-member", "Já pertences a um grupo de folgas. Sai primeiro desse grupo.");
-        }
-        if (!repo.consumeInvite(inv.id(), me.id(), now)) {
+        if (!repo.consumeInvite(inv.id(), userId, now)) {
             throw ApiException.conflict("invite-used", "Este convite já foi usado");
         }
         if (inv.role().equals("COMMANDER")) {
             repo.membershipOfGroupCommander(inv.groupId()).ifPresent(old -> repo.setRole(inv.groupId(), old, "MEMBER"));
         }
-        repo.addMember(inv.groupId(), me.id(), inv.role(), now);
-        audit.record(me.id(), "member.joined", "folga_group", inv.groupId(), Map.of("inviteId", inv.id().toString()));
-        return repo.membershipOf(me.id()).orElseThrow();
+        if (current == null) {
+            repo.addMember(inv.groupId(), userId, inv.role(), now);
+            audit.record(userId, "member.joined", "folga_group", inv.groupId(), Map.of("inviteId", inv.id().toString()));
+        } else {
+            repo.moveMember(userId, inv.groupId(), inv.role(), now);
+            audit.record(userId, "member.moved", "folga_group", inv.groupId(),
+                    Map.of("inviteId", inv.id().toString(), "from", current.groupId().toString()));
+        }
+        return repo.membershipOf(userId).orElseThrow();
+    }
+
+    private UnitsRepository.Invite usable(String token, String email) {
+        UnitsRepository.Invite inv = repo.inviteByHash(hash(token)).orElseThrow(() -> ApiException.notFound("Convite"));
+        String status = status(inv);
+        if (!status.equals("PENDING")) {
+            throw ApiException.invalid("invite-" + status.toLowerCase(Locale.ROOT), switch (status) {
+                case "ACCEPTED" -> inv.link() ? "Este link já atingiu o limite de militares" : "Este convite já foi usado";
+                case "REVOKED" -> "Este convite foi revogado";
+                default -> "Este convite expirou";
+            });
+        }
+        if (inv.email() != null && !inv.email().equalsIgnoreCase(email)) {
+            throw ApiException.forbidden("Este convite é para outro email");
+        }
+        return inv;
     }
 
     @Transactional
@@ -194,6 +255,18 @@ class UnitsService {
         repo.membershipOfGroupCommander(groupId).ifPresent(old -> repo.setRole(groupId, old, "MEMBER"));
         repo.setRole(groupId, newCommander, "COMMANDER");
         audit.record(me.id(), "group.command-transferred", "folga_group", groupId, Map.of("to", newCommander.toString()));
+    }
+
+    /** O comandante de grupo (ou o administrador) gera um código para o militar repor a palavra-passe. */
+    @Transactional
+    PasswordResets.Issued passwordReset(CurrentUser me, UUID groupId, UUID userId) {
+        UnitsRepository.Group g = repo.group(groupId).orElseThrow(() -> ApiException.notFound("Grupo"));
+        requireCommanderOrAdmin(me, g);
+        if (me.id().equals(userId)) {
+            throw ApiException.invalid("own-password", "Para mudares a tua palavra-passe usa o teu perfil");
+        }
+        repo.membershipOf(userId).filter(x -> x.groupId().equals(groupId)).orElseThrow(() -> ApiException.notFound("Militar"));
+        return resets.issue(userId, me.id());
     }
 
     // ── auxiliares ──

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError, unwrap } from "@/lib/api/client";
 import type { Posto } from "@/lib/api/models";
-import { useMe } from "@/lib/queries";
+import { useMe, usePasswordReset } from "@/lib/queries";
 import { NavBar, LargeTitle } from "@/components/NavBar";
 import { useToast } from "@/components/Toast";
 
@@ -17,6 +17,8 @@ export default function Page() {
   const postos = useQuery({ queryKey: ["admin-postos"], enabled: !!me.data?.admin, queryFn: () => unwrap<Posto[]>(api.GET("/api/v1/postos") as never) });
   const [novo, setNovo] = useState({ name: "", location: "" });
   const [codes, setCodes] = useState<Record<string, string>>({});
+  const [resets, setResets] = useState<Record<string, string>>({});
+  const reset = usePasswordReset();
   const onError = (e: unknown) => toast(e instanceof ApiError ? e.message : "Erro", "error");
 
   const createPosto = useMutation({
@@ -65,6 +67,13 @@ export default function Page() {
                     <div className="t">{g.name}</div>
                     <div className="s">{cmd ? `Comandante: ${cmd.displayName}` : "Sem comandante"} · {g.members.length} militares</div>
                     {codes[g.id] && <div className="code-box" style={{ fontSize: 16, marginTop: 6 }}>{codes[g.id]}</div>}
+                    {resets[g.id] && <div className="s" style={{ marginTop: 6 }}>Nova palavra-passe do comandante (24 h): <b className="code-box" style={{ fontSize: 15 }}>{resets[g.id]}</b></div>}
+                    {cmd && (
+                      <button className="tbtn" style={{ fontSize: 15, padding: "6px 0 0" }} disabled={reset.isPending}
+                        onClick={() => reset.mutate({ groupId: g.id, userId: cmd.userId }, { onSuccess: (r) => setResets({ ...resets, [g.id]: r.code }), onError })}>
+                        Código para nova palavra-passe
+                      </button>
+                    )}
                   </span>
                   <button className="btn small" disabled={inviteCommander.isPending}
                     onClick={() => inviteCommander.mutate(g.id, { onSuccess: (r) => setCodes({ ...codes, [g.id]: r.code }) })}>

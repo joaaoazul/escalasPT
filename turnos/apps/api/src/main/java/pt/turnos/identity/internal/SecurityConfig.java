@@ -63,7 +63,8 @@ class SecurityConfig implements WebMvcConfigurer {
     static final String CLIENT_HEADER = "X-Requested-With";
     static final String CLIENT_VALUE = "turnos";
     private static final Set<String> UNSAFE = Set.of("POST", "PUT", "PATCH", "DELETE");
-    private static final Set<String> PUBLIC_AUTH = Set.of("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh");
+    private static final Set<String> PUBLIC_AUTH = Set.of("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh",
+            "/api/v1/auth/password-reset");
 
     @Bean
     SecurityFilterChain api(HttpSecurity http, SecurityProperties props, Sessions sessions, Clock clock) throws Exception {
@@ -73,6 +74,8 @@ class SecurityConfig implements WebMvcConfigurer {
             .authorizeHttpRequests(a -> a
                 .requestMatchers(HttpMethod.POST, PUBLIC_AUTH.toArray(String[]::new)).permitAll()
                 .requestMatchers("/actuator/health/**", "/api/v3/api-docs/**").permitAll()
+                // Pré-visualização do convite: quem tem o código vê o grupo antes de criar conta.
+                .requestMatchers(HttpMethod.GET, "/api/v1/invites/*").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o
                 .bearerTokenResolver(cookieOrHeader(props))

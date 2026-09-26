@@ -23,7 +23,13 @@ class UnitsRepository implements Units {
     }
 
     record Invite(UUID id, UUID groupId, String email, String inviteeName, String inviteeRank, String role,
-                  Instant expiresAt, UUID createdBy, Instant createdAt, UUID acceptedBy, Instant acceptedAt, Instant revokedAt) {
+                  Instant expiresAt, UUID createdBy, Instant createdAt, UUID acceptedBy, Instant acceptedAt, Instant revokedAt,
+                  int maxUses, int useCount) {
+
+        /** Link do grupo: serve vários militares. */
+        boolean link() {
+            return maxUses > 1;
+        }
     }
 
     private static final String MEMBERSHIP = """
@@ -102,6 +108,11 @@ class UnitsRepository implements Units {
                 .query(UUID.class).optional();
     }
 
+    void moveMember(UUID userId, UUID toGroup, String role, Instant now) {
+        jdbc.sql("UPDATE group_members SET group_id = :g, role = :r, joined_at = :now WHERE user_id = :u")
+                .param("g", toGroup).param("u", userId).param("r", role).param("now", Timestamp.from(now)).update();
+    }
+
     void setRole(UUID groupId, UUID userId, String role) {
         jdbc.sql("UPDATE group_members SET role = :r WHERE group_id = :g AND user_id = :u")
                 .param("g", groupId).param("u", userId).param("r", role).update();
@@ -110,13 +121,20 @@ class UnitsRepository implements Units {
     // ── convites ──
 
     void insertInvite(UUID id, UUID groupId, byte[] tokenHash, String email, String name, String rank, String role,
-                      Instant expiresAt, UUID createdBy, Instant now) {
+                      int maxUses, Instant expiresAt, UUID createdBy, Instant now) {
         jdbc.sql("""
-                INSERT INTO group_invites (id, group_id, token_hash, email, invitee_name, invitee_rank, role, expires_at, created_by, created_at)
-                VALUES (:id, :g, :h, :e, :n, :r, :role, :exp, :by, :now)""")
+                INSERT INTO group_invites (id, group_id, token_hash, email, invitee_name, invitee_rank, role, max_uses, expires_at,
+                                           created_by, created_at)
+                VALUES (:id, :g, :h, :e, :n, :r, :role, :max, :exp, :by, :now)""")
                 .param("id", id).param("g", groupId).param("h", tokenHash).param("e", email).param("n", name).param("r", rank)
-                .param("role", role).param("exp", Timestamp.from(expiresAt)).param("by", createdBy).param("now", Timestamp.from(now))
-                .update();
+                .param("role", role).param("max", maxUses).param("exp", Timestamp.from(expiresAt)).param("by", createdBy)
+                .param("now", Timestamp.from(now)).update();
+    }
+
+    /** Só há um link do grupo ativo de cada vez: criar outro desativa o anterior. */
+    void revokeActiveLinks(UUID groupId, Instant now) {
+        jdbc.sql("UPDATE group_invites SET revoked_at = :now WHERE group_id = :g AND max_uses > 1 AND accepted_at IS NULL AND revoked_at IS NULL")
+                .param("g", groupId).param("now", Timestamp.from(now)).update();
     }
 
     List<Invite> invitesOfGroup(UUID groupId) {
@@ -128,11 +146,16 @@ class UnitsRepository implements Units {
         return jdbc.sql("SELECT * FROM group_invites WHERE token_hash = :h").param("h", hash).query(UnitsRepository::invite).optional();
     }
 
-    /** Consome o convite de forma atómica: só um pedido o consegue usar. */
+    /**
+     * Gasta um uso do convite de forma atómica: um convite individual só serve um pedido, o link do grupo serve até
+     * esgotar. {@code accepted_at} fica marcado quando o último uso é gasto.
+     */
     boolean consumeInvite(UUID id, UUID userId, Instant now) {
         return jdbc.sql("""
-                UPDATE group_invites SET accepted_by = :u, accepted_at = :now
-                WHERE id = :id AND accepted_at IS NULL AND revoked_at IS NULL AND expires_at > :now""")
+                UPDATE group_invites SET use_count = use_count + 1,
+                       accepted_by = CASE WHEN max_uses = 1 THEN :u ELSE accepted_by END,
+                       accepted_at = CASE WHEN use_count + 1 >= max_uses THEN :now ELSE accepted_at END
+                WHERE id = :id AND use_count < max_uses AND revoked_at IS NULL AND expires_at > :now""")
                 .param("id", id).param("u", userId).param("now", Timestamp.from(now)).update() == 1;
     }
 
@@ -150,7 +173,7 @@ class UnitsRepository implements Units {
         return new Invite(rs.getObject("id", UUID.class), rs.getObject("group_id", UUID.class), rs.getString("email"),
                 rs.getString("invitee_name"), rs.getString("invitee_rank"), rs.getString("role"), instant(rs, "expires_at"),
                 rs.getObject("created_by", UUID.class), instant(rs, "created_at"), rs.getObject("accepted_by", UUID.class),
-                instant(rs, "accepted_at"), instant(rs, "revoked_at"));
+                instant(rs, "accepted_at"), instant(rs, "revoked_at"), rs.getInt("max_uses"), rs.getInt("use_count"));
     }
 
     private static Instant instant(ResultSet rs, String col) throws SQLException {

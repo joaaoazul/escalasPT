@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import pt.turnos.identity.CurrentUser;
+import pt.turnos.identity.PasswordResets;
 import pt.turnos.identity.UserDirectory;
 import pt.turnos.identity.UserSummary;
 import pt.turnos.shared.ApiException;
@@ -38,7 +41,9 @@ class UnitsController {
     record CreateGroup(@NotBlank @Size(max = 40) String name) {
     }
 
-    record CreateInvite(@Email String email, @Size(max = 120) String name, @Size(max = 40) String rank, String role) {
+    /** {@code maxUses} &gt; 1 cria o link do grupo; sem ele é um convite individual. */
+    record CreateInvite(@Email String email, @Size(max = 120) String name, @Size(max = 40) String rank, String role,
+                        @Min(1) @Max(100) Integer maxUses) {
     }
 
     record TransferCommand(@NotNull UUID userId) {
@@ -57,7 +62,10 @@ class UnitsController {
     }
 
     record InviteView(UUID id, String email, String name, String rank, String role, String status, Instant expiresAt,
-                      Instant acceptedAt) {
+                      Instant acceptedAt, boolean link, int maxUses, int uses) {
+    }
+
+    record PasswordResetView(String code, Instant expiresAt) {
     }
 
     private final UnitsService service;
@@ -109,7 +117,7 @@ class UnitsController {
     @PostMapping("/groups/{groupId}/invites")
     @ResponseStatus(HttpStatus.CREATED)
     Map<String, Object> invite(CurrentUser me, @PathVariable UUID groupId, @Valid @RequestBody CreateInvite req) {
-        UnitsService.CreatedInvite inv = service.invite(me, groupId, req.email(), req.name(), req.rank(), req.role());
+        UnitsService.CreatedInvite inv = service.invite(me, groupId, req.email(), req.name(), req.rank(), req.role(), req.maxUses());
         // O código só é mostrado aqui, uma vez: na BD fica apenas o hash.
         return Map.of("id", inv.id(), "code", inv.token(), "expiresAt", inv.expiresAt());
     }
@@ -117,7 +125,7 @@ class UnitsController {
     @GetMapping("/groups/{groupId}/invites")
     List<InviteView> invites(CurrentUser me, @PathVariable UUID groupId) {
         return service.invites(me, groupId).stream().map(i -> new InviteView(i.id(), i.email(), i.inviteeName(), i.inviteeRank(),
-                i.role(), service.status(i), i.expiresAt(), i.acceptedAt())).toList();
+                i.role(), service.status(i), i.expiresAt(), i.acceptedAt(), i.link(), i.maxUses(), i.useCount())).toList();
     }
 
     @DeleteMapping("/groups/{groupId}/invites/{inviteId}")
@@ -142,6 +150,14 @@ class UnitsController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void removeMember(CurrentUser me, @PathVariable UUID groupId, @PathVariable UUID userId) {
         service.removeMember(me, groupId, userId);
+    }
+
+    /** Código de uso único para o militar repor a palavra-passe (mostrado só aqui). */
+    @PostMapping("/groups/{groupId}/members/{userId}/password-reset")
+    @ResponseStatus(HttpStatus.CREATED)
+    PasswordResetView passwordReset(CurrentUser me, @PathVariable UUID groupId, @PathVariable UUID userId) {
+        PasswordResets.Issued r = service.passwordReset(me, groupId, userId);
+        return new PasswordResetView(r.code(), r.expiresAt());
     }
 
     @PostMapping("/groups/{groupId}/commander")

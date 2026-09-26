@@ -176,7 +176,7 @@ export function useSwapAction() {
 export function useCreateInvite(groupId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (v: { email?: string; name?: string; rank?: string; role?: string }) =>
+    mutationFn: (v: { email?: string; name?: string; rank?: string; role?: string; maxUses?: number }) =>
       unwrap<{ id: string; code: string; expiresAt: string }>(api.POST("/api/v1/groups/{groupId}/invites", { params: { path: { groupId } }, body: v }) as never),
     onSettled: () => qc.invalidateQueries({ queryKey: qk.invites(groupId) }),
   });
@@ -196,6 +196,25 @@ export function useRemoveMember(groupId: string) {
   return useMutation({
     mutationFn: (userId: string) =>
       unwrap<void>(api.DELETE("/api/v1/groups/{groupId}/members/{userId}", { params: { path: { groupId, userId } } }) as never),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["posto"] });
+      qc.invalidateQueries({ queryKey: qk.membership });
+    },
+  });
+}
+
+/** Código de uso único para o militar repor a palavra-passe (comandante de grupo ou administrador). */
+export function usePasswordReset() {
+  return useMutation({
+    mutationFn: (v: { groupId: string; userId: string }) =>
+      unwrap<{ code: string; expiresAt: string }>(api.POST("/api/v1/groups/{groupId}/members/{userId}/password-reset", { params: { path: v } }) as never),
+  });
+}
+
+export function useTransferCommand(groupId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => unwrap<void>(api.POST("/api/v1/groups/{groupId}/commander", { params: { path: { groupId } }, body: { userId } }) as never),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["posto"] });
       qc.invalidateQueries({ queryKey: qk.membership });

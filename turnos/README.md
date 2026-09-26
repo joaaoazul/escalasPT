@@ -39,8 +39,8 @@ JWT_SECRET=$(head -c 48 /dev/urandom | base64) \
 ```
 
 - `COOKIE_SECURE=false` só em `http://localhost` (em produção os cookies usam os prefixos `__Host-`/`__Secure-`).
-- O primeiro registo com o email de `BOOTSTRAP_ADMIN_EMAIL` fica administrador: é quem cria postos e grupos de folgas
-  e nomeia o comandante de cada grupo (convite com `"role": "COMMANDER"`).
+- Só se cria conta com convite. A exceção é o email de `BOOTSTRAP_ADMIN_EMAIL`, que se regista sem convite e fica
+  administrador: cria postos e grupos de folgas e convida o comandante de cada grupo.
 - Todos os pedidos que alteram dados levam o cabeçalho `X-Requested-With: turnos`.
 - Contrato: `GET /api/v3/api-docs`.
 
@@ -88,14 +88,34 @@ Se a API mudar: `UPDATE_CONTRACT=1 ./gradlew :apps:api:test --tests '*OpenApiCon
 Os testes de integração arrancam um PostgreSQL 18 real (Testcontainers): as regras que vivem na base de dados
 (sobreposição de serviços com `EXCLUDE`, um pedido ativo por serviço) são testadas a sério, incluindo trocas concorrentes.
 
+## Contas e grupos de folgas
+
+1. O **administrador** cria o posto e os grupos e envia a cada comandante de grupo o seu convite (link `/convite/<código>`).
+2. O **comandante de grupo** abre o link, cria conta e fica comandante. Em *Grupo → Membros* convida os militares:
+   - **convite pessoal** (posto, nome e email opcional): uso único; o militar encontra os dados já preenchidos;
+   - **link do grupo**: um link para o grupo todo, até 30 militares durante 7 dias; um novo link desativa o anterior.
+3. O **militar** abre o link, cria conta e fica logo no grupo. Se já tem conta, entra e aceita. Um convite de outro grupo
+   do mesmo posto muda-o de grupo (a escala e as trocas continuam); para ir para outro posto, sai primeiro do grupo.
+4. **Palavra-passe esquecida:** na ficha do militar, o comandante de grupo gera um código (uso único, 24 h) e envia-o;
+   o militar usa-o em *Entrar → Esqueci-me da palavra-passe*. O código do comandante é gerado pelo administrador.
+   Repor termina as sessões abertas e desbloqueia a conta.
+5. No **perfil**, cada militar muda a palavra-passe (termina as outras sessões) e pode sair do grupo. O comandante de
+   grupo passa o comando na ficha de outro militar antes de sair.
+
 ## Fluxo principal pela API
 
 ```http
-POST /api/v1/auth/register                     { email, password, fullName, rank, serviceNumber }
+POST /api/v1/auth/register                     (admin de arranque) { email, password, fullName }
 POST /api/v1/postos                            (admin) { name, location }
 POST /api/v1/postos/{postoId}/groups           (admin) { name: "Grupo 2" }
-POST /api/v1/groups/{groupId}/invites          (comandante de grupo) { email } → { code }
-POST /api/v1/invites/{code}/accept             (militar convidado)
+POST /api/v1/groups/{groupId}/invites          (comandante de grupo) { email, name, rank } → { code }
+                                               link do grupo: { maxUses: 30 }
+GET  /api/v1/invites/{code}                    (público) grupo e dados pré-preenchidos
+POST /api/v1/auth/register                     { inviteCode, email, password, fullName, rank, serviceNumber }
+POST /api/v1/invites/{code}/accept             (militar que já tem conta; muda de grupo no mesmo posto)
+POST /api/v1/groups/{groupId}/members/{userId}/password-reset   (comandante de grupo) → { code }
+POST /api/v1/auth/password-reset               { code, password }
+POST /api/v1/me/password                       { currentPassword, newPassword }
 PUT  /api/v1/me/shifts/paint                   { shiftTypeId, dates: ["2026-10-07", …] }
 GET  /api/v1/postos/{postoId}/shifts?from&to[&groupId]      escala do posto / do grupo
 POST /api/v1/swaps                             { shiftId, targetShiftId, message }

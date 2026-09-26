@@ -7,6 +7,7 @@ import { useApp } from "@/lib/app-context";
 import { addDays, cap, endTime, hhmm, longDate, shortDate, stamp, today } from "@/lib/dates";
 import { useAddShift, useDeleteShift, useMyShifts, usePaint, useRequestSwap, useSwapAction, useUserShifts } from "@/lib/queries";
 import { Avatar } from "./Avatar";
+import { CommanderActions } from "./CommanderActions";
 import { Icon } from "./Icon";
 import { Pill } from "./Pill";
 import { useSheet } from "./Sheet";
@@ -41,7 +42,8 @@ const errorText = (e: unknown) => (e instanceof ApiError ? e.message : "Sem liga
 // ── ficha de um camarada ──
 
 export function MemberSheet({ userId, displayName, subtitle }: { userId: string; displayName: string; subtitle: string }) {
-  const { me } = useApp();
+  const { me, membership, posto } = useApp();
+  const inMyGroup = !!posto.groups.find((g) => g.id === membership.groupId)?.members.some((m) => m.userId === userId);
   const sheet = useSheet();
   const from = today();
   const shifts = useUserShifts(userId, from, addDays(from, 13));
@@ -84,6 +86,7 @@ export function MemberSheet({ userId, displayName, subtitle }: { userId: string;
           })}
         </div>
       </div>
+      {membership.commander && inMyGroup && !mine && <CommanderActions userId={userId} displayName={displayName} />}
     </>
   );
 }

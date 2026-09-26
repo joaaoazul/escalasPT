@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
 
+import pt.turnos.identity.RegistrationInvites;
 import pt.turnos.shared.ApiException;
 import pt.turnos.shared.Ids;
 
@@ -24,8 +25,13 @@ class AuthService {
     private static final ApiException BAD_CREDENTIALS =
             new ApiException(HttpStatus.UNAUTHORIZED, "bad-credentials", "Email ou palavra-passe incorretos");
 
+    private static final ApiException INVITE_REQUIRED = ApiException.invalid("invite-required",
+            "Para criar conta precisas do convite do comandante do teu grupo de folgas");
+
     private final Users users;
     private final Sessions sessions;
+    private final PasswordResetStore resets;
+    private final RegistrationInvites invites;
     private final Tokens tokens;
     private final PasswordEncoder passwords;
     private final SecurityProperties props;
@@ -34,10 +40,13 @@ class AuthService {
     /** Hash descartável para gastar o mesmo tempo quando o email não existe (evita enumeração por tempo). */
     private final String dummyHash;
 
-    AuthService(Users users, Sessions sessions, Tokens tokens, PasswordEncoder passwords, SecurityProperties props,
-                Clock clock, @Value("${turnos.bootstrap-admin-email:}") String bootstrapAdmin) {
+    AuthService(Users users, Sessions sessions, PasswordResetStore resets, RegistrationInvites invites, Tokens tokens,
+                PasswordEncoder passwords, SecurityProperties props, Clock clock,
+                @Value("${turnos.bootstrap-admin-email:}") String bootstrapAdmin) {
         this.users = users;
         this.sessions = sessions;
+        this.resets = resets;
+        this.invites = invites;
         this.tokens = tokens;
         this.passwords = passwords;
         this.props = props;
@@ -46,17 +55,54 @@ class AuthService {
         this.dummyHash = passwords.encode("turnos-dummy-password");
     }
 
+    /**
+     * Cria a conta e, com o convite, junta logo o militar ao grupo de folgas (tudo ou nada). Sem convite, só o
+     * administrador de arranque se regista.
+     */
     @Transactional
     Issued register(AuthController.RegisterRequest req, String userAgent) {
         String email = req.email().trim().toLowerCase(Locale.ROOT);
+        boolean admin = !bootstrapAdmin.isEmpty() && bootstrapAdmin.equals(email);
+        String code = blankToNull(req.inviteCode());
+        if (code == null && !admin) {
+            throw INVITE_REQUIRED;
+        }
+        if (code != null) {
+            invites.check(code, email);
+        }
         if (users.emailTaken(email)) {
-            throw ApiException.conflict("email-taken", "Já existe uma conta com este email");
+            throw ApiException.conflict("email-taken", "Já existe uma conta com este email. Entra e aceita o convite.");
         }
         UUID id = Ids.newId();
-        String role = !bootstrapAdmin.isEmpty() && bootstrapAdmin.equals(email) ? "ADMIN" : "USER";
         users.insert(id, email, passwords.encode(req.password()), req.fullName().trim(), blankToNull(req.rank()),
-                blankToNull(req.serviceNumber()), role, clock.instant());
+                blankToNull(req.serviceNumber()), admin ? "ADMIN" : "USER", clock.instant());
+        if (code != null) {
+            invites.redeem(code, id);
+        }
         return openSession(users.byId(id).orElseThrow(), userAgent);
+    }
+
+    /** Repõe a palavra-passe com o código dado pelo comandante: desbloqueia a conta e termina as outras sessões. */
+    @Transactional
+    Issued resetPassword(String code, String newPassword, String userAgent) {
+        Instant now = clock.instant();
+        UUID userId = resets.consume(code, now).orElseThrow(() ->
+                ApiException.invalid("invalid-reset-code", "Código inválido, expirado ou já usado. Pede outro ao comandante do teu grupo."));
+        users.updatePassword(userId, passwords.encode(newPassword), now);
+        users.resetFailedLogins(userId);
+        sessions.revokeAll(userId, null, now);
+        return openSession(users.byId(userId).orElseThrow(), userAgent);
+    }
+
+    @Transactional
+    void changePassword(UUID userId, UUID sessionId, String current, String next) {
+        UserRow u = users.byId(userId).orElseThrow(this::unauthorized);
+        if (!passwords.matches(current, u.passwordHash())) {
+            throw ApiException.invalid("wrong-password", "A palavra-passe atual não está certa");
+        }
+        Instant now = clock.instant();
+        users.updatePassword(userId, passwords.encode(next), now);
+        sessions.revokeAll(userId, sessionId, now);
     }
 
     /** As falhas de login ficam gravadas mesmo quando o pedido termina em 401 (noRollbackFor). */

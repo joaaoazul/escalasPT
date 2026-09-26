@@ -36,6 +36,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/password-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/refresh": {
         parameters: {
             query?: never;
@@ -132,6 +148,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/groups/{groupId}/members/{userId}/password-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["passwordReset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/invites/{code}": {
         parameters: {
             query?: never;
@@ -190,6 +222,22 @@ export interface paths {
         get: operations["membership"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["changePassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -547,12 +595,18 @@ export interface components {
             /** Format: time-local */
             start?: string;
         };
+        ChangePasswordRequest: {
+            currentPassword: string;
+            newPassword: string;
+        };
         CreateGroup: {
             name: string;
         };
         CreateInvite: {
             /** Format: email */
             email?: string;
+            /** Format: int32 */
+            maxUses?: number;
             name?: string;
             rank?: string;
             role?: string;
@@ -581,13 +635,18 @@ export interface components {
             unread: number;
         };
         InvitePreview: {
+            commander: boolean;
+            email: string;
             /** Format: date-time */
             expiresAt: string;
             /** Format: uuid */
             groupId: string;
             groupName: string;
             invitedBy: string;
+            link: boolean;
+            name: string;
             postoName: string;
+            rank: string;
             status: string;
         };
         InviteView: {
@@ -598,10 +657,15 @@ export interface components {
             expiresAt: string;
             /** Format: uuid */
             id: string;
+            link: boolean;
+            /** Format: int32 */
+            maxUses: number;
             name: string;
             rank: string;
             role: string;
             status: string;
+            /** Format: int32 */
+            uses: number;
         };
         Keys: {
             auth: string;
@@ -666,6 +730,11 @@ export interface components {
             /** Format: time-local */
             start?: string;
         };
+        PasswordResetView: {
+            code: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
         Person: {
             displayName: string;
             /** Format: uuid */
@@ -692,9 +761,14 @@ export interface components {
             /** Format: email */
             email: string;
             fullName: string;
+            inviteCode?: string;
             password: string;
             rank?: string;
             serviceNumber?: string;
+        };
+        ResetRequest: {
+            code: string;
+            password: string;
         };
         ShiftDto: {
             allDay: boolean;
@@ -844,6 +918,32 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    resetPassword: {
+        parameters: {
+            query?: never;
+            header?: {
+                "User-Agent"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MeResponse"];
+                };
             };
         };
     };
@@ -1009,6 +1109,29 @@ export interface operations {
             };
         };
     };
+    passwordReset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                groupId: string;
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PasswordResetView"];
+                };
+            };
+        };
+    };
     preview: {
         parameters: {
             query?: never;
@@ -1114,6 +1237,28 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["MembershipView"];
                 };
+            };
+        };
+    };
+    changePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

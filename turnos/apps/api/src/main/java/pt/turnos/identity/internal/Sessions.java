@@ -50,6 +50,12 @@ class Sessions {
                 .param("id", id).param("now", Timestamp.from(now)).update();
     }
 
+    /** Termina as sessões do militar noutros dispositivos (todas, se {@code keep} for null). */
+    void revokeAll(UUID userId, UUID keep, Instant now) {
+        jdbc.sql("UPDATE sessions SET revoked_at = :now WHERE user_id = :u AND revoked_at IS NULL AND (CAST(:keep AS uuid) IS NULL OR id <> :keep)")
+                .param("u", userId).param("keep", keep).param("now", Timestamp.from(now)).update();
+    }
+
     boolean isActive(UUID id, Instant now) {
         return jdbc.sql("SELECT count(*) FROM sessions WHERE id = :id AND revoked_at IS NULL AND expires_at > :now")
                 .param("id", id).param("now", Timestamp.from(now)).query(Long.class).single() > 0;

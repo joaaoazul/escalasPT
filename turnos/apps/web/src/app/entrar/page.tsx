@@ -51,7 +51,8 @@ function LoginForm() {
         </div>
       </form>
       <div className="section" style={{ textAlign: "center", fontSize: 15 }}>
-        <Link href={`/registar${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`}>Criar conta</Link>
+        <Link href="/repor">Esqueci-me da palavra-passe</Link>
+        <div style={{ marginTop: 14 }}><Link href="/registar">Criar conta com convite</Link></div>
       </div>
     </main>
   );

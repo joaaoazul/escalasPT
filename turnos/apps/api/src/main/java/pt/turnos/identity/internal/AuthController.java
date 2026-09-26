@@ -33,7 +33,14 @@ class AuthController {
             @NotBlank @Size(min = 10, max = 200) String password,
             @NotBlank @Size(max = 120) String fullName,
             @Size(max = 40) String rank,
-            @Pattern(regexp = "^[0-9]{1,5}$") String serviceNumber) {
+            @Pattern(regexp = "^[0-9]{1,5}$") String serviceNumber,
+            @Size(max = 40) String inviteCode) {
+    }
+
+    record ResetRequest(@NotBlank @Size(max = 40) String code, @NotBlank @Size(min = 10, max = 200) String password) {
+    }
+
+    record ChangePasswordRequest(@NotBlank String currentPassword, @NotBlank @Size(min = 10, max = 200) String newPassword) {
     }
 
     record LoginRequest(@NotBlank String email, @NotBlank String password) {
@@ -77,6 +84,22 @@ class AuthController {
         AuthService.Issued issued = auth.login(req.email(), req.password(), ua);
         cookies.write(res, issued.accessToken(), issued.refreshToken());
         return MeResponse.of(issued.user());
+    }
+
+    @PostMapping("/auth/password-reset")
+    MeResponse resetPassword(@Valid @RequestBody ResetRequest req,
+                             @RequestHeader(value = HttpHeaders.USER_AGENT, required = false) String ua,
+                             HttpServletResponse res) {
+        AuthService.Issued issued = auth.resetPassword(req.code(), req.password(), ua);
+        cookies.write(res, issued.accessToken(), issued.refreshToken());
+        return MeResponse.of(issued.user());
+    }
+
+    /** Muda a palavra-passe e termina a sessão nos outros dispositivos. */
+    @PostMapping("/me/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void changePassword(CurrentUser user, @AuthenticationPrincipal Jwt jwt, @Valid @RequestBody ChangePasswordRequest req) {
+        auth.changePassword(user.id(), UUID.fromString(jwt.getClaimAsString("sid")), req.currentPassword(), req.newPassword());
     }
 
     @PostMapping("/auth/refresh")

@@ -16,8 +16,15 @@ async function post(req: APIRequestContext, path: string, data?: unknown) {
   return r.status() === 204 ? null : r.json();
 }
 
-async function register(req: APIRequestContext, email: string, fullName: string, rank: string) {
-  return post(req, "/api/v1/auth/register", { email, password: PASS, fullName, rank });
+async function register(req: APIRequestContext, email: string, fullName: string, rank: string, inviteCode?: string) {
+  return post(req, "/api/v1/auth/register", { email, password: PASS, fullName, rank, inviteCode });
+}
+
+async function login(page: Page, email: string, password = PASS) {
+  await page.goto("/entrar");
+  await page.locator("#email").fill(email);
+  await page.locator("#password").fill(password);
+  await page.getByRole("button", { name: "Entrar" }).click();
 }
 
 async function typeId(req: APIRequestContext, postoId: string, code: string): Promise<string> {
@@ -40,27 +47,23 @@ test("militar entra por convite, pinta a escala e troca com um camarada de outro
   const g2 = await post(admin, `/api/v1/postos/${posto.id}/groups`, { name: "Grupo 2" });
 
   const cmd1 = await playwright.request.newContext({ baseURL: "http://localhost:3000" });
-  await register(cmd1, `matos.${run}@gnr.test`, "Sofia Matos", "Cabo-Chefe");
-  await post(cmd1, `/api/v1/invites/${(await post(admin, `/api/v1/groups/${g1.id}/invites`, { role: "COMMANDER" })).code}/accept`);
+  await register(cmd1, `matos.${run}@gnr.test`, "Sofia Matos", "Cabo-Chefe", (await post(admin, `/api/v1/groups/${g1.id}/invites`, { role: "COMMANDER" })).code);
   const invite = await post(cmd1, `/api/v1/groups/${g1.id}/invites`, { email: `ana.${run}@gnr.test`, name: "Ana Silva", rank: "Guarda" });
 
   // Camarada do Grupo 2 com OC3 no dia da troca
   const rui = await playwright.request.newContext({ baseURL: "http://localhost:3000" });
-  await register(rui, `rui.${run}@gnr.test`, "Rui Rocha", "Cabo");
-  await post(rui, `/api/v1/invites/${(await post(admin, `/api/v1/groups/${g2.id}/invites`, { role: "COMMANDER" })).code}/accept`);
+  await register(rui, `rui.${run}@gnr.test`, "Rui Rocha", "Cabo", (await post(admin, `/api/v1/groups/${g2.id}/invites`, { role: "COMMANDER" })).code);
   const ruiPaint = await rui.put("/api/v1/me/shifts/paint", { headers: H, data: { shiftTypeId: await typeId(rui, posto.id, "OC3"), dates: [DAY] } });
   expect(ruiPaint.ok()).toBeTruthy();
 
-  // ── a Ana abre o link do convite, cria conta e entra no grupo ──
+  // ── a Ana abre o link do convite: o nome, o posto e o email já vêm preenchidos; cria conta e fica no grupo ──
   await page.goto(`/convite/${invite.code}`);
-  await page.getByRole("link", { name: "Criar conta" }).click();
-  await page.locator("#fullName").fill("Ana Silva");
-  await page.locator("#email").fill(`ana.${run}@gnr.test`);
-  await page.locator("#password").fill(PASS);
-  await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page.getByText("Grupo 1").first()).toBeVisible();
+  await expect(page.locator("#fullName")).toHaveValue("Ana Silva");
+  await expect(page.locator("#email")).toHaveValue(`ana.${run}@gnr.test`);
+  await page.locator("#password").fill(PASS);
   await shot(page, "01-convite");
-  await page.getByRole("button", { name: "Entrar no grupo" }).click();
+  await page.getByRole("button", { name: "Criar conta e entrar" }).click();
   await expect(page).toHaveURL(/\/grupo/);
   await expect(page.getByRole("heading", { name: "Grupo 1" })).toBeVisible();
   await shot(page, "02-grupo");
@@ -91,10 +94,7 @@ test("militar entra por convite, pinta a escala e troca com um camarada de outro
   // ── o Rui entra, vê o pedido no Hoje e aceita ──
   const ruiCtx = await browser.newContext({ ...test.info().project.use, baseURL: "http://localhost:3000" });
   const ruiPage = await ruiCtx.newPage();
-  await ruiPage.goto("/entrar");
-  await ruiPage.locator("#email").fill(`rui.${run}@gnr.test`);
-  await ruiPage.locator("#password").fill(PASS);
-  await ruiPage.getByRole("button", { name: "Entrar" }).click();
+  await login(ruiPage, `rui.${run}@gnr.test`);
   await expect(ruiPage.getByText("Pedidos de troca")).toBeVisible();
   await expect(ruiPage.getByRole("button", { name: "Notificações, 1 por ler" })).toBeVisible();
   await shot(ruiPage, "06-hoje-rui");
@@ -120,4 +120,63 @@ test("militar entra por convite, pinta a escala e troca com um camarada de outro
   await page.getByRole("button", { name: /Notificações/ }).click();
   await expect(page.getByText("Troca aceite")).toBeVisible();
   await shot(page, "10-notificacoes");
+});
+
+test("link do grupo, nova palavra-passe dada pelo comandante e mudança de grupo", async ({ page, browser, playwright }) => {
+  const r = `${run}b`;
+  const admin = await playwright.request.newContext({ baseURL: "http://localhost:3000" });
+  await register(admin, `admin@turnos.test`, "Administrador", "").catch(async () => {
+    await post(admin, "/api/v1/auth/login", { email: "admin@turnos.test", password: PASS });
+  });
+  const posto = await post(admin, "/api/v1/postos", { name: `Posto Territorial de VRSA ${r}`, location: "VRSA" });
+  const g1 = await post(admin, `/api/v1/postos/${posto.id}/groups`, { name: "Grupo 1" });
+  const g2 = await post(admin, `/api/v1/postos/${posto.id}/groups`, { name: "Grupo 2" });
+  const cmd2 = await playwright.request.newContext({ baseURL: "http://localhost:3000" });
+  await register(cmd2, `cmd2.${r}@gnr.test`, "Paulo Sousa", "Cabo-Chefe", (await post(admin, `/api/v1/groups/${g2.id}/invites`, { role: "COMMANDER" })).code);
+
+  // ── a comandante do Grupo 1 cria o link do grupo na app ──
+  await register(page.request, `cmd1.${r}@gnr.test`, "Sofia Matos", "Cabo-Chefe", (await post(admin, `/api/v1/groups/${g1.id}/invites`, { role: "COMMANDER" })).code);
+  await page.goto("/grupo");
+  await page.getByRole("button", { name: "Membros" }).click();
+  await page.getByRole("button", { name: "Link do grupo" }).click();
+  const link = (await page.getByTestId("invite-code").textContent())!.trim();
+  await shot(page, "11-link-do-grupo");
+
+  // ── o Tiago abre o link, escreve os dados e entra ──
+  const tiagoCtx = await browser.newContext({ ...test.info().project.use, baseURL: "http://localhost:3000" });
+  const tiago = await tiagoCtx.newPage();
+  await tiago.goto(`/convite/${link}`);
+  await tiago.locator("#rank").selectOption("Guarda Principal");
+  await tiago.locator("#fullName").fill("Tiago Reis");
+  await tiago.locator("#email").fill(`tiago.${r}@gnr.test`);
+  await tiago.locator("#password").fill(PASS);
+  await tiago.getByRole("button", { name: "Criar conta e entrar" }).click();
+  await expect(tiago).toHaveURL(/\/grupo/);
+  await expect(tiago.getByRole("heading", { name: "Grupo 1" })).toBeVisible();
+
+  // ── o Tiago esquece-se da palavra-passe: a comandante gera o código na ficha dele ──
+  await page.reload();
+  await page.getByRole("button", { name: "Membros" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: /Guarda Principal Tiago Reis/ }).click();
+  await page.getByRole("button", { name: "Código para nova palavra-passe" }).click();
+  const code = (await page.getByTestId("reset-code").textContent())!.trim();
+  await shot(page, "12-codigo-reposicao");
+
+  await tiagoCtx.clearCookies();
+  await tiago.goto("/entrar");
+  await tiago.getByRole("link", { name: "Esqueci-me da palavra-passe" }).click();
+  await tiago.locator("#reset-code").fill(code);
+  await tiago.locator("#new-password").fill("nova-palavra-passe");
+  await tiago.getByRole("button", { name: "Guardar e entrar" }).click();
+  await expect(tiago.getByRole("heading", { name: "Hoje" })).toBeVisible();
+  await tiagoCtx.clearCookies();
+  await login(tiago, `tiago.${r}@gnr.test`, "nova-palavra-passe");
+  await expect(tiago.getByRole("heading", { name: "Hoje" })).toBeVisible();
+
+  // ── o comandante do Grupo 2 convida o Tiago, que muda de grupo ──
+  const move = await post(cmd2, `/api/v1/groups/${g2.id}/invites`, {});
+  await tiago.goto(`/convite/${move.code}`);
+  await expect(tiago.getByText("Sais do")).toBeVisible();
+  await tiago.getByRole("button", { name: "Mudar para o Grupo 2" }).click();
+  await expect(tiago.getByRole("heading", { name: "Grupo 2" })).toBeVisible();
 });

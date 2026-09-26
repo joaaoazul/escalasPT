@@ -15,7 +15,7 @@ export type ShiftRef = Nullable<S["ShiftRef"], "start" | "durationMinutes">;
 export type Swap = Omit<Nullable<S["SwapDto"], "message" | "holdMessage" | "declineReason" | "heldAt" | "respondedAt" | "documentReference">,
   "requesterShift" | "targetShift"> & { requesterShift: ShiftRef | null; targetShift: ShiftRef | null };
 export type Invite = Nullable<S["InviteView"], "email" | "name" | "rank" | "acceptedAt">;
-export type InvitePreview = Nullable<S["InvitePreview"], "invitedBy">;
+export type InvitePreview = Nullable<S["InvitePreview"], "invitedBy" | "email" | "name" | "rank">;
 export type Warning = { code: string; severity: string; date: string; message: string };
 
 export type SwapStatus = "PENDENTE" | "EM_ESPERA" | "ACEITE" | "RECUSADA" | "CANCELADA" | "EXPIRADA";

@@ -8,7 +8,8 @@ import type { Shift } from "@/lib/api/models";
 import { useApp } from "@/lib/app-context";
 import { addDays, cap, hours, longDate, mondayOf, monthRange, relDate, today, WD_LETTER, weekday } from "@/lib/dates";
 import { onColor } from "@/lib/color";
-import { useMyShifts, usePostoShifts, useSwaps } from "@/lib/queries";
+import { useMyShifts, usePostoShifts, useRemoveMember, useSwaps } from "@/lib/queries";
+import { RANKS } from "@/lib/ranks";
 import { NavBar, LargeTitle } from "@/components/NavBar";
 import { Bell, PushToggle } from "@/components/Notifications";
 import { Avatar } from "@/components/Avatar";
@@ -161,7 +162,55 @@ function Hero({ shift, now, onOpen }: { shift: Shift; now: number; onOpen: () =>
   );
 }
 
-const RANKS = ["", "Guarda", "Guarda Principal", "Cabo", "Cabo-Chefe", "Cabo-Mor", "Furriel", "2.º Sargento", "1.º Sargento", "Sargento-Ajudante", "Sargento-Chefe", "Sargento-Mor"];
+function PasswordForm() {
+  const toast = useToast();
+  const [f, setF] = useState({ currentPassword: "", newPassword: "" });
+  const [busy, setBusy] = useState(false);
+  return (
+    <form className="section" onSubmit={async (e) => {
+      e.preventDefault();
+      setBusy(true);
+      try {
+        await unwrap(api.POST("/api/v1/me/password", { body: f }) as never);
+        setF({ currentPassword: "", newPassword: "" });
+        toast("Palavra-passe alterada");
+      } catch (err) {
+        toast(err instanceof ApiError ? (err.code === "validation" ? "A nova palavra-passe precisa de pelo menos 10 caracteres" : err.message) : "Erro", "error");
+      } finally {
+        setBusy(false);
+      }
+    }}>
+      <div className="hd"><span>Palavra-passe</span></div>
+      <div className="group">
+        <div className="row"><input className="field" type="password" autoComplete="current-password" aria-label="Palavra-passe atual" placeholder="Atual" required
+          value={f.currentPassword} onChange={(e) => setF({ ...f, currentPassword: e.target.value })} /></div>
+        <div className="row"><input className="field" type="password" autoComplete="new-password" aria-label="Nova palavra-passe" placeholder="Nova (mín. 10 caracteres)" minLength={10} required
+          value={f.newPassword} onChange={(e) => setF({ ...f, newPassword: e.target.value })} /></div>
+        <button className="row tint" type="submit" disabled={busy}><span className="grow t">Mudar palavra-passe</span></button>
+      </div>
+    </form>
+  );
+}
+
+function LeaveGroup() {
+  const { me, membership } = useApp();
+  const toast = useToast();
+  const sheet = useSheet();
+  const leave = useRemoveMember(membership.groupId);
+  const [sure, setSure] = useState(false);
+  if (membership.commander) return null;
+  return (
+    <button className="row danger" disabled={leave.isPending} onClick={() => {
+      if (!sure) return setSure(true);
+      leave.mutate(me.id, {
+        onSuccess: () => { sheet.close(); toast(`Saíste do ${membership.groupName}`); },
+        onError: (e) => toast(e instanceof ApiError ? e.message : "Erro", "error"),
+      });
+    }}>
+      <span className="grow t">{sure ? `Confirmar: sair do ${membership.groupName}` : "Sair do grupo de folgas"}</span>
+    </button>
+  );
+}
 
 function ProfileForm() {
   const { me } = useApp();
@@ -187,7 +236,7 @@ function ProfileForm() {
       <div className="group">
         <div className="row"><span className="grow t">Posto</span>
           <select className="field" style={{ width: "auto" }} value={f.rank} onChange={(e) => setF({ ...f, rank: e.target.value })}>
-            {RANKS.map((r) => <option key={r} value={r}>{r || "—"}</option>)}
+            {["", ...RANKS].map((r) => <option key={r} value={r}>{r || "—"}</option>)}
           </select>
         </div>
         <div className="row"><input className="field" aria-label="Nome" value={f.fullName} onChange={(e) => setF({ ...f, fullName: e.target.value })} /></div>
@@ -214,10 +263,12 @@ function Profile({ onLogout }: { onLogout: () => void }) {
         </div>
       </div>
       <ProfileForm />
+      <PasswordForm />
       <PushToggle />
       <div className="section">
         <div className="group">
           {me.admin && <Link className="row tint" href="/admin"><span className="grow t">Administração</span></Link>}
+          <LeaveGroup />
           <button className="row danger" onClick={onLogout}><span className="grow t">Terminar sessão</span></button>
         </div>
       </div>
