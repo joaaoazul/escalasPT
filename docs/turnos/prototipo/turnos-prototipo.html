@@ -337,6 +337,17 @@ table.roster { border-collapse: separate; border-spacing: 0; }
 .a4 .f-nota { font-size: 8px; line-height: 10px; margin-top: 4px; }
 .a4 .f-foot { margin-top: 14px; font-size: 7px; color: #666; }
 .a4 u { text-underline-offset: 2px; }
+.gbars { display: grid; gap: 2px; width: 78%; }
+.gbars i { display: block; height: 5px; border-radius: 2px; background: var(--fill-2); }
+.gbars i.off { background: var(--fill); }
+.gbars i.abs { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.35) 0 2px, transparent 2px 4px); }
+.avs { display: flex; gap: 14px; overflow-x: auto; padding: 4px 16px 2px; scrollbar-width: none; }
+.avs::-webkit-scrollbar { display: none; }
+.avs button { flex: none; display: grid; justify-items: center; gap: 4px; font-size: 11px; color: var(--label-2); width: 46px; }
+.avs button .ico { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+.avs .av-all { background: var(--fill-2); color: var(--label); }
+.avs button[aria-selected="true"] { color: var(--label); font-weight: 600; }
+.avs button[aria-selected="true"] .ico { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--tint); }
 .empty { padding: 28px 16px; text-align: center; color: var(--label-2); font-size: 15px; }
 </style>
 
@@ -442,9 +453,16 @@ table.roster { border-collapse: separate; border-spacing: 0; }
         </div>
         <div id="g-agora"></div>
         <div id="g-escala" hidden>
-          <div class="section" style="margin-top:18px"><div class="hd"><span id="r-range"></span>
-            <span style="display:flex;gap:14px"><button id="r-prev" aria-label="Semana anterior"><svg class="i" style="width:18px;height:18px"><use href="#i-chevl"/></svg></button><button id="r-next" aria-label="Semana seguinte"><svg class="i" style="width:18px;height:18px"><use href="#i-chev"/></svg></button></span></div></div>
-          <div class="roster-wrap"><table class="roster" id="roster"></table></div>
+          <div class="large" style="justify-content:space-between;align-items:center;padding-top:14px">
+            <div style="display:flex;align-items:baseline;gap:8px"><span id="gc-month" style="font:700 22px/1.2 var(--font-d);letter-spacing:-.02em"></span><span class="sub num" id="gc-year"></span></div>
+            <div style="display:flex;gap:4px">
+              <button class="tbtn" id="gc-prev" aria-label="Mês anterior" style="width:36px;justify-content:center"><svg class="i"><use href="#i-chevl"/></svg></button>
+              <button class="tbtn" id="gc-next" aria-label="Mês seguinte" style="width:36px;justify-content:center"><svg class="i"><use href="#i-chev"/></svg></button>
+            </div>
+          </div>
+          <div class="avs" id="gc-avs" role="tablist" aria-label="Militar"></div>
+          <div class="wk" aria-hidden="true" style="margin-top:10px"><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span><span>D</span></div>
+          <div class="monthgrid" id="gcal" role="grid" aria-label="Escala do grupo"></div>
         </div>
         <div id="g-trocas" hidden></div>
       </div>
@@ -924,7 +942,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
       body.innerHTML = h;
       body.querySelector('#d-edit')?.addEventListener('click', () => { editing = true; refreshSheet(); });
       body.querySelector('#d-clear')?.addEventListener('click', () => { commit(d, null); closeSheet(); toast('Dia limpo · podes desfazer'); });
-      body.querySelector('#d-swap')?.addEventListener('click', () => { closeSheet(); S.rosterStart = mondayOf(d); S.grpSeg = 'escala'; setTab('grp'); toast('Escolhe o serviço de um camarada'); });
+      body.querySelector('#d-swap')?.addEventListener('click', () => { closeSheet(); S.gY = +d.slice(0, 4); S.gM = +d.slice(5, 7); S.gFilter = null; S.grpSeg = 'escala'; setTab('grp'); openGroupDay(d); });
       body.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => { commit(d, b.dataset.t || null); editing = false; haptic(); refreshSheet(); }));
     });
   }
@@ -940,8 +958,6 @@ table.roster { border-collapse: separate; border-spacing: 0; }
   $('seg-agora').addEventListener('click', () => setSeg('agora'));
   $('seg-escala').addEventListener('click', () => setSeg('escala'));
   $('seg-trocas').addEventListener('click', () => setSeg('trocas'));
-  $('r-prev').addEventListener('click', () => { S.rosterStart = add(S.rosterStart, -7); renderGrp(); });
-  $('r-next').addEventListener('click', () => { S.rosterStart = add(S.rosterStart, 7); renderGrp(); });
 
   const STATUS_TXT = {
     PENDENTE: s => s.dir === 'in' ? 'Aguarda a tua resposta' : 'Aguarda resposta',
@@ -952,23 +968,50 @@ table.roster { border-collapse: separate; border-spacing: 0; }
   const expiresTxt = d => `Expira ${shortDate(add(d, -1)).toLowerCase()} às 23:59`;
   const pendingOnDay = (d, pid) => S.swaps.some(s => isActive(s) && s.date === d && (!pid || pid === 'me' || s.person === pid));
 
+  S.gY = +TODAY.slice(0, 4); S.gM = +TODAY.slice(5, 7); S.gFilter = null;
+  function renderGroupCal() {
+    $('gc-month').textContent = cap(MONTHS[S.gM - 1]); $('gc-year').textContent = S.gY;
+    $('gc-avs').innerHTML = `<button role="tab" data-f="" aria-selected="${!S.gFilter}"><span class="ico av-all">${icon('group')}</span><span>Todos</span></button>` +
+      PEOPLE.map(p => `<button role="tab" data-f="${p.id}" aria-selected="${S.gFilter === p.id}">${avatar(p, 36)}<span>${p.id === 'me' ? 'Eu' : p.name}</span></button>`).join('');
+    const first = iso(S.gY, S.gM, 1), lead = (wday(first) + 6) % 7, start = add(first, -lead);
+    const n = new Date(Date.UTC(S.gY, S.gM, 0)).getUTCDate(), pre = first.slice(0, 7);
+    const cells = Array.from({ length: Math.ceil((lead + n) / 7) * 7 }, (_, i) => add(start, i));
+    const one = S.gFilter && person(S.gFilter);
+    $('gcal').innerHTML = cells.map(d => {
+      const cls = ['day', d.startsWith(pre) ? '' : 'out', d === TODAY ? 'today' : '', HOLIDAYS[d] ? 'hol' : ''].join(' ');
+      let inner;
+      if (one) { const c = shiftOf(one, d); inner = c ? pill(c) : '<span class="pill" style="visibility:hidden">·</span>'; }
+      else inner = `<span class="gbars">${PEOPLE.map(p => { const c = shiftOf(p, d), t = c && TYPES[c];
+        return `<i class="${!c || t.kind === 'OFF' ? 'off' : ''} ${t && t.kind === 'ABSENCE' ? 'abs' : ''}" style="${t && t.color ? `background:${t.color}` : ''}"></i>`; }).join('')}</span>`;
+      const work = PEOPLE.filter(p => isWork(shiftOf(p, d))).length;
+      return `<button class="${cls}" data-gd="${d}" aria-label="${longDate(d)}, ${work} de serviço"><span class="dn">${dnum(d)}</span>${inner}</button>`;
+    }).join('');
+    $('gc-avs').querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => { S.gFilter = b.dataset.f || null; haptic(); renderGroupCal(); }));
+    $('gcal').querySelectorAll('[data-gd]').forEach(b => b.addEventListener('click', () => openGroupDay(b.dataset.gd)));
+  }
+  function openGroupDay(d) {
+    openSheet(cap(longDate(d)), body => {
+      const rows = PEOPLE.map(p => {
+        const c = shiftOf(p, d), t = c && TYPES[c], can = p.id !== 'me' && isWork(c) && d > TODAY;
+        const when = !t ? 'Sem serviço' : t.allDay ? t.name : `${t.name} · ${hm(t.start)}–${hm((t.start + t.dur) % 1440)}`;
+        const tag = can ? 'button' : 'div';
+        return `<${tag} class="row" ${can ? `data-sw-p="${p.id}"` : ''} style="--inset:58px">${avatar(p)}<span class="grow"><div class="t" ${p.id === 'me' ? 'style="color:var(--tint)"' : ''}>${p.call}${p.id === 'me' ? ' (eu)' : ''}</div><div class="s">${when}</div></span>${c ? pill(c, 'md') : ''}${can ? '<svg class="i chev"><use href="#i-chev"/></svg>' : ''}</${tag}>`;
+      }).join('');
+      body.innerHTML = `<div class="section"><div class="group">${rows}</div></div>`;
+      body.querySelectorAll('[data-sw-p]').forEach(b => b.addEventListener('click', () => openSwapOut(b.dataset.swP, d)));
+    });
+  }
+  $('gc-prev').addEventListener('click', () => { if (--S.gM < 1) { S.gM = 12; S.gY--; } renderGroupCal(); });
+  $('gc-next').addEventListener('click', () => { if (++S.gM > 12) { S.gM = 1; S.gY++; } renderGroupCal(); });
+  (() => { // deslizar para mudar de mês
+    let x0 = null; const g = $('gcal');
+    g.addEventListener('pointerdown', e => { x0 = e.clientX; });
+    g.addEventListener('pointerup', e => { if (x0 === null) return; const dx = e.clientX - x0; x0 = null; if (Math.abs(dx) > 60) { $(dx < 0 ? 'gc-next' : 'gc-prev').click(); g.dataset.swiped = '1'; } });
+    g.addEventListener('click', e => { if (g.dataset.swiped) { e.stopPropagation(); delete g.dataset.swiped; } }, true);
+  })();
+
   function renderGrp() {
-    const days = Array.from({ length: 14 }, (_, i) => add(S.rosterStart, i));
-    const a = days[0], b = days[13];
-    $('r-range').textContent = `${dnum(a)} ${mname(a).slice(0, 3)} – ${dnum(b)} ${mname(b).slice(0, 3)}`;
-    const head = days.map(d => `<th class="${d === TODAY ? 'today' : ''} ${HOLIDAYS[d] ? 'hol' : ''}">${WDS[wday(d)].slice(0, 1)}<b class="num">${dnum(d)}</b></th>`).join('');
-    const rows = PEOPLE.map(p => `<tr class="${p.id === 'me' ? 'me' : ''}"><th><button data-m="${p.id}" style="text-align:left">${p.name}<small>${p.sub}</small></button></th>${days.map(d => {
-      const c = shiftOf(p, d);
-      if (!c) return '<td><span class="free">·</span></td>';
-      if (p.level === 'A') return isWork(c) ? '<td><span class="busy" aria-label="de serviço"></span></td>' : '<td><span class="free">·</span></td>';
-      const pend = pendingOnDay(d, p.id) && S.swaps.some(s => isActive(s) && s.date === d && (p.id === 'me' || s.person === p.id));
-      const can = p.id !== 'me' && isWork(c) && d > TODAY;
-      return `<td>${can ? `<button data-p="${p.id}" data-d="${d}" aria-label="${p.call}, ${TYPES[c].name}, ${shortDate(d)}: pedir troca">${pill(c, '', pend ? 'pending' : '')}</button>` : pill(c, '', pend ? 'pending' : '')}</td>`;
-    }).join('')}</tr>`).join('');
-    const counts = days.map(d => PEOPLE.filter(p => isWork(shiftOf(p, d))).length);
-    $('roster').innerHTML = `<thead><tr><th style="position:sticky;left:0;background:var(--card);z-index:2"></th>${head}</tr></thead><tbody>${rows}</tbody><tfoot><tr><th>De serviço</th>${counts.map(n => `<td>${n}</td>`).join('')}</tr></tfoot>`;
-    $('roster').querySelectorAll('button[data-p]').forEach(bt => bt.addEventListener('click', () => openSwapOut(bt.dataset.p, bt.dataset.d)));
-    $('roster').querySelectorAll('button[data-m]').forEach(bt => bt.addEventListener('click', () => openMember(bt.dataset.m)));
+    renderGroupCal();
 
     const inc = S.swaps.filter(s => s.dir === 'in' && isActive(s)), out = S.swaps.filter(s => s.dir === 'out' && isActive(s));
     const done = S.swaps.filter(s => !isActive(s)).sort((x, y) => (y.accAt || y.reqAt) - (x.accAt || x.reqAt));

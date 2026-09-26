@@ -86,6 +86,10 @@ Remover um militar (ou ele sair) cancela os pedidos de troca ativos dele nesse g
 | De folga | `F` ou sem serviço |
 | Ausentes | `kind = ABSENCE` (férias, convalescença…) |
 
+**Escala do grupo em calendário** (segmento "Escala"): mês com uma barra por militar em cada dia, na cor do serviço
+(folga a cinzento, ausência às riscas). Uma fila de avatares no topo filtra um militar, e aí cada dia mostra o serviço dele.
+Tocar num dia abre quem faz o quê nesse dia; tocar no serviço futuro de um camarada abre o pedido de troca.
+
 Cada linha mostra também o serviço de amanhã. Tocar num militar abre a ficha dele (posto, n.º, hoje, serviços e folgas do mês,
 próximos 14 dias) e, a partir de qualquer serviço futuro, pede-se a troca.
 
