@@ -93,8 +93,8 @@ Formato curto: **Contexto → Decisão → Consequências → Alternativas rejei
   Na aceitação, os serviços trocam de dono e o formulário oficial "Troca de Serviço" é emitido na mesma transação.
   O prazo do Art. 34.º, n.º 2 ("até à véspera da execução") passa a ser uma regra do sistema: expiração automática na véspera.
 - **Consequências**: o `decide_swap`, o estado `PENDING_APPROVAL` e as notificações aos comandantes desaparecem.
-  A prova da troca passa a ser o registo digital (cronologia, SHA-256 e código de verificação público). A caixa "VISTO"
-  fica no modelo oficial, em branco, sem bloquear nada.
+  O PDF é igual ao modelo oficial, apenas sem a linha "Autorização pelo Comandante"; o sistema guarda o ficheiro e o SHA-256.
+  As trocas fazem-se dentro da escala do posto (qualquer grupo de folgas). A caixa "VISTO" fica como no modelo.
 - **Rejeitadas**: manter um aprovador opcional por escala (reintroduz o comandante por outra porta); emitir o PDF de forma
   assíncrona depois da aceitação (poderia haver trocas aceites sem documento).
 - Especificação: [doc 09](09-trocas-gnr.md). Substitui, para as escalas GNR, a política `ADMIN_APPROVAL` do ADR-011.

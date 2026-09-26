@@ -13,19 +13,32 @@
 | O comandante/adjunto aprova ou rejeita (`decide_swap`) | **Não existe.** Não há papel de comandante nem endpoint de decisão |
 | O camarada só pode aceitar ou recusar | O camarada pode **aceitar**, **pedir para aguardar** ou **recusar** |
 | O PDF só existe depois da aprovação do comando | O PDF é emitido **automaticamente na aceitação** e fica disponível aos dois |
-| No PDF, o registo digital tem "Autorização pelo Comandante" | Essa linha sai. Entram "Pedido para aguardar" (se houve) e um **código de verificação** |
+| No PDF, o registo digital tem "Autorização pelo Comandante" | Essa linha sai. O resto do documento fica **igual ao modelo oficial** |
 | Os comandantes recebem a notificação "Troca Pendente de Aprovação" | Só os dois militares são notificados; a escala partilhada atualiza-se em tempo real |
-| Âmbito: mesmo posto (`station_id`) | Âmbito: **mesma escala** (grupo), como exige o Art. 34.º, n.º 1 |
+| Âmbito: mesmo posto (`station_id`) | Âmbito: **a escala do posto** (qualquer militar do posto, de qualquer grupo de folgas), como exige o Art. 34.º, n.º 1 |
 
 Mantém-se tudo o que já funcionava bem: as validações de tipos de serviço trocáveis, a deteção de conflitos, um só
 pedido ativo por turno, o formulário oficial com a nota do RGSGNR, as notificações in-app e push, e a auditoria.
 
-## 9.2 A escala (sem postos nem comandos)
+## 9.2 Escala do posto e grupos de folgas
 
-Não volta a hierarquia Comando → Destacamento → Posto. A "escala" é um **grupo** (doc 03, `groups`) onde estão os camaradas
-que trocam serviços entre si. Só ganha os campos que o documento oficial precisa:
+Não volta a hierarquia Comando → Destacamento → Posto. Há dois níveis, ambos só para organizar a escala:
 
-| Campo novo em `groups` | Exemplo | Uso |
+- **Posto** (`groups.kind = 'POSTO'`): a escala do posto, com todos os grupos de folgas. É o âmbito das trocas.
+- **Grupo de folgas** (`groups.kind = 'GRUPO_FOLGAS'`, `parent_id` → posto): os militares que folgam em conjunto (§9.2.1).
+
+Separador **Posto** na app:
+
+| Vista | Conteúdo |
+|-------|----------|
+| Dia | Para o dia escolhido, cada serviço (AT1, AT2, … OC3, GRAT, INQ) com os militares nomeados e o grupo de cada um; depois quem está de folga e quem está ausente |
+| Semana | Tabela militares × dias, com os militares agrupados por grupo de folgas e o total de militares de serviço em cada dia |
+
+Tocar num militar abre a ficha dele; tocar num serviço futuro de um camarada abre o pedido de troca.
+
+O posto só ganha os campos que o documento oficial precisa:
+
+| Campo novo em `groups` (posto) | Exemplo | Uso |
 |------------------------|---------|-----|
 | `unit_name` | `Posto Territorial de Castro Marim` | Cabeçalho do PDF |
 | `location` | `Castro Marim` | "Quartel em Castro Marim, 26 de setembro de 2026" |
@@ -79,7 +92,8 @@ próximos 14 dias) e, a partir de qualquer serviço futuro, pede-se a troca.
 Alterações ao modelo e à API:
 
 ```sql
-ALTER TABLE groups ADD COLUMN kind text NOT NULL DEFAULT 'GENERIC' CHECK (kind IN ('GENERIC','GRUPO_FOLGAS'));
+ALTER TABLE groups ADD COLUMN kind text NOT NULL DEFAULT 'GENERIC' CHECK (kind IN ('GENERIC','POSTO','GRUPO_FOLGAS'));
+ALTER TABLE groups ADD COLUMN parent_id uuid REFERENCES groups(id) ON DELETE RESTRICT;  -- grupo de folgas → posto
 -- GRUPO_FOLGAS: share_level forçado a DETAILS, swap_policy fixo em PEER_ONLY, convites só pelo OWNER
 ALTER TABLE group_invites ADD COLUMN invitee_name text, ADD COLUMN invitee_rank text,
                           ADD COLUMN accepted_by uuid REFERENCES users(id) ON DELETE SET NULL, ADD COLUMN accepted_at timestamptz;
@@ -140,7 +154,7 @@ Aplicadas **ao criar** e **outra vez ao aceitar**, dentro da mesma transação q
 
 | # | Regra | Origem no EscalasPT | Severidade |
 |---|-------|---------------------|------------|
-| 1 | Os dois militares estão na mesma escala (grupo) e partilham nela o calendário | `station_id` igual | erro |
+| 1 | Os dois militares pertencem ao mesmo posto (qualquer grupo de folgas) | `station_id` igual | erro |
 | 2 | O turno de A pertence a A; o de B pertence a B; A ≠ B | `create_swap` | erro |
 | 3 | Só se trocam serviços (`kind = WORK`, incluindo GRAT) e folgas (`F`). Ausências (FER, CONV, MF, DIL, LIC…) não | `SWAPPABLE_ABSENCE_CODES` | erro |
 | 4 | Não se troca com quem está no mesmo serviço, no mesmo dia | `create_swap` | erro |
@@ -173,9 +187,9 @@ sequenceDiagram
     S->>DB: swap.status = ACEITE, accepted_at = now()
     S->>DB: cancela outros pedidos ativos que envolvam estes turnos
     S->>PDF: gera o documento (dados congelados neste instante)
-    PDF->>DB: INSERT swap_documents (pdf bytea, sha256, código de verificação)
+    PDF->>DB: INSERT swap_documents (pdf bytea, sha256, referência)
     S->>EV: SwapAccepted(swapId)
-    S-->>API: 200 { swap, document: { url, verificationCode } }
+    S-->>API: 200 { swap, document: { url, reference } }
     EV-->>EV: após commit: push + in-app para A e B, SSE para a escala, auditoria
 ```
 
@@ -185,36 +199,31 @@ sequenceDiagram
   mesmo que depois alguém mude o nome, o posto ou o turno.
 - **O PDF chega aos dois de imediato.** Aparece como anexo no detalhe da troca, e a notificação push "Troca aceite" abre-o diretamente.
 
-## 9.6 O documento (formulário oficial, sem autorização do comando)
+## 9.6 O documento (igual ao modelo oficial)
 
-Mantém-se o layout do `swap_pdf_service.py` (A4, cabeçalho "Ministério da Administração Interna / GUARDA NACIONAL
-REPUBLICANA", título "TROCA DE SERVIÇO", declaração, "O DECLARANTE", "CONFIRMO A TROCA", nota com o Art. 34.º).
-As alterações são estas:
+O PDF é o formulário "Troca de Serviço" tal como o `swap_pdf_service.py` já o gera: mesma página A4, margens (2,5 cm laterais,
+2 cm em cima e em baixo), Helvetica, tamanhos de letra, textos e ordem das secções:
 
-| Secção | Antes | Depois |
-|--------|-------|--------|
-| Cabeçalho | `station_name` | `groups.unit_name` |
-| Declaração | Nome | Posto + nome (+ n.º de ordem se preenchido), p. ex. "Guarda Principal Rui Almeida (n.º 812)" |
-| "Quartel em …" | Derivado do nome do posto | `groups.location` + data da **aceitação** |
-| Assinaturas | Nomes em itálico + linha | Iguais, com a indicação "Aceite digitalmente em 26/09/2026 14:32" por baixo de cada nome |
-| Registo digital | Pedido · Aceitação pelo militar · **Autorização pelo Comandante** | Pedido · Pedido para aguardar (só se houve) · Aceitação pelo militar e emissão |
-| Rodapé | `Ref. XXXXXXXX` | `Ref. XXXXXXXX` + **código de verificação** + QR para `https://turnos.pt/verificar/{código}` |
-| Caixa "VISTO" | Presente | **Mantém-se em branco**: é parte do modelo oficial, mas a app não espera por ela nem a regista |
+1. "Ministério da Administração Interna / GUARDA NACIONAL REPUBLICANA"
+2. Nome do posto à esquerda e caixa "VISTO" à direita
+3. "TROCA DE SERVIÇO"
+4. "Declaro que desejo efectuar uma troca de serviço de ___ no dia ___, no horário compreendido entre as ___ e as ___, com o/a ___,
+   que se encontra de serviço de ___, no horário compreendido entre as ___ e as ___."
+5. "Quartel em ___, __ de ___ de ____"
+6. "O DECLARANTE" (quem pediu) e "CONFIRMO A TROCA" (quem aceitou), cada um com o nome em itálico e a linha de assinatura
+7. "REGISTO DIGITAL" com as datas no formato `dd/mm/aaaa às hh:mm`
+8. "NOTA:" com o Art. 34.º do RGSGNR (n.ºs 1, 2 e 5, alíneas c e d), com o mesmo texto
+9. Rodapé: "Processado por computador · Guarda Nacional Republicana · Ref. XXXXXXXX · Página 1 de 1"
 
-### Verificação de autenticidade
+**A única diferença** é a linha "Autorização pelo Comandante", que sai do registo digital. Ficam "Pedido de troca" e
+"Aceitação pelo militar". Não se acrescenta mais nada ao papel: nem mensagens, nem "aguardar", nem QR.
+A caixa "VISTO" fica como no modelo.
 
-Como deixa de haver a assinatura do comando, a prova é o registo digital. O código de verificação (8 caracteres
-Crockford Base32, gerados aleatoriamente e únicos) abre uma página pública mínima:
+O nome impresso é o posto e o nome completo do militar ("Guarda Ana Silva"), como o `full_name` no EscalasPT.
+"Quartel em" usa `groups.location` do posto, e a data é a da aceitação.
 
-```
-GET /api/v1/verify/{code}
-→ 200 { "reference": "7F3K9Q2M", "issuedAt": "2026-09-26T13:32:05Z", "unit": "Posto Territorial de Castro Marim",
-        "sha256": "…", "status": "VALID" }
-```
-
-- Mostra apenas a referência, a data, a unidade e o hash. **Não** mostra nomes nem serviços; quem tem o papel já os vê.
-- Quem receber o PDF pode confirmar que o ficheiro não foi alterado comparando o SHA-256.
-- Rate limit por IP. Os códigos não são sequenciais.
+**Autenticidade** (fora do papel): o sistema guarda o PDF e o SHA-256 dele em `swap_documents`. Pela referência do rodapé,
+os dois militares podem voltar a descarregar exatamente o mesmo ficheiro; um PDF alterado não tem o mesmo hash.
 
 ## 9.7 Notificações
 
@@ -262,7 +271,6 @@ CREATE UNIQUE INDEX swap_one_active_tgt ON swap_requests (target_shift_id)    WH
 CREATE TABLE swap_documents (
     swap_request_id   uuid PRIMARY KEY REFERENCES swap_requests(id) ON DELETE RESTRICT,
     reference         char(8) NOT NULL UNIQUE,         -- "Ref." no rodapé
-    verification_code char(8) NOT NULL UNIQUE,         -- aleatório, Crockford Base32
     pdf               bytea   NOT NULL,
     sha256            bytea   NOT NULL,
     snapshot          jsonb   NOT NULL,                -- nomes, postos, serviços e horas tal como impressos
@@ -286,7 +294,6 @@ Art. 34.º fala de trocas entre dois militares identificados.
 | POST | `/swaps/{id}:decline` | B | `{reason?}` → `RECUSADA` |
 | POST | `/swaps/{id}:cancel` | A | → `CANCELADA` |
 | GET | `/swaps/{id}/document.pdf` | A, B | O PDF emitido (`Content-Disposition: attachment; filename="troca-7F3K9Q2M.pdf"`) |
-| GET | `/verify/{code}` | público | Verificação do documento (§9.6) |
 
 Deixam de existir: `POST /swaps/{id}/decide`, `:approve`, `:reject` e a notificação aos comandantes.
 
@@ -309,6 +316,6 @@ Deixam de existir: `POST /swaps/{id}/decide`, `:approve`, `:reject` e a notifica
   `CountDownLatch`) → exatamente uma `ACEITE` e um único documento.
 - Véspera: pedido criado às 23:58 da antevéspera, expiração às 23:59:59 da véspera, aceitação rejeitada no próprio dia;
   com os fusos de Lisboa e dos Açores.
-- PDF: o texto extraído (PDFBox) contém os nomes, os serviços, as horas, a data de aceitação e o código; **não** contém
-  "Autorização pelo Comandante"; o SHA-256 guardado bate com o ficheiro servido.
+- PDF: teste *golden* que compara o texto extraído (PDFBox) com o do formulário gerado pelo EscalasPT para os mesmos dados;
+  a única diferença admitida é a ausência da linha "Autorização pelo Comandante". O SHA-256 guardado bate com o ficheiro servido.
 - Autorização: só B pode aceitar/aguardar/recusar; só A pode cancelar; só A e B descarregam o PDF.
