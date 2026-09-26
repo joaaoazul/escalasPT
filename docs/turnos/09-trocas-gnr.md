@@ -43,6 +43,58 @@ que se acrescenta sem mexer no fluxo.
 Os papéis no grupo continuam a ser `OWNER/ADMIN/MEMBER`, mas servem **apenas** para gerir quem entra na escala.
 Nenhum papel aprova trocas (`groups.swap_policy` fica fixo em `PEER_ONLY` nas escalas GNR).
 
+## 9.2.1 Grupo de folgas e comandante de grupo
+
+A escala partilhada é o **grupo de folgas** (ex.: "Grupo 2" do PT Castro Marim): os militares que folgam em conjunto
+e que precisam de ver o que cada um está a fazer.
+
+| Papel | Pode | Não pode |
+|-------|------|----------|
+| **Comandante de grupo** (`OWNER`, rótulo "Comandante de grupo") | Convidar militares, revogar convites, remover militares, mudar nome/unidade do grupo, passar o comando a outro militar | Aprovar, recusar ou alterar trocas; editar os serviços de outros |
+| **Militar** (`MEMBER`) | Ver os serviços, folgas e ausências de todos; pedir e responder a trocas; sair do grupo | Convidar ou remover |
+
+**Entrada só por convite do comandante de grupo:**
+
+1. O comandante de grupo convida por email (posto + nome + email) ou gera um **código de uso único** (`GF2-7K3Q`), válido 7 dias.
+2. O militar recebe o convite (email, push se já tiver conta, ou código introduzido na app) e vê quem convidou, o grupo e a unidade.
+3. Ao aceitar, **escolhe o calendário de serviço que partilha**. No grupo de folgas a partilha é sempre completa
+   (serviços, folgas e ausências); as notas pessoais nunca são partilhadas.
+4. O comandante de grupo vê o convite passar de "enviado" a "aceite" e o militar aparece na escala.
+
+Remover um militar (ou ele sair) cancela os pedidos de troca ativos dele nesse grupo. As trocas já aceites e os documentos mantêm-se.
+
+**Ver o que cada um está a fazer** (segmento "Agora" do separador Grupo):
+
+| Grupo | Critério (hora local do calendário) |
+|-------|-------------------------------------|
+| De serviço agora | serviço `WORK` em curso, com hora de fim |
+| Entra mais tarde | serviço `WORK` que ainda não começou hoje |
+| Já saiu hoje | serviço `WORK` que já terminou |
+| De folga | `F` ou sem serviço |
+| Ausentes | `kind = ABSENCE` (férias, convalescença…) |
+
+Cada linha mostra também o serviço de amanhã. Tocar num militar abre a ficha dele (posto, n.º, hoje, serviços e folgas do mês,
+próximos 14 dias) e, a partir de qualquer serviço futuro, pede-se a troca.
+
+Alterações ao modelo e à API:
+
+```sql
+ALTER TABLE groups ADD COLUMN kind text NOT NULL DEFAULT 'GENERIC' CHECK (kind IN ('GENERIC','GRUPO_FOLGAS'));
+-- GRUPO_FOLGAS: share_level forçado a DETAILS, swap_policy fixo em PEER_ONLY, convites só pelo OWNER
+ALTER TABLE group_invites ADD COLUMN invitee_name text, ADD COLUMN invitee_rank text,
+                          ADD COLUMN accepted_by uuid REFERENCES users(id) ON DELETE SET NULL, ADD COLUMN accepted_at timestamptz;
+```
+
+| Método | Path | Quem | Descrição |
+|--------|------|------|-----------|
+| POST | `/groups/{gid}/invites` | Comandante de grupo | `{rank, name, email}` ou `{type: CODE}` → convite de uso único, 7 dias |
+| DELETE | `/groups/{gid}/invites/{id}` | Comandante de grupo | Revogar |
+| POST | `/invites/{token}:accept` | Militar convidado | `{calendarId}` |
+| DELETE | `/groups/{gid}/members/{userId}` | Comandante de grupo (ou o próprio, para sair) | Cancela as trocas ativas desse militar |
+| POST | `/groups/{gid}/owner:transfer` | Comandante de grupo | Passa o comando de grupo |
+| GET | `/groups/{gid}/now` | Membros | Estado atual de cada militar (tabela acima) |
+| GET | `/groups/{gid}/members/{userId}/shifts?from&to` | Membros | Escala de um camarada (ficha do militar) |
+
 ## 9.3 Máquina de estados
 
 ```mermaid

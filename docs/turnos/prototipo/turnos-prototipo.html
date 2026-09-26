@@ -379,7 +379,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
         <div id="h-hero"></div>
         <div class="section"><div class="hd"><span>Esta semana</span><button data-go="cal">Calendário</button></div><div class="weekstrip" id="h-week"></div></div>
         <div class="section" id="h-swaps"></div>
-        <div class="section"><div class="hd"><span>Escala · de serviço hoje</span></div><div class="group" id="h-group"></div></div>
+        <div class="section"><div class="hd"><span>Grupo de folgas · hoje</span></div><div class="group" id="h-group"></div></div>
         <div class="section"><div class="hd"><span>Este mês</span><button data-go="horas">Ver horas</button></div></div>
         <div class="chips" id="h-chips"></div>
       </div>
@@ -425,19 +425,21 @@ table.roster { border-collapse: separate; border-spacing: 0; }
 
     <!-- GRUPO -->
     <section class="screen" id="scr-grp" aria-label="Grupo" hidden>
-      <header class="nav"><div class="nav-row"><div class="nav-l"></div><div class="nav-title">Escala</div><div class="nav-r"><button class="tbtn" id="g-members">5 militares</button></div></div></header>
+      <header class="nav"><div class="nav-row"><div class="nav-l"></div><div class="nav-title">Grupo de folgas</div><div class="nav-r"><button class="tbtn" id="g-members">Membros</button></div></div></header>
       <div class="scroll">
         <div class="spacer-top"></div>
-        <div class="eyebrow">PT Castro Marim</div><div class="large"><h1>Escala</h1></div>
+        <div class="eyebrow">PT Castro Marim · Grupo 2</div><div class="large"><h1>Grupo de folgas</h1></div>
         <div class="seg" role="tablist" aria-label="Secção do grupo">
-          <button role="tab" id="seg-escala" aria-selected="true">Escala</button>
+          <button role="tab" id="seg-agora" aria-selected="true">Agora</button>
+          <button role="tab" id="seg-escala" aria-selected="false">Escala</button>
           <button role="tab" id="seg-trocas" aria-selected="false">Trocas <span id="seg-badge"></span></button>
         </div>
-        <div id="g-escala">
+        <div id="g-agora"></div>
+        <div id="g-escala" hidden>
           <div class="section" style="margin-top:18px"><div class="hd"><span id="r-range"></span>
             <span style="display:flex;gap:14px"><button id="r-prev" aria-label="Semana anterior"><svg class="i" style="width:18px;height:18px"><use href="#i-chevl"/></svg></button><button id="r-next" aria-label="Semana seguinte"><svg class="i" style="width:18px;height:18px"><use href="#i-chev"/></svg></button></span></div></div>
           <div class="roster-wrap"><table class="roster" id="roster"></table></div>
-          <div class="section" style="margin-top:8px"><div class="ft" style="padding-top:0">Toca no serviço de um camarada para pedir uma troca (até à véspera). A Guarda Principal Neves partilha só quando está de serviço.</div></div>
+          <div class="section" style="margin-top:8px"><div class="ft" style="padding-top:0">Toca no nome de um camarada para ver a escala dele, ou num serviço para pedir troca (até à véspera).</div></div>
         </div>
         <div id="g-trocas" hidden></div>
       </div>
@@ -490,7 +492,8 @@ table.roster { border-collapse: separate; border-spacing: 0; }
       <li><b>Calendário</b>: desliza o mês para os lados, toca num dia para abrir o detalhe.</li>
       <li>Toca no <b>pincel</b>, escolhe um tipo e arrasta o dedo sobre vários dias. O ↶ desfaz.</li>
       <li>Vai a <b>outubro</b> e abre o dia 25: o serviço das 00–08 apanha a mudança de hora.</li>
-      <li><b>Escala</b>: toca no serviço de um camarada e envia o pedido. No protótipo, ele pede para aguardar e aceita sozinho uns segundos depois.</li>
+      <li><b>Grupo</b> › <b>Agora</b>: o que cada camarada do grupo de folgas está a fazer. Toca num nome para ver a escala dele e pedir uma troca (no protótipo ele pede para aguardar e aceita sozinho).</li>
+      <li><b>Membros</b> › <b>Comandante de grupo</b>: convida um militar; entra no grupo uns segundos depois.</li>
     </ol>
   </aside>
 </div>
@@ -564,7 +567,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
   const S = {
     tab: 'hoje', year: +TODAY.slice(0, 4), month: +TODAY.slice(5, 7), paint: false, brush: 'AT2',
     over: new Map(), src: new Map(), undo: [], redo: [], sel: null,
-    rosterStart: mondayOf(TODAY), grpSeg: 'escala', swaps: [], seq: 10, hsY: +TODAY.slice(0, 4), hsM: +TODAY.slice(5, 7),
+    rosterStart: mondayOf(TODAY), grpSeg: 'agora', swaps: [], seq: 10, hsY: +TODAY.slice(0, 4), hsM: +TODAY.slice(5, 7),
     peopleOver: {},
   };
   [['2026-10-19', 'FER'], ['2026-10-20', 'FER'], ['2026-10-21', 'FER'], ['2026-10-10', 'GRAT']].forEach(([d, c]) => S.over.set(d, c));
@@ -576,8 +579,8 @@ table.roster { border-collapse: separate; border-spacing: 0; }
   const PEOPLE = [
     { id: 'me', name: 'Silva', sub: 'Guarda · eu', call: 'Guarda Silva', full: ME.full, level: 'D', color: '#5856D6', base: d => mine(d) },
     { id: 'rocha', name: 'Rocha', sub: 'Cabo · 512', call: 'Cabo Rocha', full: 'Cabo Rui Rocha', level: 'D', color: '#1FA2B8', base: d => rot(d, 4) },
-    { id: 'neves', name: 'Neves', sub: 'G. Principal', call: 'Guarda Principal Neves', full: 'Guarda Principal Marta Neves', level: 'A', color: '#FF9F0A', base: d => rot(d, 7) },
-    { id: 'matos', name: 'Matos', sub: 'Cabo-Chefe', call: 'Cabo-Chefe Matos', full: 'Cabo-Chefe Sofia Matos', level: 'D', color: '#30B35A', base: d => (d >= S.rosterStart0 && d <= add(S.rosterStart0, 4)) ? 'FER' : rot(d, 2) },
+    { id: 'neves', name: 'Neves', sub: 'G. Principal · 640', call: 'Guarda Principal Neves', full: 'Guarda Principal Marta Neves', level: 'D', color: '#FF9F0A', base: d => rot(d, 7) },
+    { id: 'matos', name: 'Matos', sub: 'Cmdt. de grupo', call: 'Cabo-Chefe Matos', full: 'Cabo-Chefe Sofia Matos', cmd: true, level: 'D', color: '#30B35A', base: d => (d >= S.rosterStart0 && d <= add(S.rosterStart0, 4)) ? 'FER' : rot(d, 2) },
     { id: 'lopes', name: 'Lopes', sub: 'Guarda · 877', call: 'Guarda Lopes', full: 'Guarda Tiago Lopes', level: 'D', color: '#FF375F', base: d => [0, 6].includes(wday(d)) ? 'F' : 'INQ' },
   ];
   S.rosterStart0 = add(mondayOf(TODAY), 7);
@@ -732,12 +735,12 @@ table.roster { border-collapse: separate; border-spacing: 0; }
       <span class="grow"><div class="t">${person(s.person).call} pede troca</div><div class="s">${shortDate(s.date)} · dás ${TYPES[s.give].abbr}, recebes ${TYPES[s.get].abbr}${s.status === 'EM_ESPERA' ? ' · a aguardar' : ''}</div></span>${icon('chev', '', 'chev').replace('class="i"', 'class="i chev"')}</button>`).join('')}</div>` : '';
     $('h-swaps').querySelectorAll('[data-swap]').forEach(b => b.addEventListener('click', () => openSwapIn(+b.dataset.swap)));
 
-    const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-    const onNow = PEOPLE.filter(p => p.level === 'D').map(p => ({ p, c: shiftOf(p, TODAY) })).filter(x => isWork(x.c));
-    $('h-group').innerHTML = onNow.map(({ p, c }) => {
-      const t = TYPES[c], live = nowMin >= t.start && nowMin < t.start + t.dur;
-      return `<div class="row">${pill(c, 'md')}<span class="grow"><div class="t">${p.name}${p.id === 'me' ? ' (eu)' : ''}</div><div class="s num">${hm(t.start)}–${hm((t.start + t.dur) % 1440)}</div></span><span class="v" style="color:${live ? 'var(--green)' : ''}">${live ? '● agora' : ''}</span></div>`;
-    }).join('') || '<div class="empty">Ninguém do grupo trabalha hoje.</div>';
+    const onNow = PEOPLE.filter(p => p.id !== 'me').map(p => ({ p, s: statusOf(p) })).filter(x => x.s.cat === 'now' || x.s.cat === 'later');
+    $('h-group').innerHTML = onNow.map(({ p, s }) => `<button class="row" data-m="${p.id}" style="--inset:58px">${avatar(p)}<span class="grow"><div class="t">${p.call}</div><div class="s">${s.txt}</div></span>
+      ${s.cat === 'now' ? '<span class="v" style="color:var(--green)">● agora</span>' : ''}${pill(s.c, 'md')}</button>`).join('')
+      + `<button class="row tint" data-go-agora><span class="grow t">Ver todo o grupo</span><svg class="i chev"><use href="#i-chev"/></svg></button>`;
+    $('h-group').querySelectorAll('[data-m]').forEach(b => b.addEventListener('click', () => openMember(b.dataset.m)));
+    $('h-group').querySelector('[data-go-agora]').addEventListener('click', () => { S.grpSeg = 'agora'; setTab('grp'); });
 
     const st = monthStats(+TODAY.slice(0, 4), +TODAY.slice(5, 7));
     $('h-chips').innerHTML = [[`${hrs(st.work)} h`, 'trabalhadas'], [`${st.shifts}`, 'turnos'], [`${hrs(st.night)} h`, 'noturnas'], [eur(st.pay).replace(/,\d\d/, ''), 'gratificados']]
@@ -903,7 +906,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
       body.innerHTML = h;
       body.querySelector('#d-edit')?.addEventListener('click', () => { editing = true; refreshSheet(); });
       body.querySelector('#d-clear')?.addEventListener('click', () => { commit(d, null); closeSheet(); toast('Dia limpo · podes desfazer'); });
-      body.querySelector('#d-swap')?.addEventListener('click', () => { closeSheet(); S.rosterStart = mondayOf(d); S.grpSeg = 'escala'; setTab('grp'); toast('Escolhe o turno de um colega'); });
+      body.querySelector('#d-swap')?.addEventListener('click', () => { closeSheet(); S.rosterStart = mondayOf(d); S.grpSeg = 'escala'; setTab('grp'); toast('Escolhe o serviço de um camarada'); });
       body.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => { commit(d, b.dataset.t || null); editing = false; haptic(); refreshSheet(); }));
     });
   }
@@ -916,15 +919,11 @@ table.roster { border-collapse: separate; border-spacing: 0; }
 
   // ───────── ESCALA / TROCAS (sem comandante: o camarada aceita, pede para aguardar ou recusa) ─────────
   function setSeg(s) { S.grpSeg = s; setSegRender(); }
+  $('seg-agora').addEventListener('click', () => setSeg('agora'));
   $('seg-escala').addEventListener('click', () => setSeg('escala'));
   $('seg-trocas').addEventListener('click', () => setSeg('trocas'));
   $('r-prev').addEventListener('click', () => { S.rosterStart = add(S.rosterStart, -7); renderGrp(); });
   $('r-next').addEventListener('click', () => { S.rosterStart = add(S.rosterStart, 7); renderGrp(); });
-  $('g-members').addEventListener('click', () => openSheet('Militares da escala', body => {
-    body.innerHTML = `<div class="section"><div class="group" style="--inset:62px">${PEOPLE.map(p => `<div class="row"><span class="ico" style="background:${p.color};border-radius:50%;font-weight:600;font-size:14px">${p.name[0]}</span><span class="grow"><div class="t">${p.full}${p.id === 'me' ? ' (eu)' : ''}</div><div class="s">${p.id === 'matos' ? 'Gere a escala' : 'Militar'} · ${p.level === 'A' ? 'partilha só disponibilidade' : 'partilha serviços'}</div></span></div>`).join('')}
-      <div class="row tint"><span class="grow t">Convidar camaradas…</span></div></div>
-      <div class="ft">Ninguém aprova trocas: basta o camarada aceitar e o documento oficial é emitido para os dois. Quem gere a escala só convida e remove militares.</div></div>`;
-  }));
 
   const STATUS_TXT = {
     PENDENTE: s => s.dir === 'in' ? 'Aguarda a tua resposta' : 'Aguarda resposta',
@@ -940,7 +939,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     const a = days[0], b = days[13];
     $('r-range').textContent = `${dnum(a)} ${mname(a).slice(0, 3)} – ${dnum(b)} ${mname(b).slice(0, 3)}`;
     const head = days.map(d => `<th class="${d === TODAY ? 'today' : ''} ${HOLIDAYS[d] ? 'hol' : ''}">${WDS[wday(d)].slice(0, 1)}<b class="num">${dnum(d)}</b></th>`).join('');
-    const rows = PEOPLE.map(p => `<tr class="${p.id === 'me' ? 'me' : ''}"><th>${p.name}<small>${p.sub}</small></th>${days.map(d => {
+    const rows = PEOPLE.map(p => `<tr class="${p.id === 'me' ? 'me' : ''}"><th><button data-m="${p.id}" style="text-align:left">${p.name}<small>${p.sub}</small></button></th>${days.map(d => {
       const c = shiftOf(p, d);
       if (!c) return '<td><span class="free">·</span></td>';
       if (p.level === 'A') return isWork(c) ? '<td><span class="busy" aria-label="de serviço"></span></td>' : '<td><span class="free">·</span></td>';
@@ -951,6 +950,7 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     const counts = days.map(d => PEOPLE.filter(p => isWork(shiftOf(p, d))).length);
     $('roster').innerHTML = `<thead><tr><th style="position:sticky;left:0;background:var(--card);z-index:2"></th>${head}</tr></thead><tbody>${rows}</tbody><tfoot><tr><th>De serviço</th>${counts.map(n => `<td>${n}</td>`).join('')}</tr></tfoot>`;
     $('roster').querySelectorAll('button[data-p]').forEach(bt => bt.addEventListener('click', () => openSwapOut(bt.dataset.p, bt.dataset.d)));
+    $('roster').querySelectorAll('button[data-m]').forEach(bt => bt.addEventListener('click', () => openMember(bt.dataset.m)));
 
     const inc = S.swaps.filter(s => s.dir === 'in' && isActive(s)), out = S.swaps.filter(s => s.dir === 'out' && isActive(s));
     const done = S.swaps.filter(s => !isActive(s)).sort((x, y) => (y.accAt || y.reqAt) - (x.accAt || x.reqAt));
@@ -1105,6 +1105,145 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     });
   }
 
+  // ───────── GRUPO DE FOLGAS: agora, ficha do militar, convites do comandante de grupo ─────────
+  const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+  function statusOf(p) {
+    const c = shiftOf(p, TODAY), n = nowMin();
+    if (!c) return { cat: 'off', txt: 'Sem serviço hoje', c };
+    const t = TYPES[c];
+    if (t.kind === 'OFF') return { cat: 'off', txt: 'De folga', c };
+    if (t.kind === 'ABSENCE') return { cat: 'abs', txt: t.name, c };
+    const end = t.start + t.dur;
+    if (n < t.start) return { cat: 'later', txt: `Entra às ${hm(t.start)} · ${t.name}`, c };
+    if (n < end) return { cat: 'now', txt: `${t.name} · até às ${hm(end % 1440).replace(/^00:00$/, '24:00')}`, c };
+    return { cat: 'done', txt: `Saiu às ${hm(end % 1440).replace(/^00:00$/, '24:00')} · ${t.name}`, c };
+  }
+  const avatar = (p, size = 30) => `<span class="ico" style="background:${p.color};border-radius:50%;font-weight:600;font-size:${Math.round(size * .45)}px;width:${size}px;height:${size}px">${p.name[0]}</span>`;
+  const roleTxt = p => p.cmd ? 'Comandante de grupo' : 'Militar';
+
+  function renderAgora() {
+    const cats = [['now', 'De serviço agora', 'var(--green)'], ['later', 'Entra mais tarde', 'var(--orange)'], ['done', 'Já saiu hoje', 'var(--label-3)'], ['off', 'De folga', 'var(--label-3)'], ['abs', 'Ausentes', 'var(--tint)']];
+    const st = PEOPLE.map(p => ({ p, s: statusOf(p) }));
+    const count = k => st.filter(x => x.s.cat === k).length;
+    let h = `<div class="section" style="margin-top:18px"><div class="chips" style="padding:0">
+      ${[['now', 'de serviço'], ['off', 'de folga'], ['abs', 'ausentes']].map(([k, l]) => `<div class="stat-chip"><b>${count(k)}</b><span>${l}</span></div>`).join('')}
+      <div class="stat-chip"><b>${PEOPLE.length}</b><span>militares</span></div></div></div>`;
+    for (const [k, title, col] of cats) {
+      const list = st.filter(x => x.s.cat === k);
+      if (!list.length) continue;
+      h += `<div class="section"><div class="hd"><span><i class="legend-dot" style="background:${col};border-radius:50%"></i>${title}</span></div><div class="group" style="--inset:58px">${list.map(({ p, s }) => {
+        const tm = shiftOf(p, add(TODAY, 1));
+        return `<button class="row" data-m="${p.id}">${avatar(p)}<span class="grow"><div class="t">${p.call}${p.id === 'me' ? ' (eu)' : ''}</div><div class="s">${s.txt}${tm ? ` · amanhã ${TYPES[tm].abbr}` : ''}</div></span>${s.c ? pill(s.c, 'md') : ''}<svg class="i chev"><use href="#i-chev"/></svg></button>`;
+      }).join('')}</div></div>`;
+    }
+    h += `<div class="section"><div class="ft" style="padding-top:0">Atualiza em tempo real quando alguém muda um serviço ou aceita uma troca.</div></div>`;
+    $('g-agora').innerHTML = h;
+    $('g-agora').querySelectorAll('[data-m]').forEach(b => b.addEventListener('click', () => openMember(b.dataset.m)));
+  }
+
+  function openMember(pid) {
+    const p = person(pid);
+    openSheet(p.full, body => {
+      const s = statusOf(p), start = TODAY;
+      const days = Array.from({ length: 14 }, (_, i) => add(start, i));
+      const pre = TODAY.slice(0, 7);
+      let serv = 0, folgas = 0;
+      for (let d = `${pre}-01`; d.startsWith(pre); d = add(d, 1)) { const c = shiftOf(p, d); if (isWork(c)) serv++; else if (c === 'F') folgas++; }
+      body.innerHTML = `<div class="section"><div class="group"><div class="row" style="gap:14px;padding:14px 16px">${avatar(p, 52)}
+          <span class="grow"><div class="t" style="font-weight:600">${p.full}</div><div class="s">${p.sub.replace(' · eu', '')} · ${roleTxt(p)}</div></span></div>
+        <div class="row"><span class="grow t">Hoje</span><span class="v">${s.txt}</span></div>
+        <div class="row"><span class="grow t">Este mês</span><span class="v">${serv} serviços · ${folgas} folgas</span></div></div></div>
+        <div class="section"><div class="hd"><span>Próximos 14 dias</span></div>
+          <div class="weekstrip" style="grid-template-rows:auto auto;row-gap:12px">${days.map(d => {
+            const c = shiftOf(p, d), can = p.id !== 'me' && isWork(c) && d > TODAY;
+            return `<button ${can ? `data-sw-d="${d}"` : 'tabindex="-1" style="cursor:default"'} class="${d === TODAY ? 'today' : ''}" aria-label="${longDate(d)}${c ? ', ' + TYPES[c].name : ''}">${WDS[wday(d)].slice(0, 1)}<b class="num">${dnum(d)}</b>${c ? pill(c) : '<span class="pill off" style="opacity:.4">–</span>'}</button>`;
+          }).join('')}</div>
+          ${p.id !== 'me' ? `<div class="ft">Toca num serviço de ${p.call} para pedir uma troca (até à véspera).</div>` : ''}</div>`;
+      body.querySelectorAll('[data-sw-d]').forEach(b => b.addEventListener('click', () => openSwapOut(pid, b.dataset.swD)));
+    });
+  }
+
+  // Membros e convites. No protótipo pode-se pré-visualizar o ecrã como o comandante de grupo o vê.
+  S.viewAs = 'militar';
+  S.invites = [{ id: 1, rank: 'Guarda', name: 'Diogo Ramos', email: 'diogo.ramos@exemplo.pt', status: 'ENVIADO', at: clockAt(60 * 20) }];
+  const COLORS = ['#0A84FF', '#BF5AF2', '#64D2FF', '#FFD60A', '#FF6482'];
+  function ago(d) { const m = Math.round((Date.now() - d) / 6e4); return m < 1 ? 'agora' : m < 60 ? `há ${m} min` : m < 1440 ? `há ${Math.round(m / 60)} h` : `há ${Math.round(m / 1440)} dias`; }
+  function openMembers() {
+    openSheet('Grupo de Folgas 2', body => {
+      const cmd = S.viewAs === 'cmd', boss = PEOPLE.find(p => p.cmd), rest = PEOPLE.filter(p => !p.cmd);
+      body.innerHTML = `<div class="section"><div class="hd"><span>Pré-visualizar como (protótipo)</span></div>
+          <div class="seg" style="margin:0" role="tablist"><button role="tab" data-view="militar" aria-selected="${!cmd}">Militar</button><button role="tab" data-view="cmd" aria-selected="${cmd}">Comandante de grupo</button></div></div>
+        <div class="section"><div class="hd"><span>Comandante de grupo</span></div><div class="group" style="--inset:58px">
+          <button class="row" data-m="${boss.id}">${avatar(boss)}<span class="grow"><div class="t">${boss.full}</div><div class="s">Convida e remove militares · não aprova trocas</div></span><svg class="i chev"><use href="#i-chev"/></svg></button></div></div>
+        <div class="section"><div class="hd"><span>Militares (${rest.length})</span></div><div class="group" style="--inset:58px">
+          ${rest.map(p => `<div class="row">${avatar(p)}<span class="grow"><div class="t">${p.full}${p.id === 'me' ? ' (eu)' : ''}</div><div class="s">${p.sub.replace(' · eu', '')}${p.joined ? ` · entrou ${ago(p.joined)}` : ''}</div></span>
+            ${cmd && p.id !== 'me' ? `<button class="btn small red" data-rm="${p.id}" style="height:30px">Remover</button>` : `<button class="tbtn" data-m="${p.id}" aria-label="Ver ${p.call}"><svg class="i chev"><use href="#i-chev"/></svg></button>`}</div>`).join('')}
+        </div></div>
+        ${cmd ? `<div class="section"><div class="hd"><span>Convites</span></div><div class="group">
+            ${S.invites.map(i => `<div class="row"><span class="grow"><div class="t">${i.rank} ${i.name}</div><div class="s">${i.email || 'Link de convite'} · ${i.status === 'ACEITE' ? '<span style="color:var(--green)">Aceite</span>' : `enviado ${ago(i.at)}`}</div></span>
+              ${i.status === 'ENVIADO' ? `<button class="tbtn" data-rv="${i.id}" style="color:var(--red);font-size:15px">Revogar</button>` : ''}</div>`).join('')}
+            <button class="row tint" id="inv-new"><span class="grow t">Convidar militar…</span></button></div>
+            <div class="ft">Cada convite é pessoal, de uso único e válido 7 dias. O militar entra quando aceitar e escolher o calendário de serviço que partilha.</div></div>`
+          : `<div class="section"><div class="ft" style="padding-top:0">Só o comandante de grupo convida ou remove militares. Todos os membros veem os serviços, folgas e ausências uns dos outros.</div>
+            <div class="group" style="margin-top:10px"><button class="row tint" id="inv-see"><span class="grow t">Ver como chega um convite</span></button></div></div>`}`;
+      body.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { S.viewAs = b.dataset.view; refreshSheet(); }));
+      body.querySelectorAll('[data-m]').forEach(b => b.addEventListener('click', () => openMember(b.dataset.m)));
+      body.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
+        const i = PEOPLE.findIndex(p => p.id === b.dataset.rm), p = PEOPLE[i];
+        PEOPLE.splice(i, 1);
+        S.swaps.forEach(s => { if (s.person === p.id && isActive(s)) { s.status = 'CANCELADA'; s.decAt = new Date(); } });
+        render(); refreshSheet(); toast(`${p.call} saiu do grupo`);
+      }));
+      body.querySelectorAll('[data-rv]').forEach(b => b.addEventListener('click', () => { S.invites = S.invites.filter(i => i.id !== +b.dataset.rv); refreshSheet(); toast('Convite revogado'); }));
+      body.querySelector('#inv-new')?.addEventListener('click', openInvite);
+      body.querySelector('#inv-see')?.addEventListener('click', openInviteReceived);
+    });
+  }
+  $('g-members').addEventListener('click', openMembers);
+
+  function openInvite() {
+    const link = `GF2-${code8().slice(0, 4)}`;
+    openSheet('Convidar militar', body => {
+      const inp = (id, ph, type = 'text') => `<div class="row"><input id="${id}" type="${type}" placeholder="${ph}" style="width:100%;border:0;background:transparent;font:inherit;color:var(--label);outline:none"></div>`;
+      body.innerHTML = `<div class="section"><div class="group">
+          <div class="row"><span class="grow t">Posto</span><select id="inv-rank" style="border:0;background:transparent;font:inherit;color:var(--label-2)">${['Guarda', 'Guarda Principal', 'Cabo', 'Cabo-Chefe'].map(r => `<option>${r}</option>`).join('')}</select></div>
+          ${inp('inv-name', 'Nome')}${inp('inv-mail', 'Email', 'email')}</div>
+          <div class="ft">O militar recebe o convite por email e na app, se já tiver conta.</div></div>
+        <div class="section"><button class="btn primary" id="inv-send" style="width:100%">Enviar convite</button></div>
+        <div class="section"><div class="hd"><span>Ou partilha um código</span></div><div class="group">
+          <div class="row"><span class="grow"><div class="t num" style="font-size:22px;font-weight:600;letter-spacing:.06em">${link}</div><div class="s">Uso único · válido 7 dias</div></span><button class="btn small" id="inv-share">Partilhar</button></div></div></div>`;
+      body.querySelector('#inv-share').addEventListener('click', () => toast('Na app abre a folha de partilha do iOS'));
+      body.querySelector('#inv-send').addEventListener('click', () => {
+        const name = body.querySelector('#inv-name').value.trim() || 'Pedro Costa', rank = body.querySelector('#inv-rank').value;
+        const inv = { id: ++S.seq, rank, name, email: body.querySelector('#inv-mail').value.trim() || 'convite por email', status: 'ENVIADO', at: new Date() };
+        S.invites.push(inv); openMembers(); toast(`Convite enviado a ${rank} ${name}`);
+        // Protótipo: o militar aceita o convite uns segundos depois
+        setTimeout(() => {
+          if (!S.invites.includes(inv)) return;
+          inv.status = 'ACEITE';
+          const surname = name.split(' ').pop(), idx = PEOPLE.length;
+          PEOPLE.push({ id: `m${inv.id}`, name: surname, sub: rank, call: `${rank} ${surname}`, full: `${rank} ${name}`, level: 'D', color: COLORS[idx % COLORS.length], joined: new Date(), base: d => rot(d, 1 + idx * 3) });
+          render(); refreshSheet(); toast(`${rank} ${surname} entrou no grupo`);
+        }, 5000);
+      });
+    });
+  }
+  function openInviteReceived() {
+    const boss = PEOPLE.find(p => p.cmd);
+    let cal = 'gnr';
+    openSheet('Convite para grupo', body => {
+      body.innerHTML = `<div class="section"><div class="group"><div class="row" style="gap:14px;padding:16px">${avatar(boss, 44)}
+          <span class="grow"><div class="t"><b>${boss.call}</b> convidou-te para o <b>Grupo de Folgas 2</b></div><div class="s">PT Castro Marim · ${PEOPLE.length} militares</div></span></div></div></div>
+        <div class="section"><div class="hd"><span>Calendário a partilhar</span></div><div class="group">
+          ${[['gnr', 'Serviço GNR', 'Serviços, folgas e ausências'], ['pes', 'Pessoal', 'Não recomendado para o grupo']].map(([k, t, s]) => `<button class="row" data-cal="${k}"><span class="grow"><div class="t">${t}</div><div class="s">${s}</div></span>${cal === k ? '<svg class="i check"><use href="#i-tick"/></svg>' : ''}</button>`).join('')}</div>
+          <div class="ft">Os militares do grupo veem os teus serviços, folgas e ausências. As notas pessoais nunca são partilhadas. Podes sair do grupo quando quiseres.</div></div>
+        <div class="section"><div class="btnrow"><button class="btn red" id="ir-no">Recusar</button><button class="btn primary" id="ir-yes">Entrar no grupo</button></div></div>`;
+      body.querySelectorAll('[data-cal]').forEach(b => b.addEventListener('click', () => { cal = b.dataset.cal; refreshSheet(); }));
+      body.querySelector('#ir-no').addEventListener('click', () => { closeSheet(); toast('Convite recusado (simulação)'); });
+      body.querySelector('#ir-yes').addEventListener('click', () => { closeSheet(); toast('Entraste no Grupo de Folgas 2 (simulação)'); });
+    });
+  }
+
   // ───────── HORAS ─────────
   function renderHoras() {
     const y = S.hsY, m = S.hsM, st = monthStats(y, m);
@@ -1147,8 +1286,8 @@ table.roster { border-collapse: separate; border-spacing: 0; }
     if (S.tab === 'horas') renderHoras();
   }
   function setSegRender() {
-    $('seg-escala').setAttribute('aria-selected', S.grpSeg === 'escala'); $('seg-trocas').setAttribute('aria-selected', S.grpSeg === 'trocas');
-    $('g-escala').hidden = S.grpSeg !== 'escala'; $('g-trocas').hidden = S.grpSeg !== 'trocas';
+    ['agora', 'escala', 'trocas'].forEach(k => { $(`seg-${k}`).setAttribute('aria-selected', S.grpSeg === k); $(`g-${k}`).hidden = S.grpSeg !== k; });
+    if (S.grpSeg === 'agora') renderAgora();
     renderGrp();
   }
   const clock = () => { const d = new Date(); $('sb-time').textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
