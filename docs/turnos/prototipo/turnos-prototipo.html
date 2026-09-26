@@ -1,707 +1,1027 @@
-<title>Turnos — protótipo</title>
+<title>Turnos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
+/* ───────── Cores de sistema iOS (claro) ───────── */
 :root {
-  --bg: #F6F5F2;
-  --surface: #FFFFFF;
-  --surface-2: #EFEDE8;
-  --border: #E2DFD8;
-  --fg: #1D1C24;
-  --fg-muted: #67646F;
-  --brand: #4447C9;
-  --brand-soft: #E7E7FA;
-  --holiday: #C8392B;
-  --warn: #B7791F;
-  --warn-soft: #FBF1DC;
-  --ring: #4447C9;
-  --shadow: 0 1px 2px rgba(29, 28, 36, .06), 0 4px 16px rgba(29, 28, 36, .06);
-  --font-sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --bg: #F2F2F7;            /* systemGroupedBackground */
+  --card: #FFFFFF;          /* secondarySystemGroupedBackground */
+  --card-2: #F2F2F7;
+  --fill: rgba(120,120,128,.12);
+  --fill-2: rgba(120,120,128,.20);
+  --label: #000000;
+  --label-2: rgba(60,60,67,.60);
+  --label-3: rgba(60,60,67,.30);
+  --sep: rgba(60,60,67,.18);
+  --tint: #5856D6;          /* systemIndigo */
+  --red: #FF3B30; --orange: #FF9500; --green: #34C759;
+  --bar: rgba(249,249,249,.82);
+  --sheet: #FFFFFF;
+  --backdrop: rgba(0,0,0,.28);
+  --stage: #E4E4EA;
+  --bezel: #1B1B1F;
+  --off-bg: rgba(120,120,128,.14); --off-fg: rgba(60,60,67,.62);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-d: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #131218; --surface: #1C1B22; --surface-2: #25242C; --border: #33313B;
-    --fg: #EDEBF2; --fg-muted: #A29FAC; --brand: #8C8FF5; --brand-soft: #2A2A4A;
-    --holiday: #F07A6C; --warn: #E5B25A; --warn-soft: #3A3122; --ring: #8C8FF5;
-    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+    --bg: #000000; --card: #1C1C1E; --card-2: #2C2C2E;
+    --fill: rgba(118,118,128,.24); --fill-2: rgba(118,118,128,.36);
+    --label: #FFFFFF; --label-2: rgba(235,235,245,.60); --label-3: rgba(235,235,245,.30);
+    --sep: rgba(84,84,88,.60); --tint: #7D7AFF;
+    --red: #FF453A; --orange: #FF9F0A; --green: #30D158;
+    --bar: rgba(22,22,24,.82); --sheet: #1C1C1E; --backdrop: rgba(0,0,0,.5);
+    --stage: #0E0E11; --bezel: #2A2A2F;
+    --off-bg: rgba(118,118,128,.28); --off-fg: rgba(235,235,245,.62);
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #131218; --surface: #1C1B22; --surface-2: #25242C; --border: #33313B;
-  --fg: #EDEBF2; --fg-muted: #A29FAC; --brand: #8C8FF5; --brand-soft: #2A2A4A;
-  --holiday: #F07A6C; --warn: #E5B25A; --warn-soft: #3A3122; --ring: #8C8FF5;
-  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  --bg: #000000; --card: #1C1C1E; --card-2: #2C2C2E;
+  --fill: rgba(118,118,128,.24); --fill-2: rgba(118,118,128,.36);
+  --label: #FFFFFF; --label-2: rgba(235,235,245,.60); --label-3: rgba(235,235,245,.30);
+  --sep: rgba(84,84,88,.60); --tint: #7D7AFF;
+  --red: #FF453A; --orange: #FF9F0A; --green: #30D158;
+  --bar: rgba(22,22,24,.82); --sheet: #1C1C1E; --backdrop: rgba(0,0,0,.5);
+  --stage: #0E0E11; --bezel: #2A2A2F;
+  --off-bg: rgba(118,118,128,.28); --off-fg: rgba(235,235,245,.62);
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 [hidden] { display: none !important; }
+html, body { height: 100%; }
 body {
-  background: var(--bg); color: var(--fg);
-  font: 15px/1.45 var(--font-sans);
-  padding-inline: 16px; padding-block: 16px 96px;
+  margin: 0; background: var(--bg); color: var(--label);
+  font: 17px/1.3 var(--font); letter-spacing: -.01em;
+  -webkit-font-smoothing: antialiased; overflow: hidden;
 }
-button { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; letter-spacing: inherit; }
+:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; border-radius: 8px; }
 .num { font-variant-numeric: tabular-nums; }
-.mono { font-family: var(--font-mono); font-size: .86em; }
+svg.i { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
-.app { max-width: 1180px; margin: 0 auto; display: grid; gap: 16px; }
-
-/* Barra superior */
-.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
-.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
-.brand b { font: 700 22px/1 var(--font-display); letter-spacing: -.01em; }
-.proto-tag { font-size: 12px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .06em; }
-.cal-select { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); }
-.cal-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--brand); }
-.tabs { display: inline-flex; padding: 3px; background: var(--surface-2); border-radius: 10px; gap: 2px; }
-.tabs button { border: 0; background: transparent; padding: 6px 14px; border-radius: 8px; cursor: pointer; color: var(--fg-muted); font-weight: 500; }
-.tabs button[aria-selected="true"] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow); }
-
-.layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
-@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
-
-.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
-.main-panel { padding: 16px; display: grid; gap: 12px; }
-
-/* Navegação do mês */
-.monthbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
-.monthbar h1 { font: 700 clamp(22px, 4vw, 30px)/1.1 var(--font-display); margin: 0; letter-spacing: -.015em; min-width: 9.5ch; text-wrap: balance; }
-.iconbtn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; display: inline-grid; place-items: center; }
-.iconbtn:hover { background: var(--surface-2); }
-.iconbtn:disabled { opacity: .4; cursor: default; }
-.btn { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 7px 14px; cursor: pointer; font-weight: 500; }
-.btn:hover { background: var(--surface-2); }
-.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
-:root[data-theme="dark"] .btn.primary { color: #121218; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #121218; } }
-.spacer { margin-left: auto; }
-.paint-toggle[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
-
-/* Grelha do mês */
-.weekdays, .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
-.weekdays div { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-muted); padding: 0 6px; }
-.weekdays div:nth-child(n+6) { color: var(--fg); }
-.grid.painting { touch-action: none; user-select: none; }
-.cell {
-  position: relative; min-height: 84px; border: 1px solid var(--border); border-radius: 10px;
-  background: var(--surface); padding: 6px; text-align: left; cursor: pointer;
-  display: flex; flex-direction: column; gap: 4px;
+/* ───────── Palco: ecrã inteiro no telemóvel, moldura de iPhone no computador ───────── */
+.stage { height: 100%; }
+.phone { position: relative; height: 100%; width: 100%; background: var(--bg); overflow: hidden; isolation: isolate; }
+.statusbar, .island, .notes { display: none; }
+@media (min-width: 720px) and (min-height: 640px) {
+  body { background: var(--stage); }
+  .stage { display: flex; align-items: center; justify-content: center; gap: 56px; padding-inline: 24px; padding-block: 24px; }
+  .phone {
+    width: 393px; height: min(852px, calc(100vh - 48px)); flex: none;
+    border-radius: 56px; border: 12px solid var(--bezel);
+    box-shadow: 0 0 0 2px #3a3a40, 0 30px 80px rgba(0,0,0,.28);
+  }
+  .island { display: block; position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 122px; height: 35px; background: #000; border-radius: 20px; z-index: 50; }
+  .statusbar {
+    display: flex; position: absolute; top: 0; left: 0; right: 0; height: 54px; z-index: 40;
+    align-items: center; justify-content: space-between; padding-inline: 34px 30px; padding-top: 4px;
+    font: 600 16px var(--font-d); pointer-events: none;
+  }
+  .statusbar .sb-r { display: flex; gap: 6px; align-items: center; }
+  .phone .screen .nav { padding-top: 54px; }
+  .notes { display: grid; gap: 14px; max-width: 300px; color: var(--label); font-size: 15px; line-height: 1.45; }
+  .notes h2 { margin: 0; font: 700 28px/1.1 var(--font-d); letter-spacing: -.02em; }
+  .notes p { margin: 0; color: var(--label-2); }
+  .notes ol { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .notes li::marker { color: var(--tint); font-weight: 600; }
 }
-.cell:hover { border-color: var(--fg-muted); }
-.cell.out { background: transparent; border-style: dashed; opacity: .45; }
-.cell.selected { outline: 2px solid var(--ring); outline-offset: 1px; }
-.cell .d { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; }
-.cell.today .d span:first-child { background: var(--fg); color: var(--bg); border-radius: 999px; padding: 0 7px; }
-.cell.holiday .d { color: var(--holiday); }
-.cell .flag { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
-.cell .notedot { width: 6px; height: 6px; border-radius: 50%; background: var(--fg-muted); margin-left: auto; }
-.cell .editdot { flex: none; width: 7px; height: 7px; border: 1.5px solid var(--fg-muted); border-radius: 50%; }
-.cell .notedot + .editdot { margin-left: 3px; }
-.cell .d > .editdot:first-of-type { margin-left: auto; }
-.chip {
-  display: flex; align-items: baseline; gap: 6px; border-radius: 7px; padding: 3px 6px;
-  font-weight: 600; font-size: 13px; line-height: 1.25; overflow: hidden; white-space: nowrap;
-}
-.chip small { font: 500 11px/1 var(--font-mono); opacity: .85; overflow: hidden; text-overflow: ellipsis; }
-.chip.absence { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.18) 0 4px, transparent 4px 8px); }
-.chip.pending { box-shadow: 0 0 0 2px var(--warn); }
-.cell.flash { animation: flash .35s ease-out; }
-@keyframes flash { from { transform: scale(.94); } to { transform: none; } }
-@media (prefers-reduced-motion: reduce) { .cell.flash { animation: none; } }
-@media (max-width: 560px) {
-  .cell { min-height: 58px; padding: 4px; border-radius: 8px; }
-  .chip small { display: none; }
-  .chip { justify-content: center; padding: 3px 1px; font-size: 12px; letter-spacing: -.02em; }
-  .cell .flag { display: none; }
-}
+@media (min-width: 720px) and (max-width: 900px) { .notes { display: none; } }
 
-/* Pincel */
-.palette {
-  display: flex; gap: 8px; overflow-x: auto; padding: 10px; border-radius: 14px;
-  background: var(--surface-2); align-items: center;
+/* ───────── Ecrãs e barra de navegação ───────── */
+.screen { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 100px; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+.nav {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+  padding-top: 0;
+  background: transparent; transition: background .2s, box-shadow .2s;
 }
-.palette[hidden] { display: none !important; }
-.swatch {
-  flex: none; display: flex; align-items: center; gap: 8px; border: 2px solid transparent; border-radius: 10px;
-  padding: 6px 10px 6px 6px; background: var(--surface); cursor: pointer;
+.nav.scrolled { background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); box-shadow: 0 .5px 0 var(--sep); }
+.nav-row { height: 44px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding-inline: 16px; }
+.nav-title { font-weight: 600; font-size: 17px; opacity: 0; transition: opacity .15s; white-space: nowrap; }
+.nav.scrolled .nav-title { opacity: 1; }
+.nav-l, .nav-r { display: flex; align-items: center; gap: 18px; }
+.nav-r { justify-content: flex-end; }
+.tbtn { color: var(--tint); display: inline-flex; align-items: center; gap: 4px; font-size: 17px; min-height: 44px; }
+.tbtn:disabled { color: var(--label-3); cursor: default; }
+.tbtn.bold { font-weight: 600; }
+.spacer-top { height: 44px; }
+.phone .spacer-top { height: 44px; }
+@media (min-width: 720px) and (min-height: 640px) { .phone .spacer-top { height: 98px; } }
+.large { padding: 2px 16px 8px; display: flex; align-items: baseline; gap: 8px; }
+.large h1 { margin: 0; font: 700 34px/1.12 var(--font-d); letter-spacing: -.025em; }
+.large .sub { color: var(--label-2); font-size: 17px; }
+.eyebrow { padding: 0 16px; color: var(--label-2); font-size: 15px; font-weight: 500; }
+
+/* ───────── Listas agrupadas (inset grouped) ───────── */
+.section { padding: 0 16px; margin-top: 26px; }
+.section > .hd { display: flex; justify-content: space-between; align-items: baseline; padding: 0 16px 7px; font-size: 13px; color: var(--label-2); text-transform: uppercase; letter-spacing: .02em; }
+.section > .hd button { color: var(--tint); text-transform: none; font-size: 15px; letter-spacing: -.01em; }
+.section > .ft { padding: 7px 16px 0; font-size: 13px; color: var(--label-2); line-height: 1.35; }
+.group { background: var(--card); border-radius: 12px; overflow: hidden; }
+.row { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 10px 16px; position: relative; width: 100%; text-align: left; }
+.row + .row::before { content: ""; position: absolute; top: 0; right: 0; left: var(--inset, 16px); border-top: .5px solid var(--sep); }
+button.row:active { background: var(--fill); }
+.row .grow { flex: 1; min-width: 0; }
+.row .t { font-size: 17px; }
+.row .s { font-size: 15px; color: var(--label-2); margin-top: 1px; }
+.row .v { color: var(--label-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.row .chev { color: var(--label-3); width: 14px; height: 14px; stroke-width: 2.6; }
+.row.danger .t { color: var(--red); }
+.row.tint .t { color: var(--tint); }
+.row.center { justify-content: center; }
+.row .ico { width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center; color: #fff; flex: none; }
+.row .ico svg.i { width: 18px; height: 18px; stroke-width: 2.1; }
+.bar-l { width: 4px; align-self: stretch; border-radius: 4px; flex: none; }
+
+/* ───────── Pastilhas de turno ───────── */
+.pill { display: inline-grid; place-items: center; min-width: 26px; height: 20px; padding: 0 5px; border-radius: 6px; font: 700 12px/1 var(--font); letter-spacing: 0; background: var(--c); color: var(--on); }
+.pill.off { background: var(--off-bg); color: var(--off-fg); }
+.pill.abs { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.22) 0 3px, transparent 3px 6px); }
+.pill.lg { min-width: 44px; height: 44px; border-radius: 12px; font-size: 17px; }
+.pill.md { min-width: 34px; height: 28px; border-radius: 8px; font-size: 14px; }
+.pill.pending { box-shadow: 0 0 0 2px var(--card), 0 0 0 3.5px var(--orange); }
+
+/* ───────── Calendário ───────── */
+.wk { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 8px; font-size: 11px; font-weight: 600; color: var(--label-2); text-align: center; text-transform: uppercase; }
+.wk span:nth-child(n+6) { color: var(--label-3); }
+.monthgrid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 4px 8px 0; row-gap: 2px; touch-action: pan-y; }
+.monthgrid.painting { touch-action: none; user-select: none; -webkit-user-select: none; }
+.monthgrid.anim-l { animation: inL .22s ease-out; }
+.monthgrid.anim-r { animation: inR .22s ease-out; }
+@keyframes inL { from { transform: translateX(28px); opacity: .2; } }
+@keyframes inR { from { transform: translateX(-28px); opacity: .2; } }
+.day { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px; border-radius: 12px; min-height: 64px; border-top: .5px solid var(--sep); border-radius: 0; }
+.day.out { opacity: .32; }
+.day .dn { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; font-size: 17px; font-variant-numeric: tabular-nums; }
+.day.hol .dn { color: var(--red); }
+.day.today .dn { background: var(--red); color: #fff; font-weight: 600; }
+.day.sel:not(.today) .dn { background: var(--label); color: var(--bg); font-weight: 600; }
+.day .dots { position: absolute; bottom: 2px; display: flex; gap: 3px; }
+.day .dots i { width: 4px; height: 4px; border-radius: 50%; background: var(--label-3); }
+.day .dots i.edit { background: transparent; box-shadow: inset 0 0 0 1px var(--label-2); }
+.day .dots i.swap { background: var(--orange); }
+.day.pop .pill { animation: pop .28s cubic-bezier(.3,1.6,.5,1); }
+@keyframes pop { from { transform: scale(.4); } }
+@media (prefers-reduced-motion: reduce) { .monthgrid.anim-l, .monthgrid.anim-r, .day.pop .pill { animation: none; } }
+
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.stat-chip { flex: none; background: var(--card); border-radius: 12px; padding: 10px 14px; display: grid; gap: 2px; min-width: 104px; }
+.stat-chip b { font: 700 22px/1.1 var(--font-d); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.stat-chip span { font-size: 13px; color: var(--label-2); }
+
+/* ───────── Barra de separadores ───────── */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  padding-top: 6px; padding-bottom: 10px;
+  background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 -.5px 0 var(--sep);
 }
-.swatch[aria-pressed="true"] { border-color: var(--ring); }
-.swatch .chip { min-width: 34px; justify-content: center; }
-.swatch span.lbl { font-size: 13px; }
-.palette .sep { width: 1px; align-self: stretch; background: var(--border); flex: none; }
-.hint { font-size: 13px; color: var(--fg-muted); }
+@media (min-width: 720px) and (min-height: 640px) { .phone .tabbar { padding-bottom: 26px; } }
+.tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; font-weight: 500; color: var(--label-2); position: relative; min-height: 44px; letter-spacing: 0; }
+.tab svg.i { width: 26px; height: 26px; stroke-width: 1.8; }
+.tab[aria-selected="true"] { color: var(--tint); }
+.tab[aria-selected="true"] svg.i { fill: color-mix(in srgb, var(--tint) 18%, transparent); }
+.badge { position: absolute; top: -2px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--red); color: #fff; font-size: 12px; font-weight: 600; display: grid; place-items: center; }
 
-/* Lateral */
-.side { display: grid; gap: 16px; }
-.side .panel { padding: 16px; display: grid; gap: 12px; }
-.side h2 { font: 600 13px/1 var(--font-sans); text-transform: uppercase; letter-spacing: .07em; color: var(--fg-muted); margin: 0; }
-.big { font: 700 34px/1 var(--font-display); letter-spacing: -.02em; }
-.big small { font: 500 14px var(--font-sans); color: var(--fg-muted); letter-spacing: 0; }
-.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin: 0; }
-.stats div { display: grid; gap: 2px; }
-.stats dt { font-size: 12px; color: var(--fg-muted); }
-.stats dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
-.bar { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; display: flex; }
-.bar i { display: block; height: 100%; }
-.legend { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.legend li { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 10px; font-size: 14px; }
-.legend .chip { justify-content: center; }
-.legend .mono { color: var(--fg-muted); }
-.muted { color: var(--fg-muted); }
-.note { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; font-size: 14px; }
-.warnbox { background: var(--warn-soft); color: var(--fg); border-radius: 10px; padding: 8px 10px; font-size: 13px; border-left: 3px solid var(--warn); }
-.shiftcard { display: grid; gap: 6px; border: 1px solid var(--border); border-radius: 12px; padding: 10px; }
-.shiftcard .row { display: flex; align-items: center; gap: 10px; }
-.shiftcard .times { font: 500 15px var(--font-mono); }
-.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+/* ───────── Barra do pincel ───────── */
+.paintbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 31;
+  background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 -.5px 0 var(--sep);
+  padding-top: 10px; padding-bottom: 14px;
+  display: grid; gap: 6px; transform: translateY(0); transition: transform .28s cubic-bezier(.2,.9,.3,1);
+}
+@media (min-width: 720px) and (min-height: 640px) { .phone .paintbar { padding-bottom: 28px; } }
+.paintbar.closed { transform: translateY(110%); }
+.brushes { display: flex; gap: 14px; overflow-x: auto; padding: 0 16px 4px; scrollbar-width: none; }
+.brushes::-webkit-scrollbar { display: none; }
+.brush { flex: none; display: grid; justify-items: center; gap: 5px; font-size: 11px; color: var(--label-2); width: 52px; }
+.brush .pill { min-width: 46px; height: 46px; border-radius: 50%; font-size: 15px; transition: transform .15s; }
+.brush[aria-pressed="true"] { color: var(--label); font-weight: 600; }
+.brush[aria-pressed="true"] .pill { box-shadow: 0 0 0 2.5px var(--bg), 0 0 0 4.5px var(--tint); transform: scale(1.04); }
+.brush .clear { background: var(--fill); color: var(--label); }
+.paint-hint { text-align: center; font-size: 13px; color: var(--label-2); padding-inline: 16px; }
 
-/* Roster */
-.roster-wrap { overflow-x: auto; border-radius: 12px; }
-table.roster { border-collapse: separate; border-spacing: 3px; min-width: 640px; width: 100%; }
-.roster th, .roster td { text-align: center; font-size: 13px; }
-.roster thead th { font-weight: 500; color: var(--fg-muted); padding: 2px 0 6px; }
-.roster thead th.we { color: var(--fg); }
-.roster thead th.hol { color: var(--holiday); }
-.roster tbody th { text-align: left; font-weight: 600; white-space: nowrap; padding-right: 10px; position: sticky; left: 0; background: var(--surface); z-index: 1; }
-.roster tbody th small { display: block; font-weight: 400; color: var(--fg-muted); font-size: 11px; }
-.roster td button { width: 100%; min-width: 36px; height: 34px; border: 0; border-radius: 7px; cursor: pointer; font-weight: 600; font-size: 12px; }
-.roster td button.empty { background: var(--surface-2); color: var(--fg-muted); cursor: default; }
-.roster td button.busy { background: var(--surface-2); color: var(--fg-muted); background-image: repeating-linear-gradient(135deg, var(--border) 0 3px, transparent 3px 7px); cursor: default; }
-.roster tr.me th { color: var(--brand); }
-.roster tfoot td, .roster tfoot th { font-size: 12px; color: var(--fg-muted); padding-top: 6px; font-variant-numeric: tabular-nums; }
-.roster tfoot th { text-align: left; position: sticky; left: 0; background: var(--surface); }
-.swapview { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
-.swapview .side-l, .swapview .side-r { display: grid; gap: 4px; justify-items: start; font-size: 13px; }
-.swapview .chip { font-size: 14px; }
+/* ───────── Controlo segmentado ───────── */
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--fill); border-radius: 9px; padding: 2px; margin: 4px 16px 0; }
+.seg button { height: 30px; border-radius: 7px; font-size: 14px; font-weight: 500; }
+.seg button[aria-selected="true"] { background: var(--card); box-shadow: 0 3px 8px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.04); font-weight: 600; }
+:root[data-theme="dark"] .seg button[aria-selected="true"] { background: #636366; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-selected="true"] { background: #636366; } }
+
+/* ───────── Hoje ───────── */
+.hero { margin: 8px 16px 0; border-radius: 22px; padding: 18px; color: var(--on); background: var(--c); display: grid; gap: 14px; position: relative; overflow: hidden; }
+.hero::after { content: ""; position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,.10); }
+.hero .k { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; opacity: .8; }
+.hero .n { font: 700 30px/1.05 var(--font-d); letter-spacing: -.02em; }
+.hero .when { font-size: 17px; opacity: .9; }
+.hero .cd { display: flex; gap: 18px; }
+.hero .cd div { display: grid; }
+.hero .cd b { font: 700 28px/1 var(--font-d); font-variant-numeric: tabular-nums; }
+.hero .cd span { font-size: 12px; opacity: .8; }
+.weekstrip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: var(--card); border-radius: 12px; padding: 10px 6px; }
+.weekstrip button { display: grid; justify-items: center; gap: 6px; font-size: 12px; color: var(--label-2); padding: 2px 0; border-radius: 10px; }
+.weekstrip button b { font-size: 17px; color: var(--label); font-weight: 500; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; }
+.weekstrip button.today b { background: var(--red); color: #fff; font-weight: 600; }
+
+/* ───────── Grupo ───────── */
+.roster-wrap { overflow-x: auto; margin: 0 16px; background: var(--card); border-radius: 12px; scrollbar-width: none; }
+.roster-wrap::-webkit-scrollbar { display: none; }
+table.roster { border-collapse: separate; border-spacing: 0; }
+.roster th, .roster td { padding: 5px 3px; text-align: center; font-size: 12px; }
+.roster thead th { color: var(--label-2); font-weight: 500; padding-top: 10px; line-height: 1.2; }
+.roster thead th b { display: block; font-size: 15px; color: var(--label); font-weight: 500; width: 26px; height: 26px; line-height: 26px; margin: 2px auto 0; border-radius: 50%; }
+.roster thead th.today b { background: var(--red); color: #fff; }
+.roster thead th.hol b { color: var(--red); }
+.roster tbody th { position: sticky; left: 0; z-index: 1; background: var(--card); text-align: left; padding-left: 12px; padding-right: 8px; font-size: 15px; font-weight: 500; white-space: nowrap; box-shadow: .5px 0 0 var(--sep); }
+.roster tbody th small { display: block; font-size: 11px; color: var(--label-2); font-weight: 400; }
+.roster tbody tr.me th { color: var(--tint); }
+.roster td .pill { min-width: 32px; height: 30px; border-radius: 8px; font-size: 12px; }
+.roster td .busy { display: inline-grid; place-items: center; min-width: 32px; height: 30px; border-radius: 8px; background: var(--fill); background-image: repeating-linear-gradient(135deg, var(--fill-2) 0 3px, transparent 3px 7px); }
+.roster td .free { display: inline-grid; place-items: center; min-width: 32px; height: 30px; color: var(--label-3); }
+.roster tfoot td, .roster tfoot th { font-size: 12px; color: var(--label-2); padding-bottom: 10px; font-variant-numeric: tabular-nums; }
+.roster tfoot th { position: sticky; left: 0; background: var(--card); text-align: left; padding-left: 12px; font-weight: 400; box-shadow: .5px 0 0 var(--sep); }
+.swapline { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+.swapline .sd { display: grid; justify-items: center; gap: 6px; text-align: center; font-size: 13px; color: var(--label-2); }
+.swapline .sd b { color: var(--label); font-size: 15px; font-weight: 600; }
+.btnrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn { height: 50px; border-radius: 14px; font-weight: 600; font-size: 17px; background: var(--fill); color: var(--tint); }
+.btn.primary { background: var(--tint); color: #fff; }
+.btn.small { height: 36px; border-radius: 18px; font-size: 15px; padding-inline: 16px; }
+.btn.red { color: var(--red); }
+.btn:active { opacity: .7; }
+
+/* ───────── Horas ───────── */
+.ringwrap { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; background: var(--card); border-radius: 12px; padding: 16px; }
+.ringwrap .big { font: 700 34px/1 var(--font-d); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.ringwrap .big small { font-size: 17px; font-weight: 600; color: var(--label-2); }
+.ringwrap .s { color: var(--label-2); font-size: 15px; margin-top: 4px; }
+.bars { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; align-items: end; height: 140px; background: var(--card); border-radius: 12px; padding: 14px 16px 10px; }
+.bars .b { display: grid; justify-items: center; gap: 6px; height: 100%; grid-template-rows: auto 1fr auto; }
+.bars .b small { font-size: 11px; color: var(--label-2); font-variant-numeric: tabular-nums; }
+.bars .b .col { width: 100%; max-width: 34px; align-self: end; border-radius: 6px 6px 3px 3px; background: var(--tint); display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+.bars .b .col i { display: block; background: #2E2C7A; }
+.progress { height: 8px; border-radius: 4px; background: var(--fill); overflow: hidden; margin-top: 8px; }
+.progress i { display: block; height: 100%; background: var(--green); border-radius: 4px; }
+.legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: 1px; }
+
+/* ───────── Sheets ───────── */
+.backdrop { position: absolute; inset: 0; background: var(--backdrop); z-index: 60; opacity: 0; transition: opacity .25s; pointer-events: none; }
+.backdrop.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 61; max-height: 88%;
+  background: var(--bg); border-radius: 14px 14px 0 0; display: flex; flex-direction: column;
+  transform: translateY(105%); transition: transform .34s cubic-bezier(.2,.9,.25,1);
+  box-shadow: 0 -8px 40px rgba(0,0,0,.18);
+}
+.sheet.open { transform: translateY(0); }
+.sheet.dragging { transition: none; }
+.sheet-hd { flex: none; padding: 6px 16px 4px; touch-action: none; cursor: grab; }
+.grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--label-3); margin: 0 auto 8px; }
+.sheet-top { display: flex; align-items: center; justify-content: space-between; min-height: 36px; }
+.sheet-top h3 { margin: 0; font-size: 17px; font-weight: 600; }
+.xbtn { width: 30px; height: 30px; border-radius: 50%; background: var(--fill); color: var(--label-2); display: grid; place-items: center; }
+.xbtn svg.i { width: 14px; height: 14px; stroke-width: 2.8; }
+.sheet-body { overflow-y: auto; padding-bottom: 28px; overscroll-behavior: contain; }
+@media (min-width: 720px) and (min-height: 640px) { .phone .sheet-body { padding-bottom: 36px; } }
+.sheet .section:first-child { margin-top: 8px; }
+.shiftblock { display: flex; gap: 14px; align-items: center; background: var(--card); border-radius: 12px; padding: 14px 16px; }
+.shiftblock .t1 { font: 600 20px/1.2 var(--font-d); }
+.shiftblock .t2 { color: var(--label-2); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.warn { display: flex; gap: 12px; align-items: flex-start; background: color-mix(in srgb, var(--orange) 14%, var(--card)); border-radius: 12px; padding: 12px 14px; font-size: 15px; line-height: 1.35; }
+.warn svg.i { color: var(--orange); margin-top: 1px; }
+.typegrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: var(--card); border-radius: 12px; padding: 14px 10px; }
+.typegrid button { display: grid; justify-items: center; gap: 6px; font-size: 12px; color: var(--label-2); }
+.typegrid button[aria-pressed="true"] { color: var(--label); font-weight: 600; }
+.typegrid button[aria-pressed="true"] .pill { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--tint); }
+.check { color: var(--tint); }
 
 .toast {
-  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
-  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14px;
-  box-shadow: var(--shadow); max-width: calc(100% - 32px); z-index: 10;
+  position: absolute; left: 50%; top: 54px; z-index: 80;
+  transform: translate(-50%, -20px); opacity: 0; transition: transform .3s cubic-bezier(.2,.9,.3,1.2), opacity .2s;
+  background: var(--card); color: var(--label); border-radius: 22px; padding: 10px 16px; font-size: 15px; font-weight: 500;
+  box-shadow: 0 8px 30px rgba(0,0,0,.18); display: flex; gap: 10px; align-items: center; width: max-content; max-width: calc(100% - 32px); pointer-events: none;
 }
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.toast.show { transform: translate(-50%, 0); opacity: 1; }
+.toast svg.i { color: var(--green); width: 20px; height: 20px; }
+@media (min-width: 720px) and (min-height: 640px) { .phone .toast { top: 60px; } }
+.empty { padding: 28px 16px; text-align: center; color: var(--label-2); font-size: 15px; }
 </style>
 
-<div class="app">
-  <header class="topbar">
-    <div class="brand"><b>Turnos</b><span class="proto-tag">Protótipo · dados de exemplo</span></div>
-    <div class="cal-select" title="Calendário ativo"><span class="cal-dot"></span><span>Hospital São José</span></div>
-    <div class="tabs" role="tablist" aria-label="Vista">
-      <button role="tab" id="tab-cal" aria-selected="true" aria-controls="view-cal">Calendário</button>
-      <button role="tab" id="tab-grp" aria-selected="false" aria-controls="view-grp">Grupo · Urgência</button>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-today" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8 13.5h2M14 13.5h2M8 17h2"/></symbol>
+  <symbol id="i-group" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.3"/><path d="M3 19.5c.6-3.3 3-5.3 6-5.3s5.4 2 6 5.3"/><circle cx="16.8" cy="9.3" r="2.6"/><path d="M16.5 14.3c2.4.2 4 1.8 4.5 4.5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20.5h16"/><rect x="5.5" y="11" width="3.2" height="7" rx="1"/><rect x="10.4" y="6" width="3.2" height="12" rx="1"/><rect x="15.3" y="13.5" width="3.2" height="4.5" rx="1"/></symbol>
+  <symbol id="i-brush" viewBox="0 0 24 24"><path d="M14.5 4.5l5 5-8.2 8.2-5-5z"/><path d="M6.3 12.7c-2.3.2-3.3 2-3.3 4.3 0 1.5-.5 2.3-1 3 3.2.3 6.3-.4 7.3-2.3"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 000 11H13"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-chevl" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.3v.2"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 4L3.5 7.5 7 11"/><path d="M3.5 7.5h14"/><path d="M17 13l3.5 3.5L17 20"/><path d="M20.5 16.5h-14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M7.5 12.3l3 3 6-6.3"/></symbol>
+  <symbol id="i-tick" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 4.5h14v10l-5 5H5z"/><path d="M14 19.5v-5h5M8.5 9h7M8.5 12.5h4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 019.5 4.5a8 8 0 1010 10z"/></symbol>
+  <symbol id="i-euro" viewBox="0 0 24 24"><path d="M17.5 6.5a6.5 6.5 0 100 11"/><path d="M4.5 10.5h9M4.5 13.5h9"/></symbol>
+  <symbol id="i-sun2" viewBox="0 0 24 24"><path d="M3 18.5h18M6.5 18.5a5.5 5.5 0 0111 0M12 7v2M5.6 10.6l1.4 1.4M18.4 10.6L17 12"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.5 21V4M5.5 4.5c4-2 7 2 13 0v9c-6 2-9-2-13 0"/></symbol>
+  <symbol id="i-plane" viewBox="0 0 24 24"><path d="M10.5 13.5L3 11l1.3-1.8 7.2.8 4.8-5.3c.8-.9 2.3-1 3.1-.1.8.8.7 2.2-.1 3.1L14 13.5l.8 7.2-1.8 1.3-2.5-7.5"/></symbol>
+</svg>
+
+<div class="stage">
+  <div class="phone" id="phone">
+    <div class="island" aria-hidden="true"></div>
+    <div class="statusbar" aria-hidden="true">
+      <span id="sb-time">9:41</span>
+      <span class="sb-r">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.2c2.3 0 4.4.9 6 2.4l1.2-1.3A10.4 10.4 0 008 .4 10.4 10.4 0 00.8 3.3L2 4.6a8.6 8.6 0 016-2.4zm0 3.6c1.3 0 2.5.5 3.5 1.3l1.2-1.3A6.8 6.8 0 008 4a6.8 6.8 0 00-4.7 1.8l1.2 1.3A5 5 0 018 5.8zm0 3.5a1.4 1.4 0 110 2.8 1.4 1.4 0 010-2.8z"/></svg>
+        <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="17" height="9" rx="2" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg>
+      </span>
     </div>
-  </header>
 
-  <!-- Vista calendário -->
-  <div class="layout" id="view-cal" role="tabpanel" aria-labelledby="tab-cal">
-    <section class="panel main-panel" aria-label="Calendário mensal">
-      <div class="monthbar">
-        <button class="iconbtn" id="prev" aria-label="Mês anterior">‹</button>
-        <h1 id="month-title">Outubro 2026</h1>
-        <button class="iconbtn" id="next" aria-label="Mês seguinte">›</button>
-        <button class="btn" id="today-btn">Hoje</button>
-        <span class="spacer"></span>
-        <button class="iconbtn" id="undo" aria-label="Desfazer" title="Desfazer">↶</button>
-        <button class="iconbtn" id="redo" aria-label="Refazer" title="Refazer">↷</button>
-        <button class="btn paint-toggle" id="paint-toggle" aria-pressed="false">Pintar dias</button>
+    <!-- HOJE -->
+    <section class="screen" id="scr-hoje" aria-label="Hoje">
+      <header class="nav"><div class="nav-row"><div class="nav-l"></div><div class="nav-title">Hoje</div><div class="nav-r"></div></div></header>
+      <div class="scroll">
+        <div class="spacer-top"></div>
+        <div class="eyebrow" id="h-date"></div>
+        <div class="large"><h1>Hoje</h1></div>
+        <div id="h-hero"></div>
+        <div class="section"><div class="hd"><span>Esta semana</span><button data-go="cal">Calendário</button></div><div class="weekstrip" id="h-week"></div></div>
+        <div class="section" id="h-swaps"></div>
+        <div class="section"><div class="hd"><span>Urgência · agora</span></div><div class="group" id="h-group"></div></div>
+        <div class="section"><div class="hd"><span>Este mês</span><button data-go="horas">Ver horas</button></div></div>
+        <div class="chips" id="h-chips"></div>
       </div>
-      <div class="palette" id="palette" hidden aria-label="Tipo de turno a pintar"></div>
-      <div class="weekdays" aria-hidden="true"><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div><div>Dom</div></div>
-      <div class="grid" id="grid" role="grid" aria-labelledby="month-title"></div>
-      <p class="hint" id="hint">Rotação de 10 dias <span class="mono">M M T T N N F F F F</span> aplicada de set/2026 a mar/2027. Toca num dia para ver o detalhe, ou em “Pintar dias” para editar vários de uma vez.</p>
     </section>
 
-    <aside class="side">
-      <section class="panel" aria-labelledby="sum-h">
-        <h2 id="sum-h">Resumo do mês</h2>
-        <div class="big num" id="sum-hours">0 h</div>
-        <div class="bar" id="sum-bar" aria-hidden="true"></div>
-        <dl class="stats" id="sum-stats"></dl>
-      </section>
-      <section class="panel" aria-labelledby="day-h" id="day-panel">
-        <h2 id="day-h">Dia</h2>
-        <div id="day-body" class="muted">Seleciona um dia no calendário.</div>
-      </section>
-      <section class="panel" aria-labelledby="leg-h">
-        <h2 id="leg-h">Tipos de turno</h2>
-        <ul class="legend" id="legend"></ul>
-      </section>
-    </aside>
+    <!-- CALENDÁRIO -->
+    <section class="screen" id="scr-cal" aria-label="Calendário" hidden>
+      <header class="nav" id="cal-nav"><div class="nav-row">
+        <div class="nav-l"><button class="tbtn" id="cal-switch">Hospital</button></div>
+        <div class="nav-title" id="cal-small">Outubro 2026</div>
+        <div class="nav-r" id="cal-actions">
+          <button class="tbtn" id="cal-today">Hoje</button>
+          <button class="tbtn" id="paint-on" aria-label="Pintar dias"><svg class="i"><use href="#i-brush"/></svg></button>
+        </div>
+        <div class="nav-r" id="paint-actions" hidden>
+          <button class="tbtn" id="undo" aria-label="Desfazer"><svg class="i"><use href="#i-undo"/></svg></button>
+          <button class="tbtn" id="redo" aria-label="Refazer"><svg class="i"><use href="#i-redo"/></svg></button>
+          <button class="tbtn bold" id="paint-off">OK</button>
+        </div>
+      </div></header>
+      <div class="scroll" id="cal-scroll">
+        <div class="spacer-top"></div>
+        <div class="large" style="justify-content:space-between;align-items:center">
+          <div style="display:flex;align-items:baseline;gap:8px"><h1 id="cal-month">Outubro</h1><span class="sub num" id="cal-year">2026</span></div>
+          <div style="display:flex;gap:4px">
+            <button class="tbtn" id="m-prev" aria-label="Mês anterior" style="width:36px;justify-content:center"><svg class="i"><use href="#i-chevl"/></svg></button>
+            <button class="tbtn" id="m-next" aria-label="Mês seguinte" style="width:36px;justify-content:center"><svg class="i"><use href="#i-chev"/></svg></button>
+          </div>
+        </div>
+        <div class="wk" aria-hidden="true"><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span><span>D</span></div>
+        <div class="monthgrid" id="grid" role="grid" aria-label="Mês"></div>
+        <div id="cal-below">
+          <div class="section" style="margin-top:18px"><div class="chips" id="c-chips" style="padding:0"></div></div>
+          <div class="section"><div class="hd"><span>Próximos turnos</span></div><div class="group" id="c-next"></div>
+            <div class="ft">Rotação de 10 dias (M M T T N N F F F F) aplicada de setembro a março. Desliza o mês para os lados ou toca num dia.</div></div>
+        </div>
+      </div>
+      <div class="paintbar closed" id="paintbar" aria-label="Pincel">
+        <div class="paint-hint" id="paint-hint">Toca ou arrasta sobre os dias</div>
+        <div class="brushes" id="brushes"></div>
+      </div>
+    </section>
+
+    <!-- GRUPO -->
+    <section class="screen" id="scr-grp" aria-label="Grupo" hidden>
+      <header class="nav"><div class="nav-row"><div class="nav-l"></div><div class="nav-title">Urgência</div><div class="nav-r"><button class="tbtn" id="g-members">5 membros</button></div></div></header>
+      <div class="scroll">
+        <div class="spacer-top"></div>
+        <div class="large"><h1>Urgência</h1></div>
+        <div class="seg" role="tablist" aria-label="Secção do grupo">
+          <button role="tab" id="seg-escala" aria-selected="true">Escala</button>
+          <button role="tab" id="seg-trocas" aria-selected="false">Trocas <span id="seg-badge"></span></button>
+        </div>
+        <div id="g-escala">
+          <div class="section" style="margin-top:18px"><div class="hd"><span id="r-range"></span>
+            <span style="display:flex;gap:14px"><button id="r-prev" aria-label="Semana anterior"><svg class="i" style="width:18px;height:18px"><use href="#i-chevl"/></svg></button><button id="r-next" aria-label="Semana seguinte"><svg class="i" style="width:18px;height:18px"><use href="#i-chev"/></svg></button></span></div></div>
+          <div class="roster-wrap"><table class="roster" id="roster"></table></div>
+          <div class="section" style="margin-top:8px"><div class="ft" style="padding-top:0">Toca no turno de um colega para propor uma troca. A Marta partilha só a disponibilidade.</div></div>
+        </div>
+        <div id="g-trocas" hidden></div>
+      </div>
+    </section>
+
+    <!-- HORAS -->
+    <section class="screen" id="scr-horas" aria-label="Horas" hidden>
+      <header class="nav"><div class="nav-row"><div class="nav-l"></div><div class="nav-title" id="hs-small">Horas</div><div class="nav-r"></div></div></header>
+      <div class="scroll">
+        <div class="spacer-top"></div>
+        <div class="large" style="justify-content:space-between;align-items:center">
+          <h1>Horas</h1>
+          <div style="display:flex;align-items:center;gap:2px">
+            <button class="tbtn" id="hs-prev" aria-label="Mês anterior" style="width:32px;justify-content:center"><svg class="i"><use href="#i-chevl"/></svg></button>
+            <span id="hs-month" style="font-weight:600;min-width:86px;text-align:center;font-size:15px"></span>
+            <button class="tbtn" id="hs-next" aria-label="Mês seguinte" style="width:32px;justify-content:center"><svg class="i"><use href="#i-chev"/></svg></button>
+          </div>
+        </div>
+        <div class="section" style="margin-top:8px"><div id="hs-ring"></div></div>
+        <div class="section"><div class="hd"><span>Por semana</span><span><i class="legend-dot" style="background:var(--tint)"></i>dia <i class="legend-dot" style="background:#2E2C7A;margin-left:8px"></i>noturno</span></div><div class="bars" id="hs-bars"></div></div>
+        <div class="section"><div class="hd"><span>Detalhe</span></div><div class="group" id="hs-detail" style="--inset:58px"></div>
+          <div class="ft">Estimativa bruta com 9,50 €/h, +25% noturno e +100% em feriado. Configurável em Definições › Remuneração.</div></div>
+        <div class="section"><div class="hd"><span>Ausências</span></div><div class="group" id="hs-abs"></div></div>
+        <div class="section"><div class="hd"><span>Por tipo</span></div><div class="group" id="hs-types"></div></div>
+      </div>
+    </section>
+
+    <nav class="tabbar" id="tabbar" role="tablist" aria-label="Secções">
+      <button class="tab" role="tab" data-tab="hoje" aria-selected="true"><svg class="i"><use href="#i-today"/></svg>Hoje</button>
+      <button class="tab" role="tab" data-tab="cal" aria-selected="false"><svg class="i"><use href="#i-cal"/></svg>Calendário</button>
+      <button class="tab" role="tab" data-tab="grp" aria-selected="false"><svg class="i"><use href="#i-group"/></svg>Grupo<span class="badge" id="tab-badge" hidden></span></button>
+      <button class="tab" role="tab" data-tab="horas" aria-selected="false"><svg class="i"><use href="#i-chart"/></svg>Horas</button>
+    </nav>
+
+    <div class="backdrop" id="backdrop"></div>
+    <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-hd" id="sheet-hd"><div class="grabber"></div>
+        <div class="sheet-top"><h3 id="sheet-title"></h3><button class="xbtn" id="sheet-x" aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button></div>
+      </div>
+      <div class="sheet-body" id="sheet-body"></div>
+    </section>
+    <div class="toast" id="toast" role="status"><svg class="i"><use href="#i-check"/></svg><span id="toast-t"></span></div>
   </div>
 
-  <!-- Vista grupo -->
-  <div class="layout" id="view-grp" role="tabpanel" aria-labelledby="tab-grp" hidden>
-    <section class="panel main-panel" aria-label="Roster do grupo">
-      <div class="monthbar">
-        <button class="iconbtn" id="r-prev" aria-label="Semana anterior">‹</button>
-        <h1 id="r-title">12–25 out</h1>
-        <button class="iconbtn" id="r-next" aria-label="Semana seguinte">›</button>
-        <span class="spacer"></span>
-        <span class="hint">5 membros · trocas aprovadas entre colegas</span>
-      </div>
-      <div class="roster-wrap"><table class="roster" id="roster"></table></div>
-      <p class="hint">Toca num turno de um colega para propor uma troca com o teu turno desse dia. A Marta partilha só disponibilidade, por isso aparece como “ocupada”.</p>
-    </section>
-    <aside class="side">
-      <section class="panel" aria-labelledby="now-h">
-        <h2 id="now-h">Hoje no grupo</h2>
-        <div id="now-body"></div>
-      </section>
-      <section class="panel" aria-labelledby="swap-h">
-        <h2 id="swap-h">Proposta de troca</h2>
-        <div id="swap-body" class="muted">Escolhe um turno de um colega no roster.</div>
-      </section>
-    </aside>
-  </div>
+  <aside class="notes">
+    <h2>Turnos</h2>
+    <p>Protótipo navegável, com dados de exemplo. Abre no telemóvel para ver em ecrã inteiro.</p>
+    <ol>
+      <li><b>Hoje</b>: o próximo turno com contagem decrescente e um pedido de troca do Rui para responderes.</li>
+      <li><b>Calendário</b>: desliza o mês para os lados, toca num dia para abrir o detalhe.</li>
+      <li>Toca no <b>pincel</b>, escolhe um tipo e arrasta o dedo sobre vários dias. O ↶ desfaz.</li>
+      <li>Vai a <b>outubro</b> e abre o dia 24: o turno da noite atravessa a mudança de hora.</li>
+      <li><b>Grupo</b>: toca no turno de um colega para propor uma troca.</li>
+    </ol>
+  </aside>
 </div>
-<div class="toast" id="toast" role="status" hidden></div>
 
 <script>
 (() => {
   // ───────── Domínio (espelha shift_types / rotations do doc 03) ─────────
   const TYPES = {
-    M:   { name: 'Manhã',  abbr: 'M',   color: '#F2B53A', kind: 'WORK',    start: 7 * 60,  dur: 480 },
-    T:   { name: 'Tarde',  abbr: 'T',   color: '#1F9E89', kind: 'WORK',    start: 15 * 60, dur: 480 },
-    N:   { name: 'Noite',  abbr: 'N',   color: '#2E3A6E', kind: 'WORK',    start: 23 * 60, dur: 480 },
-    EX:  { name: 'Extra',  abbr: 'EX',  color: '#D9480F', kind: 'WORK',    start: 9 * 60,  dur: 240 },
-    F:   { name: 'Folga',  abbr: 'F',   color: '#CFDCD3', kind: 'OFF',     allDay: true },
-    FER: { name: 'Férias', abbr: 'FER', color: '#E0607E', kind: 'ABSENCE', allDay: true },
-    BX:  { name: 'Baixa',  abbr: 'BX',  color: '#8E6CC9', kind: 'ABSENCE', allDay: true },
+    M:   { name: 'Manhã',  abbr: 'M',   color: '#FF9F0A', kind: 'WORK',    start: 420,  dur: 480 },
+    T:   { name: 'Tarde',  abbr: 'T',   color: '#1FA2B8', kind: 'WORK',    start: 900,  dur: 480 },
+    N:   { name: 'Noite',  abbr: 'N',   color: '#3B3A98', kind: 'WORK',    start: 1380, dur: 480 },
+    EX:  { name: 'Extra',  abbr: 'EX',  color: '#FF375F', kind: 'WORK',    start: 540,  dur: 240 },
+    F:   { name: 'Folga',  abbr: 'F',   color: null,      kind: 'OFF',     allDay: true },
+    FER: { name: 'Férias', abbr: 'FER', color: '#30B35A', kind: 'ABSENCE', allDay: true },
+    BX:  { name: 'Baixa',  abbr: 'BX',  color: '#AF52DE', kind: 'ABSENCE', allDay: true },
   };
-  const PAINT_ORDER = ['M', 'T', 'N', 'EX', 'F', 'FER', 'BX'];
+  const ORDER = ['M', 'T', 'N', 'EX', 'F', 'FER', 'BX'];
   const ROTATION = ['M', 'M', 'T', 'T', 'N', 'N', 'F', 'F', 'F', 'F'];
   const ROT_START = '2026-09-01', ROT_END = '2027-03-31', ROT_ANCHOR = '2026-09-30';
-  const PAY = { rate: 9.5, night: 0.25, holiday: 1.0 };
-  const FER_ALLOWANCE = 22;
-
+  const PAY = { rate: 9.5, night: .25, holiday: 1 }, TARGET_H = 150, FER_ALLOW = 22;
   const HOLIDAYS = {
-    '2026-01-01': 'Ano Novo', '2026-04-03': 'Sexta-feira Santa', '2026-04-05': 'Páscoa',
-    '2026-04-25': 'Dia da Liberdade', '2026-05-01': 'Dia do Trabalhador', '2026-06-04': 'Corpo de Deus',
-    '2026-06-10': 'Dia de Portugal', '2026-06-13': 'Santo António (Lisboa)', '2026-08-15': 'Assunção de Nossa Senhora',
+    '2026-06-10': 'Dia de Portugal', '2026-06-13': 'Santo António', '2026-08-15': 'Assunção de Nossa Senhora',
     '2026-10-05': 'Implantação da República', '2026-11-01': 'Todos os Santos', '2026-12-01': 'Restauração da Independência',
     '2026-12-08': 'Imaculada Conceição', '2026-12-25': 'Natal', '2027-01-01': 'Ano Novo',
   };
-  // Europe/Lisbon: mudanças de hora (hora local em que acontecem)
-  const DST = { '2026-03-29': 'spring', '2026-10-25': 'fall', '2027-03-28': 'spring' };
+  const DST = { '2026-10-25': 'fall', '2027-03-28': 'spring' };
   const NOTES = { '2026-10-17': 'Formação SBV às 14:00, sala 2.' };
 
-  // ───────── Utilitários de datas (datas locais como strings ISO) ─────────
+  // ───────── Datas ─────────
   const MONTHS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   const WD = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  const WDS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   const iso = (y, m, d) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
-  const fmt = dt => iso(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate());
-  const addDays = (s, n) => { const d = parse(s); d.setUTCDate(d.getUTCDate() + n); return fmt(d); };
-  const diffDays = (a, b) => Math.round((parse(a) - parse(b)) / 86400000);
-  const weekday = s => parse(s).getUTCDay();
-  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-  const hm = min => `${String(Math.floor(min / 60) % 24).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
-  const hours = min => (min / 60).toLocaleString('pt-PT', { maximumFractionDigits: 1 });
+  const fmt = d => iso(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+  const add = (s, n) => { const d = parse(s); d.setUTCDate(d.getUTCDate() + n); return fmt(d); };
+  const diff = (a, b) => Math.round((parse(a) - parse(b)) / 864e5);
+  const wday = s => parse(s).getUTCDay();
+  const dnum = s => Number(s.slice(8));
+  const mname = s => MONTHS[Number(s.slice(5, 7)) - 1];
+  const cap = s => s[0].toUpperCase() + s.slice(1);
+  const hm = m => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  const hrs = m => (m / 60).toLocaleString('pt-PT', { maximumFractionDigits: 1 });
   const eur = v => v.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
-  const now = new Date();
-  const TODAY = iso(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const mondayOf = d => add(d, -((wday(d) + 6) % 7));
+  const nowD = new Date();
+  const TODAY = iso(nowD.getFullYear(), nowD.getMonth() + 1, nowD.getDate());
+  const longDate = d => `${WD[wday(d)]}, ${dnum(d)} de ${mname(d)}`;
+  const shortDate = d => `${WDS[wday(d)]}, ${dnum(d)} ${mname(d).slice(0, 3)}`;
+  const relDate = d => d === TODAY ? 'Hoje' : d === add(TODAY, 1) ? 'Amanhã' : shortDate(d);
 
-  function textOn(hex) {
-    const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
-      .map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-    const L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-    return (1.05) / (L + 0.05) >= (L + 0.05) / 0.05 ? '#FFFFFF' : '#16151B';
+  function onColor(hex) {
+    if (!hex) return '';
+    const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4);
+    const L = .2126 * c[0] + .7152 * c[1] + .0722 * c[2];
+    return 1.05 / (L + .05) >= (L + .05) / .05 ? '#FFFFFF' : '#1C1C1E';
   }
-  function chipHTML(code, withTime, extraClass = '') {
+  function pill(code, size = '', extra = '') {
     const t = TYPES[code];
-    const time = withTime && !t.allDay ? `<small>${hm(t.start)}</small>` : '';
-    const cls = `chip${t.kind === 'ABSENCE' ? ' absence' : ''} ${extraClass}`;
-    return `<span class="${cls}" style="background:${t.color};color:${textOn(t.color)}">${t.abbr}${time}</span>`;
+    const cls = `pill ${size} ${t.kind === 'OFF' ? 'off' : ''} ${t.kind === 'ABSENCE' ? 'abs' : ''} ${extra}`;
+    return `<span class="${cls}" style="--c:${t.color || 'transparent'};--on:${onColor(t.color)}">${t.abbr}</span>`;
   }
+  const icon = (id, style = '') => `<svg class="i" style="${style}"><use href="#i-${id}"/></svg>`;
 
   // ───────── Estado ─────────
-  const state = {
-    year: 2026, month: 10, paint: false, brush: 'M', selected: null,
-    overrides: new Map(), undo: [], redo: [], pendingSwaps: new Set(),
-    tab: 'cal', rosterStart: '2026-10-12', swap: null,
+  const S = {
+    tab: 'hoje', year: +TODAY.slice(0, 4), month: +TODAY.slice(5, 7), paint: false, brush: 'M',
+    over: new Map(), src: new Map(), undo: [], redo: [], sel: null,
+    rosterStart: mondayOf(TODAY), grpSeg: 'escala', swaps: [], hsY: +TODAY.slice(0, 4), hsM: +TODAY.slice(5, 7),
+    peopleOver: {},
   };
-  // Algumas edições manuais de exemplo (turnos "override")
-  [['2026-10-19', 'FER'], ['2026-10-20', 'FER'], ['2026-10-21', 'FER'], ['2026-10-10', 'EX']]
-    .forEach(([d, c]) => state.overrides.set(d, c));
+  [['2026-10-19', 'FER'], ['2026-10-20', 'FER'], ['2026-10-21', 'FER'], ['2026-10-10', 'EX']].forEach(([d, c]) => S.over.set(d, c));
 
-  function rotationCode(date) {
-    if (date < ROT_START || date > ROT_END) return null;
-    const i = ((diffDays(date, ROT_ANCHOR) % ROTATION.length) + ROTATION.length) % ROTATION.length;
-    return ROTATION[i];
+  const rot = (d, off = 0) => (d < ROT_START || d > ROT_END) ? null : ROTATION[(((diff(d, ROT_ANCHOR) + off) % 10) + 10) % 10];
+  const mine = d => S.over.has(d) ? S.over.get(d) : rot(d);
+
+  const PEOPLE = [
+    { id: 'me', name: 'Ana', sub: 'eu', level: 'D', base: d => mine(d) },
+    { id: 'rui', name: 'Rui', sub: 'enfermeiro', level: 'D', base: d => rot(d, 4) },
+    { id: 'marta', name: 'Marta', sub: 'disponibilidade', level: 'A', base: d => rot(d, 7) },
+    { id: 'sofia', name: 'Sofia', sub: 'admin', level: 'D', base: d => (d >= add(S.rosterStart0, 0) && d <= add(S.rosterStart0, 4)) ? 'FER' : rot(d, 2) },
+    { id: 'tiago', name: 'Tiago', sub: 'horário fixo', level: 'D', base: d => [0, 6].includes(wday(d)) ? 'F' : 'M' },
+  ];
+  S.rosterStart0 = add(mondayOf(TODAY), 7);
+  const shiftOf = (p, d) => p.id === 'me' ? mine(d) : (S.peopleOver[p.id]?.has(d) ? S.peopleOver[p.id].get(d) : p.base(d));
+  const person = id => PEOPLE.find(p => p.id === id);
+  const isWork = c => c && TYPES[c].kind === 'WORK';
+
+  // Hoje tem sempre um turno (vindo de uma troca antiga), para o ecrã "Hoje" ter vida
+  if (!isWork(mine(TODAY))) { S.over.set(TODAY, 'T'); S.src.set(TODAY, 'Troca com o Tiago'); }
+  // Pedido de troca recebido do Rui: primeiro dia nos próximos 3–14 em que ambos trabalham em turnos diferentes
+  for (let i = 3; i <= 14; i++) {
+    const d = add(TODAY, i), a = mine(d), b = shiftOf(person('rui'), d);
+    if (isWork(a) && isWork(b) && a !== b && !restWarnings(d, b)) {
+      S.swaps.push({ id: 1, dir: 'in', person: 'rui', date: d, give: a, get: b, status: 'PENDING', msg: 'Tenho consulta nesse dia, dás-me uma mão?' });
+      break;
+    }
   }
-  const shiftOn = date => state.overrides.has(date) ? state.overrides.get(date) : rotationCode(date);
 
-  // Simula o servidor: percorre o turno minuto a minuto em tempo real, avançando o relógio local
-  // e aplicando a mudança de hora de Lisboa (01:00→02:00 em março, 02:00→01:00 em outubro).
-  function resolveShift(date, code) {
+  // Motor de tempo: percorre o turno minuto a minuto (tempo real), avançando o relógio local de Lisboa
+  function resolve(date, code) {
     const t = TYPES[code];
     if (!t || t.allDay) return null;
-    let d = date, wall = t.start, fellBack = false;
-    const r = { real: t.dur, night: 0, weekend: 0, holiday: 0, endDate: null, endWall: 0, dstNote: null };
+    let d = date, w = t.start, fell = false;
+    const r = { real: t.dur, night: 0, weekend: 0, holiday: 0, endDate: null, endW: 0, dst: null };
     for (let i = 0; i < t.dur; i++) {
-      if (DST[d] === 'spring' && wall === 60) { wall = 120; r.dstNote = 'Mudança para a hora de verão: o relógio salta das 01:00 para as 02:00.'; }
-      if (DST[d] === 'fall' && wall === 120 && !fellBack) { wall = 60; fellBack = true; r.dstNote = 'Mudança para a hora de inverno: a hora entre as 01:00 e as 02:00 repete-se.'; }
-      const h = Math.floor(wall / 60);
+      if (DST[d] === 'spring' && w === 60) { w = 120; r.dst = 'Mudança para a hora de verão: o relógio salta das 01:00 para as 02:00.'; }
+      if (DST[d] === 'fall' && w === 120 && !fell) { w = 60; fell = true; r.dst = 'Mudança para a hora de inverno: a hora entre as 01:00 e as 02:00 repete-se.'; }
+      const h = Math.floor(w / 60);
       if (h >= 22 || h < 7) r.night++;
-      const wd = weekday(d);
-      if (wd === 0 || wd === 6) r.weekend++;
+      if (wday(d) === 0 || wday(d) === 6) r.weekend++;
       if (HOLIDAYS[d]) r.holiday++;
-      wall++;
-      if (wall >= 1440) { wall -= 1440; d = addDays(d, 1); }
+      if (++w >= 1440) { w -= 1440; d = add(d, 1); }
     }
-    r.endDate = d; r.endWall = wall;
+    r.endDate = d; r.endW = w;
     return r;
   }
+  function monthStats(y, m) {
+    const pre = iso(y, m, 1).slice(0, 7), n = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const o = { work: 0, night: 0, weekend: 0, holiday: 0, pay: 0, shifts: 0, off: 0, abs: 0, byType: {}, weeks: [] };
+    let wk = null;
+    for (let i = 1; i <= n; i++) {
+      const d = `${pre}-${String(i).padStart(2, '0')}`, c = mine(d);
+      if (!wk || wday(d) === 1) { wk = { label: `${dnum(d)}`, work: 0, night: 0 }; o.weeks.push(wk); }
+      if (!c) continue;
+      o.byType[c] = (o.byType[c] || 0) + 1;
+      const r = resolve(d, c);
+      if (!r) { TYPES[c].kind === 'OFF' ? o.off++ : o.abs++; continue; }
+      o.shifts++; o.work += r.real; o.night += r.night; o.weekend += r.weekend; o.holiday += r.holiday;
+      o.pay += PAY.rate * (r.real + PAY.night * r.night + PAY.holiday * r.holiday) / 60;
+      wk.work += r.real; wk.night += r.night;
+    }
+    return o;
+  }
+  function yearCount(y, code) { let n = 0; for (let d = `${y}-01-01`; d <= `${y}-12-31`; d = add(d, 1)) if (mine(d) === code) n++; return n; }
 
-  // ───────── Render: calendário ─────────
+  // ───────── Utilitários de UI ─────────
   const $ = id => document.getElementById(id);
-  const grid = $('grid');
+  const phone = $('phone');
+  function haptic() { try { navigator.vibrate && navigator.vibrate(8); } catch (e) {} }
+  let toastT;
+  function toast(msg) { $('toast-t').textContent = msg; $('toast').classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.remove('show'), 2600); }
 
-  function monthDays() {
-    const first = iso(state.year, state.month, 1);
-    const lead = (weekday(first) + 6) % 7; // semana começa à segunda
-    const start = addDays(first, -lead);
-    const daysInMonth = new Date(Date.UTC(state.year, state.month, 0)).getUTCDate();
-    const cells = Math.ceil((lead + daysInMonth) / 7) * 7;
-    return Array.from({ length: cells }, (_, i) => addDays(start, i));
-  }
-
-  function renderGrid() {
-    $('month-title').textContent = `${cap(MONTHS[state.month - 1])} ${state.year}`;
-    const prefix = iso(state.year, state.month, 1).slice(0, 7);
-    grid.innerHTML = monthDays().map(d => {
-      const inMonth = d.startsWith(prefix);
-      const code = shiftOn(d);
-      const hol = HOLIDAYS[d];
-      const cls = ['cell', inMonth ? '' : 'out', d === TODAY ? 'today' : '', hol ? 'holiday' : '', state.selected === d ? 'selected' : ''].join(' ');
-      const t = code ? TYPES[code] : null;
-      const label = `${cap(WD[weekday(d)])}, ${Number(d.slice(8))} de ${MONTHS[Number(d.slice(5, 7)) - 1]}` +
-        (t ? `, ${t.name}${t.allDay ? '' : ' às ' + hm(t.start)}` : ', sem turno') + (hol ? `, feriado: ${hol}` : '');
-      const flag = hol ? `<span class="flag">Feriado</span>` : DST[d] ? `<span class="flag muted">Muda a hora</span>` : '';
-      const pending = state.pendingSwaps.has(d) ? 'pending' : '';
-      return `<button class="${cls}" role="gridcell" data-date="${d}" aria-label="${label}" ${inMonth ? '' : 'tabindex="-1"'}>
-        <span class="d"><span class="num">${Number(d.slice(8))}</span>${NOTES[d] ? '<span class="notedot" title="Tem nota"></span>' : ''}${state.overrides.has(d) && rotationCode(d) !== null ? '<span class="editdot" title="Editado à mão (preservado ao reaplicar a rotação)"></span>' : ''}</span>
-        ${code ? chipHTML(code, true, pending) : ''}${flag}
-      </button>`;
-    }).join('');
-    $('prev').disabled = state.year === 2026 && state.month === 1;
-    $('undo').disabled = !state.undo.length;
-    $('redo').disabled = !state.redo.length;
-  }
-
-  function renderSummary() {
-    const prefix = iso(state.year, state.month, 1).slice(0, 7);
-    const days = monthDays().filter(d => d.startsWith(prefix));
-    let work = 0, night = 0, weekend = 0, holiday = 0, pay = 0, shifts = 0, off = 0, abs = 0;
-    const byType = {};
-    for (const d of days) {
-      const code = shiftOn(d);
-      if (!code) continue;
-      byType[code] = (byType[code] || 0) + 1;
-      const r = resolveShift(d, code);
-      if (!r) { TYPES[code].kind === 'OFF' ? off++ : abs++; continue; }
-      shifts++; work += r.real; night += r.night; weekend += r.weekend; holiday += r.holiday;
-      pay += PAY.rate * (r.real + PAY.night * r.night + PAY.holiday * r.holiday) / 60;
-    }
-    const year = String(state.year);
-    let ferUsed = 0;
-    for (let d = `${year}-01-01`; d <= `${year}-12-31`; d = addDays(d, 1)) if (shiftOn(d) === 'FER') ferUsed++;
-
-    $('sum-hours').innerHTML = `${hours(work)} h <small>em ${shifts} turnos</small>`;
-    const total = Object.values(byType).reduce((a, b) => a + b, 0) || 1;
-    $('sum-bar').innerHTML = PAINT_ORDER.filter(c => byType[c]).map(c => `<i style="width:${byType[c] / total * 100}%;background:${TYPES[c].color}" title="${TYPES[c].name}: ${byType[c]}"></i>`).join('');
-    $('sum-stats').innerHTML = [
-      ['Noturno', `${hours(night)} h`], ['Fim de semana', `${hours(weekend)} h`],
-      ['Em feriado', `${hours(holiday)} h`], ['Folgas', `${off} dias`],
-      ['Estimativa bruta', eur(pay)], [`Férias ${year}`, `${ferUsed} de ${FER_ALLOWANCE}`],
-    ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
-
-    $('legend').innerHTML = PAINT_ORDER.map(c => {
-      const t = TYPES[c];
-      const time = t.allDay ? 'dia inteiro' : `${hm(t.start)}–${hm((t.start + t.dur) % 1440)}`;
-      return `<li>${chipHTML(c, false)}<span>${t.name}</span><span class="mono">${time}</span></li>`;
-    }).join('');
-  }
-
-  function renderDay() {
-    const d = state.selected, body = $('day-body');
-    if (!d) { body.className = 'muted'; body.textContent = 'Seleciona um dia no calendário.'; return; }
-    body.className = '';
-    const code = shiftOn(d), hol = HOLIDAYS[d];
-    const title = `${cap(WD[weekday(d)])}, ${Number(d.slice(8))} de ${MONTHS[Number(d.slice(5, 7)) - 1]}`;
-    let html = `<div style="display:grid;gap:10px"><div><strong>${title}</strong>${hol ? `<div style="color:var(--holiday);font-size:13px">Feriado · ${hol}</div>` : ''}</div>`;
-    if (code) {
-      const t = TYPES[code], r = resolveShift(d, code);
-      const src = state.overrides.has(d) ? (rotationCode(d) ? 'Editado à mão sobre a rotação' : 'Adicionado à mão') : 'Gerado pela rotação de 10 dias';
-      html += `<div class="shiftcard"><div class="row">${chipHTML(code, false)}<strong>${t.name}</strong></div>`;
-      if (r) {
-        const plus = r.endDate !== d ? ' <span class="muted">(+1)</span>' : '';
-        html += `<div class="times">${hm(t.start)} → ${hm(r.endWall)}${plus}</div>
-          <div class="muted" style="font-size:13px">${hours(r.real)} h reais · ${hours(r.night)} h noturnas${r.holiday ? ` · ${hours(r.holiday)} h em feriado` : ''}</div>`;
-        if (r.dstNote) html += `<div class="warnbox">${r.dstNote} O turno dura ${hours(r.real)} h reais e acaba às ${hm(r.endWall)}.</div>`;
-      } else {
-        html += `<div class="muted" style="font-size:13px">Dia inteiro · ${t.kind === 'ABSENCE' ? 'conta para o saldo de ausências' : 'não conta como trabalho'}</div>`;
-      }
-      html += `<div class="muted" style="font-size:12px">${src}</div></div>`;
-    } else {
-      html += `<div class="muted">Sem turno neste dia.</div>`;
-    }
-    if (NOTES[d]) html += `<div class="note">${NOTES[d]}</div>`;
-    html += `<div class="actions">${code && TYPES[code].kind === 'WORK' ? '<button class="btn" id="d-swap">Propor troca</button>' : ''}${code ? '<button class="btn" id="d-clear">Limpar dia</button>' : ''}</div></div>`;
-    body.innerHTML = html;
-    $('d-clear')?.addEventListener('click', () => { commit([[d, null]]); toast('Dia limpo. Podes desfazer com ↶.'); });
-    $('d-swap')?.addEventListener('click', () => { state.rosterStart = mondayOf(d); setTab('grp'); toast('Escolhe o turno do colega com quem queres trocar.'); });
-  }
-
-  function renderPalette() {
-    $('palette').innerHTML = PAINT_ORDER.map(c =>
-      `<button class="swatch" data-brush="${c}" aria-pressed="${state.brush === c}">${chipHTML(c, false)}<span class="lbl">${TYPES[c].name}</span></button>`
-    ).join('') + `<span class="sep"></span><button class="swatch" data-brush="" aria-pressed="${state.brush === ''}"><span class="chip" style="background:var(--surface-2)">⌫</span><span class="lbl">Limpar</span></button>`;
-  }
-
-  function renderAll() { renderGrid(); renderSummary(); renderDay(); if (state.tab === 'grp') renderRoster(); }
-
-  // ───────── Edição com desfazer/refazer ─────────
-  function commit(changes) {
-    const before = changes.map(([d]) => [d, state.overrides.has(d) ? state.overrides.get(d) : undefined]);
-    changes.forEach(([d, c]) => state.overrides.set(d, c));
-    state.undo.push({ before, after: changes }); state.redo = [];
-    if (state.undo.length > 20) state.undo.shift();
-    renderAll();
-  }
-  function applyEntries(entries) { entries.forEach(([d, c]) => c === undefined ? state.overrides.delete(d) : state.overrides.set(d, c)); }
-  $('undo').addEventListener('click', () => { const op = state.undo.pop(); if (!op) return; applyEntries(op.before); state.redo.push(op); renderAll(); });
-  $('redo').addEventListener('click', () => { const op = state.redo.pop(); if (!op) return; applyEntries(op.after); state.undo.push(op); renderAll(); });
-
-  // ───────── Modo pincel (toque/arrastar) ─────────
-  let stroke = null;
-  function paintCell(cell) {
-    const d = cell.dataset.date;
-    if (!d || stroke.has(d)) return;
-    const code = state.brush || null;
-    if (shiftOn(d) === code) return;
-    stroke.set(d, code);
-    state.overrides.set(d, code);
-    const t = code ? TYPES[code] : null;
-    const old = cell.querySelector('.chip'); if (old) old.remove();
-    if (t) cell.querySelector('.d').insertAdjacentHTML('afterend', chipHTML(code, true));
-    cell.classList.remove('flash'); void cell.offsetWidth; cell.classList.add('flash');
-  }
-  grid.addEventListener('pointerdown', e => {
-    const cell = e.target.closest('.cell');
-    if (!cell) return;
-    if (!state.paint) return;
-    e.preventDefault();
-    stroke = new Map();
-    // guarda o estado anterior para o desfazer antes de pintar
-    stroke.before = new Map();
-    stroke.snapshot = d => { if (!stroke.before.has(d)) stroke.before.set(d, state.overrides.has(d) ? state.overrides.get(d) : undefined); };
-    stroke.snapshot(cell.dataset.date);
-    paintCell(cell);
-  });
-  grid.addEventListener('pointermove', e => {
-    if (!stroke) return;
-    const el = document.elementFromPoint(e.clientX, e.clientY);
-    const cell = el && el.closest && el.closest('.cell');
-    if (cell && grid.contains(cell)) { stroke.snapshot(cell.dataset.date); paintCell(cell); }
-  });
-  const endStroke = () => {
-    if (!stroke) return;
-    if (stroke.size) {
-      state.undo.push({ before: [...stroke.before], after: [...stroke] }); state.redo = [];
-      if (state.undo.length > 20) state.undo.shift();
-    }
-    stroke = null; renderAll();
-  };
-  window.addEventListener('pointerup', endStroke);
-  window.addEventListener('pointercancel', endStroke);
-
-  grid.addEventListener('click', e => {
-    const cell = e.target.closest('.cell');
-    if (!cell || state.paint) return;
-    state.selected = cell.dataset.date;
-    const [y, m] = state.selected.split('-').map(Number);
-    if (y !== state.year || m !== state.month) { state.year = y; state.month = m; }
-    renderAll();
-  });
-  grid.addEventListener('keydown', e => {
-    const cell = e.target.closest('.cell');
-    if (!cell) return;
-    const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
-    if (moves[e.key]) {
-      e.preventDefault();
-      const target = addDays(cell.dataset.date, moves[e.key]);
-      const next = grid.querySelector(`[data-date="${target}"]`);
-      if (next) next.focus();
-    } else if (state.paint && (e.key === ' ' || e.key === 'Enter')) {
-      e.preventDefault();
-      commit([[cell.dataset.date, state.brush || null]]);
-      grid.querySelector(`[data-date="${cell.dataset.date}"]`)?.focus();
-    }
+  // Títulos grandes que colapsam na barra ao fazer scroll
+  document.querySelectorAll('.screen').forEach(sc => {
+    const sc2 = sc.querySelector('.scroll'), nav = sc.querySelector('.nav');
+    sc2.addEventListener('scroll', () => nav.classList.toggle('scrolled', sc2.scrollTop > 36), { passive: true });
   });
 
-  $('paint-toggle').addEventListener('click', () => {
-    state.paint = !state.paint;
-    $('paint-toggle').setAttribute('aria-pressed', state.paint);
-    $('paint-toggle').textContent = state.paint ? 'Concluir' : 'Pintar dias';
-    $('palette').hidden = !state.paint;
-    grid.classList.toggle('painting', state.paint);
-    $('hint').textContent = state.paint
-      ? 'Escolhe um tipo e toca ou arrasta sobre os dias. As alterações ficam guardadas no fim de cada gesto; ↶ desfaz.'
-      : 'Rotação de 10 dias M M T T N N F F F F aplicada de set/2026 a mar/2027. Toca num dia para ver o detalhe.';
-    if (state.paint) renderPalette();
-  });
-  $('palette').addEventListener('click', e => {
-    const b = e.target.closest('[data-brush]');
-    if (!b) return;
-    state.brush = b.dataset.brush; renderPalette();
-  });
-
-  const shiftMonth = n => {
-    let m = state.month + n, y = state.year;
-    if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; }
-    state.year = y; state.month = m; state.selected = null; renderAll();
-  };
-  $('prev').addEventListener('click', () => shiftMonth(-1));
-  $('next').addEventListener('click', () => shiftMonth(1));
-  $('today-btn').addEventListener('click', () => {
-    state.year = Number(TODAY.slice(0, 4)); state.month = Number(TODAY.slice(5, 7)); state.selected = TODAY; renderAll();
-  });
-
-  // ───────── Grupo / roster ─────────
-  const PEOPLE = [
-    { id: 'me', name: 'Ana', note: 'eu', level: 'DETAILS', shift: d => shiftOn(d) },
-    { id: 'rui', name: 'Rui', note: 'enfermeiro', level: 'DETAILS', shift: d => ROTATION[((diffDays(d, ROT_ANCHOR) + 4) % 10 + 10) % 10] },
-    { id: 'marta', name: 'Marta', note: 'só disponibilidade', level: 'AVAILABILITY', shift: d => ROTATION[((diffDays(d, ROT_ANCHOR) + 7) % 10 + 10) % 10] },
-    { id: 'sofia', name: 'Sofia', note: 'admin do grupo', level: 'DETAILS', shift: d => (d >= '2026-10-12' && d <= '2026-10-18') ? 'FER' : ROTATION[((diffDays(d, ROT_ANCHOR) + 2) % 10 + 10) % 10] },
-    { id: 'tiago', name: 'Tiago', note: 'horário fixo', level: 'DETAILS', shift: d => [0, 6].includes(weekday(d)) ? 'F' : 'M' },
-  ];
-  const mondayOf = d => addDays(d, -((weekday(d) + 6) % 7));
-
-  function renderRoster() {
-    const days = Array.from({ length: 14 }, (_, i) => addDays(state.rosterStart, i));
-    const a = days[0], b = days[13];
-    const mon = s => MONTHS[Number(s.slice(5, 7)) - 1].slice(0, 3);
-    $('r-title').textContent = `${Number(a.slice(8))}${mon(a) !== mon(b) ? ' ' + mon(a) : ''}–${Number(b.slice(8))} ${mon(b)}`;
-    const head = days.map(d => {
-      const wd = weekday(d), cls = HOLIDAYS[d] ? 'hol' : (wd === 0 || wd === 6) ? 'we' : '';
-      return `<th class="${cls}" scope="col">${['D','S','T','Q','Q','S','S'][wd]}<br><span class="num">${Number(d.slice(8))}</span></th>`;
-    }).join('');
-    const rows = PEOPLE.map(p => `<tr class="${p.id === 'me' ? 'me' : ''}"><th scope="row">${p.name}<small>${p.note}</small></th>` + days.map(d => {
-      const c = p.shift(d);
-      if (!c) return `<td><button class="empty" tabindex="-1" aria-label="${p.name}, sem turno">·</button></td>`;
-      const t = TYPES[c];
-      if (p.level === 'AVAILABILITY') {
-        return t.kind === 'WORK'
-          ? `<td><button class="busy" tabindex="-1" aria-label="${p.name}, ocupada">●</button></td>`
-          : `<td><button class="empty" tabindex="-1" aria-label="${p.name}, livre">·</button></td>`;
-      }
-      const pend = state.pendingSwaps.has(`${p.id}:${d}`) || (p.id === 'me' && state.pendingSwaps.has(d));
-      const canSwap = p.id !== 'me' && t.kind === 'WORK';
-      return `<td><button data-person="${p.id}" data-date="${d}" ${canSwap ? '' : 'tabindex="-1"'} class="${pend ? 'chip pending' : ''}"
-        style="background:${t.color};color:${textOn(t.color)};${canSwap ? '' : 'cursor:default'}"
-        aria-label="${p.name}, ${t.name}${canSwap ? ', propor troca' : ''}">${t.abbr}</button></td>`;
-    }).join('') + '</tr>').join('');
-    const counts = days.map(d => PEOPLE.filter(p => { const c = p.shift(d); return c && TYPES[c].kind === 'WORK'; }).length);
-    $('roster').innerHTML = `<thead><tr><th></th>${head}</tr></thead><tbody>${rows}</tbody>
-      <tfoot><tr><th>A trabalhar</th>${counts.map(n => `<td>${n}</td>`).join('')}</tr></tfoot>`;
-
-    const ref = (TODAY >= days[0] && TODAY <= days[13]) ? TODAY : days[0];
-    const working = PEOPLE.map(p => ({ p, c: p.shift(ref) })).filter(x => x.c && TYPES[x.c].kind === 'WORK');
-    $('now-body').innerHTML = `<div class="muted" style="font-size:13px">${cap(WD[weekday(ref)])}, ${Number(ref.slice(8))} de ${MONTHS[Number(ref.slice(5, 7)) - 1]}</div>
-      <ul class="legend">${working.map(({ p, c }) => p.level === 'AVAILABILITY'
-        ? `<li><span class="chip" style="background:var(--surface-2);justify-content:center">●</span><span>${p.name}</span><span class="mono">ocupada</span></li>`
-        : `<li>${chipHTML(c, false)}<span>${p.name}</span><span class="mono">${hm(TYPES[c].start)}–${hm((TYPES[c].start + TYPES[c].dur) % 1440)}</span></li>`).join('')}</ul>`;
-    renderSwap();
+  // ───────── Sheets ─────────
+  const sheet = $('sheet'), backdrop = $('backdrop');
+  let sheetRender = null;
+  function openSheet(title, render) {
+    sheetRender = render; $('sheet-title').textContent = title; render($('sheet-body'));
+    $('sheet-body').scrollTop = 0; sheet.classList.add('open'); backdrop.classList.add('open'); haptic();
   }
-
-  function renderSwap() {
-    const body = $('swap-body'), s = state.swap;
-    if (!s) { body.className = 'muted'; body.textContent = 'Escolhe um turno de um colega no roster.'; return; }
-    body.className = '';
-    const p = PEOPLE.find(x => x.id === s.person);
-    const theirs = p.shift(s.date), mine = shiftOn(s.date);
-    const dLabel = `${WD[weekday(s.date)].split('-')[0]}, ${Number(s.date.slice(8))} ${MONTHS[Number(s.date.slice(5, 7)) - 1].slice(0, 3)}`;
-    if (!mine || TYPES[mine].kind !== 'WORK') {
-      body.innerHTML = `<div style="display:grid;gap:10px"><div>Não tens turno de trabalho em <strong>${dLabel}</strong>.</div>
-        <div class="muted" style="font-size:13px">Podes pedir o turno do ${p.name} como oferta (ficas com ele sem dar outro em troca).</div>
-        <div class="actions"><button class="btn primary" id="s-send">Pedir o turno ${TYPES[theirs].abbr} ao ${p.name}</button><button class="btn" id="s-cancel">Cancelar</button></div></div>`;
-    } else if (mine === theirs) {
-      body.innerHTML = `<div>Tu e o ${p.name} têm o mesmo turno (${TYPES[mine].name}) em ${dLabel}. Não há nada a trocar.</div>
-        <div class="actions" style="margin-top:10px"><button class="btn" id="s-cancel">Fechar</button></div>`;
-    } else {
-      body.innerHTML = `<div style="display:grid;gap:12px">
-        <div class="swapview">
-          <div class="side-l"><span class="muted">Dás</span>${chipHTML(mine, true)}<span>${dLabel}</span></div>
-          <span aria-hidden="true" style="font-size:20px">⇄</span>
-          <div class="side-r"><span class="muted">Recebes (de ${p.name})</span>${chipHTML(theirs, true)}<span>${dLabel}</span></div>
-        </div>
-        ${checkRest(s.date, theirs)}
-        <div class="muted" style="font-size:13px">Este grupo usa aprovação entre colegas: a troca fica feita quando o ${p.name} aceitar.</div>
-        <div class="actions"><button class="btn primary" id="s-send">Enviar pedido</button><button class="btn" id="s-cancel">Cancelar</button></div>
-      </div>`;
-    }
-    $('s-send')?.addEventListener('click', () => {
-      state.pendingSwaps.add(s.date); state.pendingSwaps.add(`${s.person}:${s.date}`);
-      state.swap = null; renderAll(); toast(`Pedido enviado ao ${p.name} (simulação). Os dois turnos ficam marcados como pendentes.`);
-    });
-    $('s-cancel')?.addEventListener('click', () => { state.swap = null; renderSwap(); });
-  }
-
-  // Aviso de descanso mínimo (11 h) usando os turnos vizinhos, como o módulo rules
-  function checkRest(date, newCode) {
-    const t = TYPES[newCode];
-    const start = t.start, end = t.start + t.dur;
-    const prev = shiftOn(addDays(date, -1)), next = shiftOn(addDays(date, 1));
-    const msgs = [];
-    if (prev && !TYPES[prev].allDay) {
-      const gap = start + 1440 - (TYPES[prev].start + TYPES[prev].dur);
-      if (gap < 660) msgs.push(`Só ${hours(Math.max(gap, 0))} h de descanso depois do turno ${TYPES[prev].abbr} da véspera (mínimo 11 h).`);
-    }
-    if (next && !TYPES[next].allDay) {
-      const gap = TYPES[next].start + 1440 - end;
-      if (gap < 660) msgs.push(`Só ${hours(Math.max(gap, 0))} h de descanso antes do turno ${TYPES[next].abbr} do dia seguinte (mínimo 11 h).`);
-    }
-    return msgs.map(m => `<div class="warnbox">Aviso: ${m} Podes enviar na mesma.</div>`).join('');
-  }
-
-  $('roster').addEventListener('click', e => {
-    const b = e.target.closest('button[data-person]');
-    if (!b || b.dataset.person === 'me') return;
-    const p = PEOPLE.find(x => x.id === b.dataset.person);
-    if (TYPES[p.shift(b.dataset.date)].kind !== 'WORK') return;
-    state.swap = { person: b.dataset.person, date: b.dataset.date };
-    renderSwap();
-    $('swap-body').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  });
-  $('r-prev').addEventListener('click', () => { state.rosterStart = addDays(state.rosterStart, -7); renderRoster(); });
-  $('r-next').addEventListener('click', () => { state.rosterStart = addDays(state.rosterStart, 7); renderRoster(); });
+  function refreshSheet() { if (sheet.classList.contains('open') && sheetRender) sheetRender($('sheet-body')); }
+  function closeSheet() { sheet.classList.remove('open'); backdrop.classList.remove('open'); sheet.style.transform = ''; sheetRender = null; }
+  backdrop.addEventListener('click', closeSheet);
+  $('sheet-x').addEventListener('click', closeSheet);
+  (() => { // arrastar para fechar
+    let y0 = null, dy = 0;
+    $('sheet-hd').addEventListener('pointerdown', e => { if (e.target.closest('button')) return; y0 = e.clientY; dy = 0; sheet.classList.add('dragging'); $('sheet-hd').setPointerCapture(e.pointerId); });
+    $('sheet-hd').addEventListener('pointermove', e => { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); sheet.style.transform = `translateY(${dy}px)`; });
+    const end = () => { if (y0 === null) return; y0 = null; sheet.classList.remove('dragging'); sheet.style.transform = ''; if (dy > 90) closeSheet(); };
+    $('sheet-hd').addEventListener('pointerup', end); $('sheet-hd').addEventListener('pointercancel', end);
+  })();
 
   // ───────── Separadores ─────────
-  function setTab(tab) {
-    state.tab = tab;
-    $('tab-cal').setAttribute('aria-selected', tab === 'cal');
-    $('tab-grp').setAttribute('aria-selected', tab === 'grp');
-    $('view-cal').hidden = tab !== 'cal';
-    $('view-grp').hidden = tab !== 'grp';
-    if (tab === 'grp') renderRoster();
+  function setTab(t) {
+    if (S.paint) setPaint(false);
+    S.tab = t;
+    document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+    ['hoje', 'cal', 'grp', 'horas'].forEach(k => { $(`scr-${k}`).hidden = k !== t; });
+    render();
   }
-  $('tab-cal').addEventListener('click', () => setTab('cal'));
-  $('tab-grp').addEventListener('click', () => setTab('grp'));
+  document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { haptic(); setTab(b.dataset.tab); }));
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => setTab(b.dataset.go)));
 
-  let toastTimer;
-  function toast(msg) {
-    const t = $('toast'); t.textContent = msg; t.hidden = false;
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+  // ───────── HOJE ─────────
+  function nextShift() {
+    const now = new Date();
+    for (let i = -1; i < 40; i++) {
+      const d = add(TODAY, i), c = mine(d);
+      if (!isWork(c)) continue;
+      const t = TYPES[c], [y, m, dd] = d.split('-').map(Number);
+      const st = new Date(y, m - 1, dd, Math.floor(t.start / 60), t.start % 60), en = new Date(st.getTime() + t.dur * 6e4);
+      if (en > now) return { d, c, st, en, live: st <= now };
+    }
+    return null;
+  }
+  function renderHoje() {
+    $('h-date').textContent = cap(longDate(TODAY));
+    const n = nextShift();
+    if (n) {
+      const t = TYPES[n.c], r = resolve(n.d, n.c), now = new Date();
+      const ms = (n.live ? n.en : n.st) - now;
+      const dd = Math.floor(ms / 864e5), hh = Math.floor(ms / 36e5) % 24, mm = Math.floor(ms / 6e4) % 60;
+      const cd = (dd ? [[dd, dd === 1 ? 'dia' : 'dias']] : []).concat([[hh, 'h'], [mm, 'min']]);
+      $('h-hero').innerHTML = `<button class="hero" id="hero" style="--c:${t.color};--on:${onColor(t.color)};width:calc(100% - 32px);text-align:left">
+        <div class="k">${n.live ? 'A decorrer' : 'Próximo turno'}</div>
+        <div><div class="n">${t.name}</div><div class="when num">${relDate(n.d)} · ${hm(t.start)}–${hm(r.endW)}${r.endDate !== n.d ? ' (+1)' : ''}</div></div>
+        <div class="cd">${cd.map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('')}<div style="align-self:end;opacity:.85;font-size:13px">${n.live ? 'para terminar' : 'para começar'}</div></div>
+      </button>`;
+      $('hero').addEventListener('click', () => openDay(n.d));
+    } else $('h-hero').innerHTML = '';
+    const mon = mondayOf(TODAY);
+    $('h-week').innerHTML = Array.from({ length: 7 }, (_, i) => add(mon, i)).map(d => {
+      const c = mine(d);
+      return `<button data-d="${d}" class="${d === TODAY ? 'today' : ''}" aria-label="${longDate(d)}">${WDS[wday(d)].slice(0, 1)}<b class="num">${dnum(d)}</b>${c ? pill(c) : '<span class="pill off" style="opacity:.4">–</span>'}</button>`;
+    }).join('');
+    $('h-week').querySelectorAll('button').forEach(b => b.addEventListener('click', () => openDay(b.dataset.d)));
+
+    const inc = S.swaps.filter(s => s.dir === 'in' && s.status === 'PENDING');
+    $('h-swaps').innerHTML = inc.length ? `<div class="hd"><span>Precisa da tua resposta</span></div><div class="group">${inc.map(s => `
+      <button class="row" data-swap="${s.id}"><span class="ico" style="background:var(--orange)">${icon('swap')}</span>
+      <span class="grow"><div class="t">${person(s.person).name} quer trocar</div><div class="s">${shortDate(s.date)} · dás ${TYPES[s.give].name}, recebes ${TYPES[s.get].name}</div></span>${icon('chev', '', 'chev').replace('class="i"', 'class="i chev"')}</button>`).join('')}</div>` : '';
+    $('h-swaps').querySelectorAll('[data-swap]').forEach(b => b.addEventListener('click', () => openSwapIn(+b.dataset.swap)));
+
+    const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+    const onNow = PEOPLE.filter(p => p.level === 'D').map(p => ({ p, c: shiftOf(p, TODAY) })).filter(x => isWork(x.c));
+    $('h-group').innerHTML = onNow.map(({ p, c }) => {
+      const t = TYPES[c], live = nowMin >= t.start && nowMin < t.start + t.dur;
+      return `<div class="row">${pill(c, 'md')}<span class="grow"><div class="t">${p.name}${p.id === 'me' ? ' (eu)' : ''}</div><div class="s num">${hm(t.start)}–${hm((t.start + t.dur) % 1440)}</div></span><span class="v" style="color:${live ? 'var(--green)' : ''}">${live ? '● agora' : ''}</span></div>`;
+    }).join('') || '<div class="empty">Ninguém do grupo trabalha hoje.</div>';
+
+    const st = monthStats(+TODAY.slice(0, 4), +TODAY.slice(5, 7));
+    $('h-chips').innerHTML = [[`${hrs(st.work)} h`, 'trabalhadas'], [`${st.shifts}`, 'turnos'], [`${hrs(st.night)} h`, 'noturnas'], [eur(st.pay).replace(/,\d\d/, ''), 'estimativa']]
+      .map(([b, s]) => `<div class="stat-chip"><b>${b}</b><span>${s}</span></div>`).join('');
   }
 
-  state.selected = '2026-10-24';
-  renderAll();
+  // ───────── CALENDÁRIO ─────────
+  const grid = $('grid');
+  function monthCells() {
+    const first = iso(S.year, S.month, 1), lead = (wday(first) + 6) % 7, start = add(first, -lead);
+    const n = new Date(Date.UTC(S.year, S.month, 0)).getUTCDate();
+    return Array.from({ length: Math.ceil((lead + n) / 7) * 7 }, (_, i) => add(start, i));
+  }
+  function cellHTML(d, pre) {
+    const c = mine(d), inM = d.startsWith(pre), hol = HOLIDAYS[d];
+    const cls = ['day', inM ? '' : 'out', d === TODAY ? 'today' : '', hol ? 'hol' : '', S.sel === d ? 'sel' : ''].join(' ');
+    const dots = [NOTES[d] ? '<i></i>' : '', S.over.has(d) && rot(d) && !S.src.has(d) ? '<i class="edit"></i>' : '', S.src.has(d) || pendingOn(d) ? '<i class="swap"></i>' : ''].join('');
+    const lbl = `${longDate(d)}${c ? ', ' + TYPES[c].name : ', sem turno'}${hol ? ', feriado' : ''}`;
+    return `<button class="${cls}" role="gridcell" data-date="${d}" aria-label="${lbl}" ${inM ? '' : 'tabindex="-1"'}>
+      <span class="dn">${dnum(d)}</span>${c ? pill(c, '', pendingOn(d) ? 'pending' : '') : '<span class="pill" style="visibility:hidden">·</span>'}<span class="dots">${dots}</span></button>`;
+  }
+  const pendingOn = d => S.swaps.some(s => s.status === 'PENDING' && s.date === d);
+  function renderCal(anim) {
+    $('cal-month').textContent = cap(MONTHS[S.month - 1]);
+    $('cal-year').textContent = S.year;
+    $('cal-small').textContent = `${cap(MONTHS[S.month - 1])} ${S.year}`;
+    const pre = iso(S.year, S.month, 1).slice(0, 7);
+    grid.innerHTML = monthCells().map(d => cellHTML(d, pre)).join('');
+    if (anim) { grid.classList.remove('anim-l', 'anim-r'); void grid.offsetWidth; grid.classList.add(anim); }
+    $('undo').disabled = !S.undo.length; $('redo').disabled = !S.redo.length;
+
+    const st = monthStats(S.year, S.month);
+    $('c-chips').innerHTML = [[`${hrs(st.work)} h`, `${st.shifts} turnos`], [`${hrs(st.night)} h`, 'noturnas'], [`${st.off}`, 'folgas'], [eur(st.pay).replace(/,\d\d/, ''), 'estimativa']]
+      .map(([b, s]) => `<div class="stat-chip"><b>${b}</b><span>${s}</span></div>`).join('');
+
+    const from = pre === TODAY.slice(0, 7) ? TODAY : iso(S.year, S.month, 1);
+    const list = [];
+    for (let d = from; list.length < 5 && d <= add(from, 60); d = add(d, 1)) if (isWork(mine(d))) list.push(d);
+    $('c-next').innerHTML = list.map(d => {
+      const c = mine(d), t = TYPES[c], r = resolve(d, c);
+      return `<button class="row" data-d="${d}" style="--inset:32px"><span class="bar-l" style="background:${t.color}"></span><span class="grow"><div class="t">${t.name}</div><div class="s">${relDate(d)}</div></span><span class="v">${hm(t.start)}–${hm(r.endW)}</span><svg class="i chev"><use href="#i-chev"/></svg></button>`;
+    }).join('');
+    $('c-next').querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => openDay(b.dataset.d)));
+  }
+  function goMonth(n) {
+    let m = S.month + n, y = S.year;
+    if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; }
+    S.month = m; S.year = y; haptic(); renderCal(n > 0 ? 'anim-l' : 'anim-r');
+  }
+  $('m-prev').addEventListener('click', () => goMonth(-1));
+  $('m-next').addEventListener('click', () => goMonth(1));
+  $('cal-today').addEventListener('click', () => { S.year = +TODAY.slice(0, 4); S.month = +TODAY.slice(5, 7); renderCal('anim-r'); $('cal-scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
+  $('cal-switch').addEventListener('click', () => openSheet('Calendários', body => {
+    body.innerHTML = `<div class="section"><div class="group">
+      <div class="row"><span class="ico" style="background:var(--tint)">${icon('cal')}</span><span class="grow"><div class="t">Hospital São José</div><div class="s">Europe/Lisbon · 7 tipos</div></span><svg class="i check"><use href="#i-tick"/></svg></div>
+      <div class="row"><span class="ico" style="background:var(--green)">${icon('cal')}</span><span class="grow"><div class="t">Clínica Belém</div><div class="s">Europe/Lisbon · 3 tipos</div></span></div>
+      <div class="row tint"><span class="grow"><div class="t">Novo calendário</div></div></div></div>
+      <div class="ft">Cada calendário tem os seus tipos de turno, rotações, remuneração e partilhas.</div></div>`;
+  }));
+
+  // Gestos na grelha: deslizar muda o mês; no modo pincel, arrastar pinta
+  let gest = null, suppressClick = false;
+  grid.addEventListener('pointerdown', e => {
+    const cell = e.target.closest('.day');
+    gest = { x: e.clientX, y: e.clientY, painted: new Map(), before: new Map() };
+    if (S.paint && cell) { e.preventDefault(); grid.setPointerCapture(e.pointerId); paintCell(cell); }
+  });
+  grid.addEventListener('pointermove', e => {
+    if (!gest || !S.paint) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY), cell = el && el.closest && el.closest('.day');
+    if (cell && grid.contains(cell)) paintCell(cell);
+  });
+  const endGesture = e => {
+    if (!gest) return;
+    if (S.paint) {
+      if (gest.painted.size) { S.undo.push({ before: [...gest.before], after: [...gest.painted] }); S.redo = []; S.undo = S.undo.slice(-30); }
+      $('paint-hint').textContent = gest.painted.size ? `${gest.painted.size} ${gest.painted.size === 1 ? 'dia alterado' : 'dias alterados'} · guardado` : 'Toca ou arrasta sobre os dias';
+      gest = null; suppressClick = true; renderCal(); refreshOthers(); return;
+    }
+    const dx = e.clientX - gest.x, dy = e.clientY - gest.y;
+    if (Math.abs(dx) > 60 && Math.abs(dy) < 45) { suppressClick = true; goMonth(dx < 0 ? 1 : -1); }
+    gest = null;
+  };
+  grid.addEventListener('pointerup', endGesture);
+  grid.addEventListener('pointercancel', () => { gest = null; });
+  grid.addEventListener('click', e => {
+    if (suppressClick) { suppressClick = false; return; }
+    const cell = e.target.closest('.day');
+    if (cell && !S.paint) openDay(cell.dataset.date);
+  });
+  function paintCell(cell) {
+    const d = cell.dataset.date;
+    if (gest.painted.has(d)) return;
+    const code = S.brush || null;
+    if (mine(d) === code) return;
+    gest.before.set(d, S.over.has(d) ? S.over.get(d) : undefined);
+    gest.painted.set(d, code);
+    S.over.set(d, code); S.src.delete(d);
+    const tmp = document.createElement('div');
+    tmp.innerHTML = cellHTML(d, iso(S.year, S.month, 1).slice(0, 7));
+    const nc = tmp.firstElementChild; nc.classList.add('pop');
+    cell.replaceWith(nc); haptic();
+  }
+  function applyEntries(list) { list.forEach(([d, c]) => c === undefined ? S.over.delete(d) : S.over.set(d, c)); }
+  $('undo').addEventListener('click', () => { const op = S.undo.pop(); if (!op) return; applyEntries(op.before); S.redo.push(op); haptic(); renderCal(); });
+  $('redo').addEventListener('click', () => { const op = S.redo.pop(); if (!op) return; applyEntries(op.after); S.undo.push(op); haptic(); renderCal(); });
+
+  function renderBrushes() {
+    $('brushes').innerHTML = ORDER.map(c => `<button class="brush" data-b="${c}" aria-pressed="${S.brush === c}">${pill(c)}<span>${TYPES[c].name}</span></button>`).join('')
+      + `<button class="brush" data-b="" aria-pressed="${S.brush === ''}"><span class="pill clear">✕</span><span>Limpar</span></button>`;
+  }
+  $('brushes').addEventListener('click', e => { const b = e.target.closest('[data-b]'); if (!b) return; S.brush = b.dataset.b; haptic(); renderBrushes(); $('paint-hint').textContent = S.brush ? `A pintar: ${TYPES[S.brush].name}` : 'A limpar dias'; });
+  function setPaint(on) {
+    S.paint = on;
+    $('paintbar').classList.toggle('closed', !on);
+    $('tabbar').hidden = on;
+    $('cal-actions').hidden = on; $('paint-actions').hidden = !on;
+    $('cal-switch').hidden = on;
+    grid.classList.toggle('painting', on);
+    $('cal-below').style.opacity = on ? '.35' : '';
+    if (on) { renderBrushes(); $('paint-hint').textContent = `A pintar: ${TYPES[S.brush].name} · toca ou arrasta`; $('cal-scroll').scrollTo({ top: 0, behavior: 'smooth' }); }
+    renderCal();
+  }
+  $('paint-on').addEventListener('click', () => { haptic(); setPaint(true); });
+  $('paint-off').addEventListener('click', () => { setPaint(false); toast('Calendário atualizado'); });
+
+  // Detalhe do dia (sheet)
+  function openDay(d) {
+    S.sel = d;
+    if (S.tab === 'cal') renderCal();
+    let editing = false;
+    openSheet(cap(longDate(d)), body => {
+      const c = mine(d), hol = HOLIDAYS[d];
+      let h = '';
+      if (hol) h += `<div class="section"><div class="group"><div class="row"><span class="ico" style="background:var(--red)">${icon('flag')}</span><span class="grow"><div class="t">Feriado</div><div class="s">${hol}</div></span></div></div></div>`;
+      if (c) {
+        const t = TYPES[c], r = resolve(d, c);
+        const src = S.src.get(d) || (S.over.has(d) ? (rot(d) ? 'Editado à mão' : 'Adicionado à mão') : 'Rotação de 10 dias');
+        h += `<div class="section"><div class="shiftblock">${pill(c, 'lg')}<div><div class="t1">${t.name}</div><div class="t2">${r ? `${hm(t.start)} – ${hm(r.endW)}${r.endDate !== d ? ' (+1)' : ''}` : 'Dia inteiro'}</div></div></div></div>`;
+        if (r && r.dst) h += `<div class="section" style="margin-top:12px"><div class="warn">${icon('warn')}<div><b>${r.dst.split(':')[0]}</b><br>${r.dst.split(': ')[1]} O turno dura ${hrs(r.real)} h reais e termina às ${hm(r.endW)}.</div></div></div>`;
+        h += `<div class="section"><div class="group">
+          ${r ? `<div class="row"><span class="grow t">Duração</span><span class="v">${hrs(r.real)} h</span></div>
+          <div class="row"><span class="grow t">Horas noturnas</span><span class="v">${hrs(r.night)} h</span></div>
+          ${r.holiday ? `<div class="row"><span class="grow t">Em feriado</span><span class="v">${hrs(r.holiday)} h</span></div>` : ''}
+          <div class="row"><span class="grow t">Estimativa</span><span class="v">${eur(PAY.rate * (r.real + PAY.night * r.night + PAY.holiday * r.holiday) / 60)}</span></div>` :
+          `<div class="row"><span class="grow t">Tipo</span><span class="v">${t.kind === 'ABSENCE' ? 'Ausência' : 'Folga'}</span></div>`}
+          <div class="row"><span class="grow t">Origem</span><span class="v">${src}</span></div>
+        </div></div>`;
+      } else {
+        h += `<div class="section"><div class="empty" style="background:var(--card);border-radius:12px">Sem turno neste dia.</div></div>`;
+      }
+      if (NOTES[d]) h += `<div class="section"><div class="hd"><span>Nota</span></div><div class="group"><div class="row">${icon('note', 'color:var(--label-2)')}<span class="grow">${NOTES[d]}</span></div></div></div>`;
+      h += `<div class="section"><div class="hd"><span>${editing ? 'Escolhe o turno' : 'Alterar'}</span></div>`;
+      if (editing) {
+        h += `<div class="typegrid">${ORDER.map(k => `<button data-t="${k}" aria-pressed="${c === k}">${pill(k, 'md')}<span>${TYPES[k].name}</span></button>`).join('')}<button data-t=""><span class="pill md off">✕</span><span>Nenhum</span></button></div>`;
+      } else {
+        h += `<div class="group">
+          <button class="row tint" id="d-edit"><span class="grow t">${c ? 'Mudar turno' : 'Adicionar turno'}</span></button>
+          ${isWork(c) ? `<button class="row tint" id="d-swap"><span class="grow t">Propor troca no grupo</span></button>` : ''}
+          ${c ? `<button class="row danger" id="d-clear"><span class="grow t">Limpar dia</span></button>` : ''}</div>`;
+      }
+      h += `</div>`;
+      body.innerHTML = h;
+      body.querySelector('#d-edit')?.addEventListener('click', () => { editing = true; refreshSheet(); });
+      body.querySelector('#d-clear')?.addEventListener('click', () => { commit(d, null); closeSheet(); toast('Dia limpo · podes desfazer'); });
+      body.querySelector('#d-swap')?.addEventListener('click', () => { closeSheet(); S.rosterStart = mondayOf(d); S.grpSeg = 'escala'; setTab('grp'); toast('Escolhe o turno de um colega'); });
+      body.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => { commit(d, b.dataset.t || null); editing = false; haptic(); refreshSheet(); }));
+    });
+  }
+  function commit(d, code) {
+    S.undo.push({ before: [[d, S.over.has(d) ? S.over.get(d) : undefined]], after: [[d, code]] }); S.redo = [];
+    S.over.set(d, code); S.src.delete(d);
+    render();
+  }
+  sheet.addEventListener('transitionend', () => { if (!sheet.classList.contains('open') && S.sel) { S.sel = null; if (S.tab === 'cal') renderCal(); } });
+
+  // ───────── GRUPO ─────────
+  function setSeg(s) {
+    S.grpSeg = s;
+    $('seg-escala').setAttribute('aria-selected', s === 'escala'); $('seg-trocas').setAttribute('aria-selected', s === 'trocas');
+    $('g-escala').hidden = s !== 'escala'; $('g-trocas').hidden = s !== 'trocas';
+    renderGrp();
+  }
+  $('seg-escala').addEventListener('click', () => setSeg('escala'));
+  $('seg-trocas').addEventListener('click', () => setSeg('trocas'));
+  $('r-prev').addEventListener('click', () => { S.rosterStart = add(S.rosterStart, -7); renderGrp(); });
+  $('r-next').addEventListener('click', () => { S.rosterStart = add(S.rosterStart, 7); renderGrp(); });
+  $('g-members').addEventListener('click', () => openSheet('Membros', body => {
+    body.innerHTML = `<div class="section"><div class="group" style="--inset:62px">${PEOPLE.map(p => `<div class="row"><span class="ico" style="background:${['#5856D6','#1FA2B8','#FF9F0A','#30B35A','#FF375F'][PEOPLE.indexOf(p)]};border-radius:50%;font-weight:600;font-size:14px">${p.name[0]}</span><span class="grow"><div class="t">${p.name}${p.id === 'me' ? ' (eu)' : ''}</div><div class="s">${p.id === 'sofia' ? 'Admin' : p.id === 'me' ? 'Dona do grupo' : 'Membro'} · ${p.level === 'A' ? 'partilha disponibilidade' : 'partilha detalhes'}</div></span></div>`).join('')}
+      <div class="row tint"><span class="grow t">Convidar colegas…</span></div></div>
+      <div class="ft">Trocas: aprovação entre colegas. Quem convidas entra com um link e escolhe o calendário que partilha.</div></div>`;
+  }));
+
+  function renderGrp() {
+    const days = Array.from({ length: 14 }, (_, i) => add(S.rosterStart, i));
+    const a = days[0], b = days[13];
+    $('r-range').textContent = `${dnum(a)} ${mname(a).slice(0, 3)} – ${dnum(b)} ${mname(b).slice(0, 3)}`;
+    const head = days.map(d => `<th class="${d === TODAY ? 'today' : ''} ${HOLIDAYS[d] ? 'hol' : ''}">${WDS[wday(d)].slice(0, 1)}<b class="num">${dnum(d)}</b></th>`).join('');
+    const rows = PEOPLE.map(p => `<tr class="${p.id === 'me' ? 'me' : ''}"><th>${p.name}<small>${p.sub}</small></th>${days.map(d => {
+      const c = shiftOf(p, d);
+      if (!c) return '<td><span class="free">·</span></td>';
+      if (p.level === 'A') return isWork(c) ? '<td><span class="busy" aria-label="ocupada"></span></td>' : '<td><span class="free">·</span></td>';
+      const pend = S.swaps.some(s => s.status === 'PENDING' && s.date === d && (s.person === p.id || p.id === 'me'));
+      const can = p.id !== 'me' && isWork(c) && d >= TODAY;
+      return `<td>${can ? `<button data-p="${p.id}" data-d="${d}" aria-label="${p.name}, ${TYPES[c].name}, ${shortDate(d)}: propor troca">${pill(c, '', pend ? 'pending' : '')}</button>` : pill(c, '', pend ? 'pending' : '')}</td>`;
+    }).join('')}</tr>`).join('');
+    const counts = days.map(d => PEOPLE.filter(p => isWork(shiftOf(p, d))).length);
+    $('roster').innerHTML = `<thead><tr><th style="position:sticky;left:0;background:var(--card);z-index:2"></th>${head}</tr></thead><tbody>${rows}</tbody><tfoot><tr><th>A trabalhar</th>${counts.map(n => `<td>${n}</td>`).join('')}</tr></tfoot>`;
+    $('roster').querySelectorAll('button[data-p]').forEach(bt => bt.addEventListener('click', () => openSwapOut(bt.dataset.p, bt.dataset.d)));
+
+    const pend = S.swaps.filter(s => s.status === 'PENDING');
+    const inc = pend.filter(s => s.dir === 'in'), out = pend.filter(s => s.dir === 'out'), done = S.swaps.filter(s => s.status !== 'PENDING');
+    const card = s => `<button class="row" data-sw="${s.id}"><span class="grow"><div class="t">${s.dir === 'in' ? `${person(s.person).name} pede-te` : `Pedido ao ${person(s.person).name}`}</div><div class="s">${shortDate(s.date)}</div></span>
+      <span style="display:flex;align-items:center;gap:6px">${pill(s.give, 'md')}${icon('swap', 'width:16px;height:16px;color:var(--label-2)')}${pill(s.get, 'md')}</span><svg class="i chev"><use href="#i-chev"/></svg></button>`;
+    $('g-trocas').innerHTML = `
+      <div class="section" style="margin-top:18px"><div class="hd"><span>Para ti</span></div>${inc.length ? `<div class="group">${inc.map(card).join('')}</div>` : '<div class="empty" style="background:var(--card);border-radius:12px">Nada à espera da tua resposta.</div>'}</div>
+      <div class="section"><div class="hd"><span>Enviadas</span></div>${out.length ? `<div class="group">${out.map(card).join('')}</div>` : '<div class="empty" style="background:var(--card);border-radius:12px">Ainda não pediste trocas. Toca num turno de um colega na Escala.</div>'}</div>
+      ${done.length ? `<div class="section"><div class="hd"><span>Histórico</span></div><div class="group">${done.map(s => `<div class="row"><span class="grow"><div class="t">${person(s.person).name} · ${shortDate(s.date)}</div><div class="s">${s.status === 'COMPLETED' ? 'Troca concluída' : s.status === 'DECLINED' ? 'Recusada' : 'Cancelada'}</div></span><span style="display:flex;gap:6px;align-items:center">${pill(s.give, 'md')}${icon('swap', 'width:16px;height:16px;color:var(--label-2)')}${pill(s.get, 'md')}</span></div>`).join('')}</div></div>` : ''}`;
+    $('g-trocas').querySelectorAll('[data-sw]').forEach(bt => bt.addEventListener('click', () => {
+      const s = S.swaps.find(x => x.id === +bt.dataset.sw); s.dir === 'in' ? openSwapIn(s.id) : openSwapOutView(s.id);
+    }));
+    $('seg-badge').textContent = inc.length ? `(${inc.length})` : '';
+  }
+
+  function restWarnings(date, code) {
+    const t = TYPES[code], out = [];
+    const p = mine(add(date, -1)), n = mine(add(date, 1));
+    if (isWork(p)) { const g = t.start + 1440 - (TYPES[p].start + TYPES[p].dur); if (g < 660) out.push(`Só ${hrs(Math.max(g, 0))} h de descanso depois do turno ${TYPES[p].abbr} da véspera (mínimo 11 h).`); }
+    if (isWork(n)) { const g = TYPES[n].start + 1440 - (t.start + t.dur); if (g < 660) out.push(`Só ${hrs(Math.max(g, 0))} h de descanso antes do turno ${TYPES[n].abbr} do dia seguinte (mínimo 11 h).`); }
+    return out.map(m => `<div class="section" style="margin-top:12px"><div class="warn">${icon('warn')}<div>${m} Podes enviar na mesma.</div></div></div>`).join('');
+  }
+  function swapLine(give, get, other, d) {
+    return `<div class="section"><div class="group" style="padding:18px 12px"><div class="swapline">
+      <div class="sd"><span>Dás</span>${give ? pill(give, 'lg') : '<span class="pill lg off">–</span>'}<b>${give ? TYPES[give].name : 'Nada'}</b><span>${give && !TYPES[give].allDay ? hm(TYPES[give].start) : ''}</span></div>
+      ${icon('swap', 'width:26px;height:26px;color:var(--tint)')}
+      <div class="sd"><span>Recebes de ${other}</span>${pill(get, 'lg')}<b>${TYPES[get].name}</b><span>${hm(TYPES[get].start)}</span></div>
+    </div></div><div class="ft">${cap(longDate(d))}</div></div>`;
+  }
+  function openSwapOut(pid, d) {
+    const p = person(pid), theirs = shiftOf(p, d), my = mine(d);
+    openSheet('Propor troca', body => {
+      if (my === theirs) { body.innerHTML = `<div class="section"><div class="empty" style="background:var(--card);border-radius:12px">Tu e o ${p.name} têm o mesmo turno neste dia.</div></div>`; return; }
+      const give = isWork(my) ? my : null;
+      body.innerHTML = swapLine(give, theirs, p.name, d) + restWarnings(d, theirs) +
+        `<div class="section"><div class="ft" style="padding:0 16px 12px">${give ? `O ${p.name} fica com o teu turno ${TYPES[give].name} e tu com o dele.` : `Não tens turno neste dia: é um pedido para ficares com o turno do ${p.name}.`} O grupo aprova trocas entre colegas: fica feito quando ele aceitar.</div>
+        <button class="btn primary" id="sw-send" style="width:100%">Enviar pedido</button></div>`;
+      body.querySelector('#sw-send').addEventListener('click', () => {
+        S.swaps.push({ id: Date.now(), dir: 'out', person: pid, date: d, give: give || 'F', get: theirs, status: 'PENDING' });
+        closeSheet(); render(); toast(`Pedido enviado ao ${p.name}`);
+      });
+    });
+  }
+  function openSwapOutView(id) {
+    const s = S.swaps.find(x => x.id === id), p = person(s.person);
+    openSheet('Pedido enviado', body => {
+      body.innerHTML = swapLine(s.give, s.get, p.name, s.date) + `<div class="section"><div class="ft" style="padding:0 16px 12px">À espera da resposta do ${p.name}. Expira automaticamente quando o turno começar.</div>
+        <div class="group"><button class="row danger center" id="sw-cancel"><span class="t">Cancelar pedido</span></button></div></div>`;
+      body.querySelector('#sw-cancel').addEventListener('click', () => { s.status = 'CANCELLED'; closeSheet(); render(); toast('Pedido cancelado'); });
+    });
+  }
+  function openSwapIn(id) {
+    const s = S.swaps.find(x => x.id === id), p = person(s.person);
+    openSheet(`Pedido do ${p.name}`, body => {
+      body.innerHTML = (s.msg ? `<div class="section"><div class="group"><div class="row"><span class="ico" style="background:#1FA2B8;border-radius:50%;font-weight:600;font-size:14px">${p.name[0]}</span><span class="grow" style="font-size:15px">“${s.msg}”</span></div></div></div>` : '')
+        + swapLine(s.give, s.get, p.name, s.date) + restWarnings(s.date, s.get)
+        + `<div class="section"><div class="btnrow"><button class="btn red" id="sw-no">Recusar</button><button class="btn primary" id="sw-yes">Aceitar</button></div>
+          <div class="ft">Ao aceitar, os dois calendários são atualizados de imediato.</div></div>`;
+      body.querySelector('#sw-no').addEventListener('click', () => { s.status = 'DECLINED'; closeSheet(); render(); toast('Pedido recusado'); });
+      body.querySelector('#sw-yes').addEventListener('click', () => {
+        s.status = 'COMPLETED';
+        S.over.set(s.date, s.get); S.src.set(s.date, `Troca com o ${p.name}`);
+        (S.peopleOver[p.id] ||= new Map()).set(s.date, s.give);
+        closeSheet(); render(); toast('Troca concluída');
+      });
+    });
+  }
+
+  // ───────── HORAS ─────────
+  function renderHoras() {
+    const y = S.hsY, m = S.hsM, st = monthStats(y, m);
+    $('hs-month').textContent = `${cap(MONTHS[m - 1]).slice(0, 3)} ${y}`;
+    $('hs-small').textContent = `Horas · ${MONTHS[m - 1]}`;
+    const pct = Math.min(st.work / 60 / TARGET_H, 1), R = 38, C = 2 * Math.PI * R;
+    const bal = st.work / 60 - TARGET_H;
+    $('hs-ring').innerHTML = `<div class="ringwrap">
+      <svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="${R}" fill="none" stroke="var(--fill)" stroke-width="12"/>
+      <circle cx="48" cy="48" r="${R}" fill="none" stroke="var(--tint)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C * pct} ${C}" transform="rotate(-90 48 48)"/></svg>
+      <div><div class="big">${hrs(st.work)}<small> / ${TARGET_H} h</small></div>
+      <div class="s">${st.shifts} turnos · banco de horas <b style="color:${bal >= 0 ? 'var(--green)' : 'var(--orange)'}">${bal >= 0 ? '+' : '−'}${hrs(Math.abs(bal) * 60)} h</b></div></div></div>`;
+    const max = Math.max(...st.weeks.map(w => w.work), 1);
+    $('hs-bars').innerHTML = st.weeks.map(w => `<div class="b"><small>${hrs(w.work)}</small>
+      <div class="col" style="height:${Math.max(w.work / max * 100, 3)}%"><i style="height:${w.work ? w.night / w.work * 100 : 0}%"></i></div><small>${w.label}</small></div>`).join('');
+    const rows = [
+      ['moon', '#3B3A98', 'Noturno', `${hrs(st.night)} h`], ['sun2', '#FF9F0A', 'Fim de semana', `${hrs(st.weekend)} h`],
+      ['flag', 'var(--red)', 'Em feriado', `${hrs(st.holiday)} h`], ['euro', 'var(--green)', 'Estimativa bruta', eur(st.pay)],
+    ];
+    $('hs-detail').innerHTML = rows.map(([i, c, t, v]) => `<div class="row"><span class="ico" style="background:${c}">${icon(i)}</span><span class="grow t">${t}</span><span class="v">${v}</span></div>`).join('');
+    const fer = yearCount(y, 'FER'), bx = yearCount(y, 'BX');
+    $('hs-abs').innerHTML = `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><span class="t">Férias ${y}</span><span class="v">${fer} de ${FER_ALLOW} dias</span></div><div class="progress"><i style="width:${fer / FER_ALLOW * 100}%"></i></div></div>
+      <div class="row"><span class="grow t">Baixa</span><span class="v">${bx} dias</span></div>`;
+    $('hs-types').innerHTML = ORDER.filter(c => st.byType[c]).map(c => `<div class="row">${pill(c, 'md')}<span class="grow t">${TYPES[c].name}</span><span class="v">${st.byType[c]}×</span></div>`).join('') || '<div class="empty">Sem turnos neste mês.</div>';
+  }
+  const hsGo = n => { let m = S.hsM + n, y = S.hsY; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } S.hsM = m; S.hsY = y; renderHoras(); };
+  $('hs-prev').addEventListener('click', () => hsGo(-1));
+  $('hs-next').addEventListener('click', () => hsGo(1));
+
+  // ───────── Render global ─────────
+  function refreshOthers() {
+    const n = S.swaps.filter(s => s.dir === 'in' && s.status === 'PENDING').length;
+    $('tab-badge').hidden = !n; $('tab-badge').textContent = n;
+  }
+  function render() {
+    refreshOthers();
+    if (S.tab === 'hoje') renderHoje();
+    if (S.tab === 'cal') renderCal();
+    if (S.tab === 'grp') setSegRender();
+    if (S.tab === 'horas') renderHoras();
+  }
+  function setSegRender() {
+    $('seg-escala').setAttribute('aria-selected', S.grpSeg === 'escala'); $('seg-trocas').setAttribute('aria-selected', S.grpSeg === 'trocas');
+    $('g-escala').hidden = S.grpSeg !== 'escala'; $('g-trocas').hidden = S.grpSeg !== 'trocas';
+    renderGrp();
+  }
+  const clock = () => { const d = new Date(); $('sb-time').textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  clock(); setInterval(() => { clock(); if (S.tab === 'hoje' && !sheet.classList.contains('open')) renderHoje(); }, 30000);
+  render();
 })();
 </script>

@@ -216,7 +216,7 @@ A trabalhar    2     2     3     4     3     2     1     ← contagem por dia
 
 ## 5.6 Design system
 
-> Protótipo navegável destes princípios: [`prototipo/turnos-prototipo.html`](prototipo/turnos-prototipo.html)
+> Protótipo navegável (iOS, mobile-first): [`prototipo/turnos-prototipo.html`](prototipo/turnos-prototipo.html)
 > (abrir no browser; dados de exemplo).
 
 ### Direção visual
